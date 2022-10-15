@@ -1,0 +1,19 @@
+[features]
+seeds = false
+skip-lint = false
+
+[programs.localnet]
+masterarbeit_philipp_roiner = "4euwMgqxB9GkxVBY7uXKRRuC68yhkNbsVUhDPYS1mbhD"
+
+[programs.devnet]
+masterarbeit_philipp_roiner = "4euwMgqxB9GkxVBY7uXKRRuC68yhkNbsVUhDPYS1mbhD"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "devnet"
+wallet = "/Users/philipproiner/.config/solana/keypair.json"
+
+[scripts]
+test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
