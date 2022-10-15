@@ -5,10 +5,16 @@ use anchor_spl::token::{MintTo, Token};
 use mpl_token_metadata::instruction::create_master_edition_v3;
 use mpl_token_metadata::instruction::create_metadata_accounts_v2;
 
+// use crate::state::error_codes::*;
+// use crate::state::image::*;
+
 use crate::state::error_codes::*;
 use crate::state::image::*;
 
-pub fn handler(
+// use super::super::state::error_codes::*;
+// use super::super::state::image::*;
+
+pub fn mint_nft_handler(
     ctx: Context<MintNFT>,
     creator_key: Pubkey,
     name: String,

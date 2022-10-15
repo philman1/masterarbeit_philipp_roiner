@@ -3,7 +3,7 @@ use anchor_spl::token::{Mint, Token, TokenAccount};
 
 use crate::state::offer::*;
 
-pub fn handler(
+pub fn make_offer_handler(
     ctx: Context<MakeOffer>,
     escrowed_tokens_of_offer_maker_bump: u8,
     im_offering_this_much: u64,

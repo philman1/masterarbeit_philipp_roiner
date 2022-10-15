@@ -1,15 +1,9 @@
 use anchor_lang::prelude::*;
 
-mod instructions {
-    pub mod make_offer;
-    pub mod mint_nft;
-}
-mod state {
-    pub mod error_codes;
-    pub mod image;
-    pub mod offer;
-}
-
+mod instructions;
+mod state;
+use crate::make_offer::*;
+use crate::mint_nft::*;
 use instructions::*;
 
 declare_id!("4euwMgqxB9GkxVBY7uXKRRuC68yhkNbsVUhDPYS1mbhD");
@@ -19,23 +13,23 @@ pub mod masterarbeit_philipp_roiner {
     use super::*;
 
     pub fn mint_nft(
-        ctx: Context<mint_nft::MintNFT>,
+        ctx: Context<MintNFT>,
         creator_key: Pubkey,
         name: String,
         symbol: String,
         uri: String,
         allowed_license_types: u8,
     ) -> Result<()> {
-        mint_nft::handler(ctx, creator_key, name, symbol, uri, allowed_license_types)
+        mint_nft_handler(ctx, creator_key, name, symbol, uri, allowed_license_types)
     }
 
     pub fn make_offer(
-        ctx: Context<make_offer::MakeOffer>,
+        ctx: Context<MakeOffer>,
         escrowed_tokens_of_offer_maker_bump: u8,
         im_offering_this_much: u64,
         how_much_i_want_of_what_you_have: u64,
     ) -> Result<()> {
-        make_offer::handler(
+        make_offer_handler(
             ctx,
             escrowed_tokens_of_offer_maker_bump,
             im_offering_this_much,
