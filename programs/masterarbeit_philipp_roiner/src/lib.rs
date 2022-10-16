@@ -2,6 +2,8 @@ use anchor_lang::prelude::*;
 
 mod instructions;
 mod state;
+use crate::accept_offer::*;
+use crate::cancel_offer::*;
 use crate::make_offer::*;
 use crate::mint_nft::*;
 use instructions::*;
@@ -10,6 +12,7 @@ declare_id!("4euwMgqxB9GkxVBY7uXKRRuC68yhkNbsVUhDPYS1mbhD");
 
 #[program]
 pub mod masterarbeit_philipp_roiner {
+
     use super::*;
 
     pub fn mint_nft(
@@ -35,6 +38,14 @@ pub mod masterarbeit_philipp_roiner {
             im_offering_this_much,
             how_much_i_want_of_what_you_have,
         )
+    }
+
+    pub fn accept_offer(ctx: Context<AcceptOffer>) -> Result<()> {
+        accept_offer_handler(ctx)
+    }
+
+    pub fn cancel_offer(ctx: Context<CancelOffer>) -> Result<()> {
+        cancel_offer_handler(ctx)
     }
 
     //     pub fn mint_print_edition(ctx: Context<MintPrintEdition>) -> Result<()> {

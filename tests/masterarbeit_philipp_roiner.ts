@@ -6,10 +6,16 @@ import {
 	createAssociatedTokenAccountInstruction,
 	getAssociatedTokenAddress,
 	createInitializeMintInstruction,
-	createMintToCheckedInstruction,
 	MINT_SIZE,
+	createMint,
+	createAssociatedTokenAccount,
+	mintTo,
+	AccountLayout,
 } from "@solana/spl-token";
 import { create } from "ipfs-http-client";
+import { BN } from "bn.js";
+import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet";
+import { assert } from "chai";
 
 const TOKEN_METADATA_PROGRAM_ID = new anchor.web3.PublicKey(
 	"metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
@@ -24,6 +30,9 @@ let metadataUri = `https://ipfs.infura.io/ipfs/`;
 
 let masterMintId = null;
 let nftTokenAccount = null;
+
+const provider = anchor.AnchorProvider.env();
+anchor.setProvider(provider);
 
 const createMetadata = async () => {
 	// Upload image to IPFS
@@ -75,12 +84,28 @@ const getMasterEdition = async (mint: anchor.web3.PublicKey) => {
 	)[0];
 };
 
-async function sol_mint_nft() {
+async function generateKeypair() {
+	let keypair = anchor.web3.Keypair.generate();
+	await provider.connection.requestAirdrop(
+		keypair.publicKey,
+		2 * anchor.web3.LAMPORTS_PER_SOL
+	);
+	await new Promise((resolve) => setTimeout(resolve, 3 * 1000)); // Sleep 3s
+	return keypair;
+}
+
+const getTokenAmount = async (accountPublicKey, provider) => {
+	const tokenInfoLol = await provider.connection.getAccountInfo(
+		accountPublicKey
+	);
+	const data = Buffer.from(tokenInfoLol.data);
+	const accountInfo = AccountLayout.decode(data);
+	return accountInfo.amount.toString();
+};
+
+async function mintNft() {
 	// Configure the client to use the local cluster.
 	try {
-		const provider = anchor.AnchorProvider.env();
-		anchor.setProvider(provider);
-
 		const program = anchor.workspace
 			.MasterarbeitPhilippRoiner as Program<MasterarbeitPhilippRoiner>;
 
@@ -338,5 +363,306 @@ async function sol_mint_nft() {
 // 	}
 // }
 
-sol_mint_nft().then(() => console.log("..."));
+// mintNft().then(() => console.log("..."));
 // mint_print_edition());
+
+async function makeAndAcceptOffer() {
+	// Configure the client to use the local cluster.
+	try {
+		const program = anchor.workspace
+			.MasterarbeitPhilippRoiner as Program<MasterarbeitPhilippRoiner>;
+
+		const wallet = provider.wallet as NodeWallet;
+		let offerTaker = anchor.web3.Keypair.generate();
+
+		const cowMint = await createMint(
+			program.provider.connection,
+			wallet.payer,
+			provider.wallet.publicKey,
+			provider.wallet.publicKey,
+			0
+		);
+
+		const pigMint = await createMint(
+			program.provider.connection,
+			wallet.payer,
+			provider.wallet.publicKey,
+			provider.wallet.publicKey,
+			0
+		);
+
+		console.log("Mints created");
+
+		const offerMakerCowTokenAccount = await createAssociatedTokenAccount(
+			program.provider.connection,
+			wallet.payer,
+			cowMint,
+			wallet.publicKey
+		);
+
+		const offerMakerPigTokenAccount = await createAssociatedTokenAccount(
+			program.provider.connection,
+			wallet.payer,
+			pigMint,
+			wallet.publicKey
+		);
+
+		const offerTakerCowTokenAccount = await createAssociatedTokenAccount(
+			program.provider.connection,
+			wallet.payer,
+			cowMint,
+			offerTaker.publicKey
+		);
+
+		const offerTakerPigTokenAccount = await createAssociatedTokenAccount(
+			program.provider.connection,
+			wallet.payer,
+			pigMint,
+			offerTaker.publicKey
+		);
+
+		console.log("ATAs created");
+
+		await mintTo(
+			program.provider.connection,
+			wallet.payer,
+			cowMint,
+			offerMakerCowTokenAccount,
+			provider.wallet.publicKey,
+			4,
+			[]
+		);
+		await mintTo(
+			program.provider.connection,
+			wallet.payer,
+			pigMint,
+			offerTakerPigTokenAccount,
+			provider.wallet.publicKey,
+			4,
+			[]
+		);
+
+		console.log("Tokens minted");
+
+		const offer = await anchor.web3.Keypair.generate();
+		const [pda, escrowedTokensOfOfferMakerBump] =
+			await anchor.web3.PublicKey.findProgramAddress(
+				[offer.publicKey.toBuffer()],
+				program.programId
+			);
+
+		console.log(
+			"Token Account offerMaker: ",
+			await getTokenAmount(offerMakerCowTokenAccount, provider)
+		);
+
+		const tx = await program.methods
+			.makeOffer(escrowedTokensOfOfferMakerBump, new BN(2), new BN(4))
+			.accounts({
+				offer: offer.publicKey,
+				whoMadeTheOffer: provider.wallet.publicKey,
+				tokenAccountFromWhoMadeTheOffer: offerMakerCowTokenAccount,
+				escrowedTokensOfOfferMaker: pda,
+				kindOfTokenOffered: cowMint,
+				kindOfTokenWantedInReturn: pigMint,
+				tokenProgram: TOKEN_PROGRAM_ID,
+				systemProgram: anchor.web3.SystemProgram.programId,
+				rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+			})
+			.signers([offer])
+			.rpc();
+		console.log("Your transaction signature", tx);
+
+		console.log(
+			"Token Account offerMaker: ",
+			await getTokenAmount(offerMakerCowTokenAccount, provider)
+		);
+		console.log("PDA: ", await getTokenAmount(pda, provider));
+
+		console.log("ACCEPT OFFER");
+
+		await program.methods
+			.acceptOffer()
+			.accounts({
+				offer: offer.publicKey,
+				escrowedTokensOfOfferMaker: pda,
+				whoMadeTheOffer: provider.wallet.publicKey,
+				whoIsTakingTheOffer: offerTaker.publicKey,
+				accountHoldingWhatMakerWillGet: offerMakerPigTokenAccount,
+				accountHoldingWhatReceiverWillGive: offerTakerPigTokenAccount,
+				accountHoldingWhatReceiverWillGet: offerTakerCowTokenAccount,
+				kindOfTokenWantedInReturn: pigMint,
+				tokenProgram: TOKEN_PROGRAM_ID,
+			})
+			.signers([offerTaker])
+			.rpc();
+
+		console.log(
+			"Cow Token Account offerMaker: ",
+			await getTokenAmount(offerMakerCowTokenAccount, provider)
+		);
+		console.log(
+			"Pig Token Account offerMaker: ",
+			await getTokenAmount(offerMakerPigTokenAccount, provider)
+		);
+		console.log(
+			"Cow Token Account offerTaker: ",
+			await getTokenAmount(offerTakerCowTokenAccount, provider)
+		);
+		console.log(
+			"Pig Token Account offerTaker: ",
+			await getTokenAmount(offerTakerPigTokenAccount, provider)
+		);
+	} catch (e) {
+		console.error(e);
+	}
+}
+
+async function makeAndCancelOffer() {
+	// Configure the client to use the local cluster.
+	try {
+		const program = anchor.workspace
+			.MasterarbeitPhilippRoiner as Program<MasterarbeitPhilippRoiner>;
+
+		const wallet = provider.wallet as NodeWallet;
+		let offerTaker = anchor.web3.Keypair.generate();
+
+		const cowMint = await createMint(
+			program.provider.connection,
+			wallet.payer,
+			provider.wallet.publicKey,
+			provider.wallet.publicKey,
+			0
+		);
+
+		const pigMint = await createMint(
+			program.provider.connection,
+			wallet.payer,
+			provider.wallet.publicKey,
+			provider.wallet.publicKey,
+			0
+		);
+
+		console.log("Mints created");
+
+		const offerMakerCowTokenAccount = await createAssociatedTokenAccount(
+			program.provider.connection,
+			wallet.payer,
+			cowMint,
+			wallet.publicKey
+		);
+
+		const offerMakerPigTokenAccount = await createAssociatedTokenAccount(
+			program.provider.connection,
+			wallet.payer,
+			pigMint,
+			wallet.publicKey
+		);
+
+		const offerTakerCowTokenAccount = await createAssociatedTokenAccount(
+			program.provider.connection,
+			wallet.payer,
+			cowMint,
+			offerTaker.publicKey
+		);
+
+		const offerTakerPigTokenAccount = await createAssociatedTokenAccount(
+			program.provider.connection,
+			wallet.payer,
+			pigMint,
+			offerTaker.publicKey
+		);
+
+		console.log("ATAs created");
+
+		await mintTo(
+			program.provider.connection,
+			wallet.payer,
+			cowMint,
+			offerMakerCowTokenAccount,
+			provider.wallet.publicKey,
+			4,
+			[]
+		);
+		await mintTo(
+			program.provider.connection,
+			wallet.payer,
+			pigMint,
+			offerTakerPigTokenAccount,
+			provider.wallet.publicKey,
+			4,
+			[]
+		);
+
+		console.log("Tokens minted");
+
+		const offer = await anchor.web3.Keypair.generate();
+		const [pda, escrowedTokensOfOfferMakerBump] =
+			await anchor.web3.PublicKey.findProgramAddress(
+				[offer.publicKey.toBuffer()],
+				program.programId
+			);
+
+		console.log(
+			"Token Account offerMaker: ",
+			await getTokenAmount(offerMakerCowTokenAccount, provider)
+		);
+
+		const tx = await program.methods
+			.makeOffer(escrowedTokensOfOfferMakerBump, new BN(2), new BN(4))
+			.accounts({
+				offer: offer.publicKey,
+				whoMadeTheOffer: provider.wallet.publicKey,
+				tokenAccountFromWhoMadeTheOffer: offerMakerCowTokenAccount,
+				escrowedTokensOfOfferMaker: pda,
+				kindOfTokenOffered: cowMint,
+				kindOfTokenWantedInReturn: pigMint,
+				tokenProgram: TOKEN_PROGRAM_ID,
+				systemProgram: anchor.web3.SystemProgram.programId,
+				rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+			})
+			.signers([offer])
+			.rpc();
+		console.log("Your transaction signature", tx);
+
+		console.log(
+			"Token Account offerMaker: ",
+			await getTokenAmount(offerMakerCowTokenAccount, provider)
+		);
+		console.log("PDA: ", await getTokenAmount(pda, provider));
+
+		await program.methods
+			.cancelOffer()
+			.accounts({
+				offer: offer.publicKey,
+				whoMadeTheOffer: provider.wallet.publicKey,
+				whereTheEscrowedAccountWasFundedFrom: offerMakerCowTokenAccount,
+				escrowedTokensOfOfferMaker: pda,
+				tokenProgram: TOKEN_PROGRAM_ID,
+			})
+			// .signers([offerTaker])
+			.rpc();
+
+		console.log(
+			"Cow Token Account offerMaker: ",
+			await getTokenAmount(offerMakerCowTokenAccount, provider)
+		);
+		console.log(
+			"Pig Token Account offerMaker: ",
+			await getTokenAmount(offerMakerPigTokenAccount, provider)
+		);
+		console.log(
+			"Cow Token Account offerTaker: ",
+			await getTokenAmount(offerTakerCowTokenAccount, provider)
+		);
+		console.log(
+			"Pig Token Account offerTaker: ",
+			await getTokenAmount(offerTakerPigTokenAccount, provider)
+		);
+	} catch (e) {
+		console.error(e);
+	}
+}
+
+// makeAndAcceptOffer();
+makeAndCancelOffer();
