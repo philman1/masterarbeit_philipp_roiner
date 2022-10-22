@@ -1,5 +1,5 @@
 import * as anchor from "@project-serum/anchor";
-import { Program } from "@project-serum/anchor";
+import { Program, Wallet } from "@project-serum/anchor";
 import { MasterarbeitPhilippRoiner } from "../target/types/masterarbeit_philipp_roiner";
 import {
 	TOKEN_PROGRAM_ID,
@@ -11,11 +11,13 @@ import {
 	createAssociatedTokenAccount,
 	mintTo,
 	AccountLayout,
+	createMintToCheckedInstruction,
 } from "@solana/spl-token";
 import { create } from "ipfs-http-client";
 import { BN } from "bn.js";
 import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet";
 import { assert } from "chai";
+const { SystemProgram, PublicKey } = anchor.web3;
 
 const TOKEN_METADATA_PROGRAM_ID = new anchor.web3.PublicKey(
 	"metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
@@ -29,10 +31,15 @@ const nftSymbol = "Portugal";
 let metadataUri = `https://ipfs.infura.io/ipfs/`;
 
 let masterMintId = null;
-let nftTokenAccount = null;
+let ata = null;
+let ataMaster = null;
+let metadataAddressMaster = null;
 
 const provider = anchor.AnchorProvider.env();
 anchor.setProvider(provider);
+const wallet = provider.wallet as Wallet;
+
+const mintKey: anchor.web3.Keypair = anchor.web3.Keypair.generate();
 
 const createMetadata = async () => {
 	// Upload image to IPFS
@@ -44,7 +51,7 @@ const createMetadata = async () => {
 		name: "Lisboa",
 		symbol: "Portugal",
 		description: "This is a image I took in Lisboa",
-		image: image_url,
+		image: cid,
 	};
 
 	const ipfs_metadata = await ipfs.add(JSON.stringify(metadata));
@@ -122,11 +129,11 @@ async function mintNft() {
 		masterMintId = mintKey;
 
 		// Get the ATA for a token and the account that we want to own the ATA (but it might not existing on the SOL network yet)
-		nftTokenAccount = await getAssociatedTokenAddress(
+		ataMaster = await getAssociatedTokenAddress(
 			mintKey.publicKey,
 			provider.wallet.publicKey
 		);
-		console.log("NFT Account: ", nftTokenAccount.toBase58());
+		console.log("NFT Account: ", ataMaster.toBase58());
 
 		// Fires a list of instructions
 		const mint_tx = new anchor.web3.Transaction().add(
@@ -148,7 +155,7 @@ async function mintNft() {
 			// Create the ATA account that is associated with our mint on our anchor wallet
 			createAssociatedTokenAccountInstruction(
 				provider.wallet.publicKey,
-				nftTokenAccount,
+				ataMaster,
 				provider.wallet.publicKey,
 				mintKey.publicKey
 			)
@@ -163,25 +170,35 @@ async function mintNft() {
 		console.log("User: ", provider.wallet.publicKey.toString());
 
 		// Executes our code to mint our token into our specified ATA
-		const metadataAddress = await getMetadata(mintKey.publicKey);
-		console.log("Metadata address: ", metadataAddress.toBase58());
+		metadataAddressMaster = await getMetadata(mintKey.publicKey);
+		console.log("Metadata address: ", metadataAddressMaster.toBase58());
 		const masterEditionAddress = await getMasterEdition(mintKey.publicKey);
 		console.log("MasterEdition address: ", masterEditionAddress.toBase58());
 
+		const image = anchor.web3.Keypair.generate();
+
 		const tx = await program.methods
-			.mintNft(mintKey.publicKey, nftName, nftSymbol, metadataUri)
+			.mintNft(
+				mintKey.publicKey,
+				nftName,
+				nftSymbol,
+				metadataUri,
+				new BN(1)
+			)
 			.accounts({
+				image: image.publicKey,
 				mintAuthority: provider.wallet.publicKey,
 				mint: mintKey.publicKey,
-				tokenAccount: nftTokenAccount,
+				tokenAccount: ataMaster,
 				tokenProgram: TOKEN_PROGRAM_ID,
-				metadata: metadataAddress,
+				metadata: metadataAddressMaster,
 				masterEdition: masterEditionAddress,
 				tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
 				payer: provider.wallet.publicKey,
 				systemProgram: anchor.web3.SystemProgram.programId,
 				rent: anchor.web3.SYSVAR_RENT_PUBKEY,
 			})
+			.signers([image])
 			.rpc();
 		console.log("Your transaction signature", tx);
 		return tx;
@@ -190,181 +207,174 @@ async function mintNft() {
 	}
 }
 
-// async function mint_print_edition() {
-// 	const getNewEdition = async (
-// 		mint: anchor.web3.PublicKey
-// 	): Promise<anchor.web3.PublicKey> => {
-// 		return (
-// 			await anchor.web3.PublicKey.findProgramAddress(
-// 				[
-// 					Buffer.from("metadata"),
-// 					TOKEN_METADATA_PROGRAM_ID.toBuffer(),
-// 					mint.toBuffer(),
-// 					Buffer.from("metadata"),
-// 				],
-// 				TOKEN_METADATA_PROGRAM_ID
-// 			)
-// 		)[0];
-// 	};
+async function mint_print_edition() {
+	const getNewEdition = async (
+		mint: anchor.web3.PublicKey
+	): Promise<anchor.web3.PublicKey> => {
+		return (
+			await anchor.web3.PublicKey.findProgramAddress(
+				[
+					Buffer.from("metadata"),
+					TOKEN_METADATA_PROGRAM_ID.toBuffer(),
+					mint.toBuffer(),
+					Buffer.from("edition"),
+				],
+				TOKEN_METADATA_PROGRAM_ID
+			)
+		)[0];
+	};
 
-// 	const getMasterEdition = async (
-// 		mint: anchor.web3.PublicKey
-// 	): Promise<anchor.web3.PublicKey> => {
-// 		return (
-// 			await anchor.web3.PublicKey.findProgramAddress(
-// 				[
-// 					Buffer.from("metadata"),
-// 					TOKEN_METADATA_PROGRAM_ID.toBuffer(),
-// 					masterMintId.publicKey.toBuffer(),
-// 					Buffer.from("edition"),
-// 				],
-// 				TOKEN_METADATA_PROGRAM_ID
-// 			)
-// 		)[0];
-// 	};
+	const getMasterEdition = async (
+		mint: anchor.web3.PublicKey
+	): Promise<anchor.web3.PublicKey> => {
+		return (
+			await anchor.web3.PublicKey.findProgramAddress(
+				[
+					Buffer.from("metadata"),
+					TOKEN_METADATA_PROGRAM_ID.toBuffer(),
+					masterMintId.publicKey.toBuffer(),
+					Buffer.from("edition"),
+				],
+				TOKEN_METADATA_PROGRAM_ID
+			)
+		)[0];
+	};
 
-// 	const getEditionMarkPda = async (
-// 		mint: anchor.web3.PublicKey
-// 	): Promise<anchor.web3.PublicKey> => {
-// 		return (
-// 			await anchor.web3.PublicKey.findProgramAddress(
-// 				[
-// 					Buffer.from("metadata"),
-// 					TOKEN_METADATA_PROGRAM_ID.toBuffer(),
-// 					masterMintId.publicKey.toBuffer(),
-// 					Buffer.from("edition"),
-// 					Buffer.from("1"),
-// 				],
-// 				TOKEN_METADATA_PROGRAM_ID
-// 			)
-// 		)[0];
-// 	};
+	const getEditionMarkPda = async (): Promise<anchor.web3.PublicKey> => {
+		const EDITION_MARKER_BIT_SIZE = 248;
+		let edition = 1;
 
-// 	// Configure the client to use the local cluster.
-// 	try {
-// 		const provider = anchor.AnchorProvider.env();
-// 		anchor.setProvider(provider);
+		let editionNumber = new anchor.BN(
+			Math.floor(edition / EDITION_MARKER_BIT_SIZE)
+		);
+		console.log("editionNumber: ", editionNumber.toString());
 
-// 		const program = anchor.workspace
-// 			.MasterarbeitPhilippRoiner as Program<MasterarbeitPhilippRoiner>;
+		return (
+			await anchor.web3.PublicKey.findProgramAddress(
+				[
+					Buffer.from("metadata"),
+					TOKEN_METADATA_PROGRAM_ID.toBuffer(),
+					masterMintId.publicKey.toBuffer(),
+					Buffer.from("edition"),
+					Buffer.from(editionNumber.toString()),
+				],
+				TOKEN_METADATA_PROGRAM_ID
+			)
+		)[0];
+	};
 
-// 		console.log("Program Id: ", program.programId.toBase58());
-// 		console.log("Mint Size: ", MINT_SIZE);
-// 		const lamports =
-// 			await program.provider.connection.getMinimumBalanceForRentExemption(
-// 				MINT_SIZE
-// 			);
-// 		console.log("Mint Account Lamports: ", lamports);
+	// Configure the client to use the local cluster.
+	try {
+		const provider = anchor.AnchorProvider.env();
+		anchor.setProvider(provider);
 
-// 		// Generate a random keypair that will represent our token
-// 		const newMint: anchor.web3.Keypair = anchor.web3.Keypair.generate();
+		const program = anchor.workspace
+			.MasterarbeitPhilippRoiner as Program<MasterarbeitPhilippRoiner>;
 
-// 		// Get the ATA for a token and the account that we want to own the ATA (but it might not existing on the SOL network yet)
-// 		const nftTokenAccount = await getAssociatedTokenAddress(
-// 			newMint.publicKey,
-// 			provider.wallet.publicKey
-// 		);
-// 		console.log("NFT Account: ", nftTokenAccount.toBase58());
+		console.log("Program Id: ", program.programId.toBase58());
+		console.log("Mint Size: ", MINT_SIZE);
+		const lamports =
+			await program.provider.connection.getMinimumBalanceForRentExemption(
+				MINT_SIZE
+			);
+		console.log("Mint Account Lamports: ", lamports);
 
-// 		// Fires a list of instructions
-// 		// const mint_tx = new anchor.web3.Transaction().add(
-// 		// 	// Use anchor to create an account from the mint provider.wallet.publicKey that we created
-// 		// 	anchor.web3.SystemProgram.createAccount({
-// 		// 		fromPubkey: provider.wallet.publicKey,
-// 		// 		newAccountPubkey: mintKey.publicKey,
-// 		// 		space: MINT_SIZE,
-// 		// 		programId: TOKEN_PROGRAM_ID,
-// 		// 		lamports,
-// 		// 	}),
-// 		// 	// Fire a transaction to create our mint account that is controlled by our anchor wallet
-// 		// 	createInitializeMintInstruction(
-// 		// 		mintKey.publicKey,
-// 		// 		0,
-// 		// 		provider.wallet.publicKey,
-// 		// 		provider.wallet.publicKey
-// 		// 	),
-// 		// 	// Create the ATA account that is associated with our mint on our anchor wallet
-// 		// 	createAssociatedTokenAccountInstruction(
-// 		// 		provider.wallet.publicKey,
-// 		// 		nftTokenAccount,
-// 		// 		provider.wallet.publicKey,
-// 		// 		mintKey.publicKey
-// 		// 	)
-// 		// );
-// 		const tx2 = new anchor.web3.Transaction().add(
-// 			anchor.web3.SystemProgram.createAccount({
-// 				fromPubkey: provider.wallet.publicKey,
-// 				newAccountPubkey: newMint.publicKey,
-// 				lamports,
-// 				space: MINT_SIZE,
-// 				programId: TOKEN_PROGRAM_ID,
-// 			}),
-// 			createInitializeMintInstruction(
-// 				newMint.publicKey,
-// 				0,
-// 				provider.wallet.publicKey,
-// 				null
-// 			),
-// 			createAssociatedTokenAccountInstruction(
-// 				provider.wallet.publicKey,
-// 				nftTokenAccount,
-// 				provider.wallet.publicKey,
-// 				newMint.publicKey
-// 			),
-// 			createMintToCheckedInstruction(
-// 				newMint.publicKey,
-// 				nftTokenAccount,
-// 				provider.wallet.publicKey,
-// 				1,
-// 				0
-// 			)
-// 		);
+		// Generate a random keypair that will represent our token
+		const newMint: anchor.web3.Keypair = anchor.web3.Keypair.generate();
 
-// 		// const mintResult = await connection.sendTransaction(tx, [wallet.payer, newMint]
-// 		// sends and create the transaction
-// 		const res = await program.provider.sendAndConfirm(tx2, [newMint]);
+		// Get the ATA for a token and the account that we want to own the ATA (but it might not existing on the SOL network yet)
+		const ata = await getAssociatedTokenAddress(
+			newMint.publicKey,
+			provider.wallet.publicKey
+		);
+		console.log("NFT Account: ", ata.toBase58());
 
-// 		metadataUri = await createMetadata();
+		const tx2 = new anchor.web3.Transaction().add(
+			anchor.web3.SystemProgram.createAccount({
+				fromPubkey: provider.wallet.publicKey,
+				newAccountPubkey: newMint.publicKey,
+				lamports,
+				space: MINT_SIZE,
+				programId: TOKEN_PROGRAM_ID,
+			}),
+			createInitializeMintInstruction(
+				newMint.publicKey,
+				0,
+				provider.wallet.publicKey,
+				null
+			),
+			createAssociatedTokenAccountInstruction(
+				provider.wallet.publicKey,
+				ata,
+				provider.wallet.publicKey,
+				newMint.publicKey
+			),
+			createMintToCheckedInstruction(
+				newMint.publicKey,
+				ata,
+				provider.wallet.publicKey,
+				1,
+				0
+			)
+		);
 
-// 		console.log("Mint key: ", newMint.publicKey.toString());
-// 		console.log("User: ", provider.wallet.publicKey.toString());
+		// const mintResult = await connection.sendTransaction(tx, [
+		// 	wallet.payer,
+		// 	newMint,
+		// ]);
+		// sends and create the transaction
+		const res = await program.provider.sendAndConfirm(tx2, [newMint]);
 
-// 		// Executes our code to mint our token into our specified ATA
-// 		const metadataAddress = await getMetadata(newMint.publicKey);
+		// metadataUri = await createMetadata();
 
-// 		const newEditionAddress = await getNewEdition(newMint.publicKey);
+		console.log("Mint key: ", newMint.publicKey.toString());
+		console.log("User: ", provider.wallet.publicKey.toString());
 
-// 		const masterEditionAddress = await getMasterEdition(newMint.publicKey);
+		// Executes our code to mint our token into our specified ATA
+		const metadataAddress = await getMetadata(newMint.publicKey);
 
-// 		const editionMarkPda = await getEditionMarkPda(newMint.publicKey);
+		const newEditionAddress = await getNewEdition(newMint.publicKey);
 
-// 		const tx = await program.methods
-// 			.mintPrintEdition()
-// 			.accounts({
-// 				newMetadata: metadataAddress,
-// 				newEdition: newEditionAddress,
-// 				masterEdition: masterEditionAddress,
-// 				newMint: newMint.publicKey,
-// 				editionMarkPda: editionMarkPda,
-// 				newMintAuthority: provider.wallet.publicKey,
-// 				payer: provider.wallet.publicKey,
-// 				tokenAccountOwner: provider.wallet.publicKey,
-// 				tokenAccount: nftTokenAccount,
-// 				newMetadataUpdateAuthority: provider.wallet.publicKey,
-// 				metadata: metadataAddress,
-// 				tokenProgram: TOKEN_PROGRAM_ID,
-// 				systemProgram: anchor.web3.SystemProgram.programId,
-// 				rent: anchor.web3.SYSVAR_RENT_PUBKEY,
-// 			})
-// 			.rpc();
-// 		console.log("Your transaction signature", tx);
-// 	} catch (e) {
-// 		console.error(e);
-// 	}
-// }
+		const masterEditionAddress = await getMasterEdition(newMint.publicKey);
 
-// mintNft().then(() => console.log("..."));
-// mint_print_edition());
+		const editionMarkPda = await getEditionMarkPda();
+
+		console.log("MetadataAddress: ", metadataAddress.toBase58());
+		console.log(
+			"MetadataAddress master: ",
+			metadataAddressMaster.toBase58()
+		);
+		console.log("newEditionAddress: ", newEditionAddress.toBase58());
+		console.log("masterEditionAddress: ", masterEditionAddress.toBase58());
+		console.log("editionMarkPda: ", editionMarkPda.toBase58());
+
+		const tx = await program.methods
+			.mintEdition((1)[0])
+			.accounts({
+				originalMint: masterMintId.publicKey,
+				newMetadata: metadataAddress,
+				newEdition: newEditionAddress,
+				masterEdition: masterEditionAddress,
+				newMint: newMint.publicKey,
+				editionMarkPda: editionMarkPda,
+				newMintAuthority: provider.wallet.publicKey,
+				payer: provider.wallet.publicKey,
+				tokenAccountOwner: provider.wallet.publicKey,
+				tokenAccount: ataMaster,
+				newMetadataUpdateAuthority: provider.wallet.publicKey,
+				metadata: metadataAddressMaster,
+				tokenProgram: TOKEN_PROGRAM_ID,
+				systemProgram: anchor.web3.SystemProgram.programId,
+				rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+			})
+			.rpc();
+		console.log("Your transaction signature", tx);
+	} catch (e) {
+		console.error(e);
+	}
+}
+
+mintNft().then(() => mint_print_edition());
 
 async function makeAndAcceptOffer() {
 	// Configure the client to use the local cluster.
@@ -665,4 +675,4 @@ async function makeAndCancelOffer() {
 }
 
 // makeAndAcceptOffer();
-makeAndCancelOffer();
+// makeAndCancelOffer();

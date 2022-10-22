@@ -6,9 +6,10 @@ import {
 	// createMintToCheckedInstruction,
 	MINT_SIZE,
 } from "@solana/spl-token";
-import { web3 } from "@project-serum/anchor";
+import { BN, web3 } from "@project-serum/anchor";
 import { create } from "ipfs-http-client";
-import { useWorkspace } from "@/composables";
+import { PublicKey } from "@metaplex-foundation/js";
+import { useMetaplex, useWorkspace } from "@/composables";
 
 const TOKEN_METADATA_PROGRAM_ID = new web3.PublicKey(
 	"metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
@@ -97,14 +98,18 @@ export const mintNft = async (metadata) => {
 		const masterEditionAddress = await getMasterEdition(mintKey.publicKey);
 		console.log("MasterEdition address: ", masterEditionAddress.toBase58());
 
+		const image = web3.Keypair.generate();
+
 		const tx = await program.value.methods
 			.mintNft(
 				mintKey.publicKey,
 				metadata.name,
 				metadata.symbol,
-				metadataUri
+				metadataUri,
+				new BN(1)
 			)
 			.accounts({
+				image: image.publicKey,
 				mintAuthority: wallet.value.publicKey,
 				mint: mintKey.publicKey,
 				tokenAccount: ata,
@@ -116,6 +121,7 @@ export const mintNft = async (metadata) => {
 				systemProgram: web3.SystemProgram.programId,
 				rent: web3.SYSVAR_RENT_PUBKEY,
 			})
+			.signers([image])
 			.rpc();
 		console.log("Your transaction signature", tx);
 		return tx;
@@ -124,12 +130,27 @@ export const mintNft = async (metadata) => {
 	}
 };
 
+export const printEdition = async (originalNft) => {
+	const { metaplex } = useMetaplex();
+	console.log(originalNft.mint);
+
+	const originalMint = new PublicKey(
+		"EwXaxjJ51DQkfUqLvh26X5iLiELzPJEzvTEnn5FJMQ8d"
+	);
+	console.log(originalMint);
+	const { nft: printedNft } = await metaplex.nfts().printNewEdition({
+		originalMint: originalNft.mint,
+	});
+
+	console.log(printedNft);
+};
+
 const uploadOffchainMetadataToIpfs = async (metadata) => {
 	const ipfs_metadata = await ipfs.add(JSON.stringify(metadata));
 	if (ipfs_metadata == null) {
 		return "";
 	} else {
-		return ipfs_metadata.path; // `https://ipfs.io/ipfs/${ipfs_metadata.path}`;
+		return `https://ipfs.io/ipfs/${ipfs_metadata.path}`;
 	}
 };
 

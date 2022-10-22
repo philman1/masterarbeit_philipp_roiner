@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use crate::state::offer::*;
+use crate::state::{offer::*, license::*};
 use anchor_spl::token::{Mint, Token, TokenAccount};
 
 pub fn accept_offer_handler(ctx: Context<AcceptOffer>) -> Result<()> {
@@ -71,6 +71,9 @@ pub fn accept_offer_handler(ctx: Context<AcceptOffer>) -> Result<()> {
 
 #[derive(Accounts)]
 pub struct AcceptOffer<'info> {
+    #[account(init, payer = who_made_the_offer, space = License::LEN)]
+    pub license: Account<'info, License>,
+
     #[account(
         mut,
         constraint = offer.who_made_the_offer == who_made_the_offer.key(),
@@ -107,4 +110,6 @@ pub struct AcceptOffer<'info> {
     pub kind_of_token_wanted_in_return: Account<'info, Mint>,
 
     pub token_program: Program<'info, Token>,
+    pub system_program: Program<'info, System>,
+    // pub rent: Sysvar<'info, Rent>,
 }

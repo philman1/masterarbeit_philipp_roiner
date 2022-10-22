@@ -1,6 +1,11 @@
 import { computed } from "vue";
-import { useAnchorWallet } from "solana-wallets-vue";
-import { Connection, PublicKey } from "@solana/web3.js";
+import { useAnchorWallet, useWallet } from "solana-wallets-vue";
+import {
+	Metaplex,
+	keypairIdentity,
+	bundlrStorage,
+} from "@metaplex-foundation/js";
+import { Connection, PublicKey, clusterApiUrl } from "@solana/web3.js";
 import { Program, AnchorProvider } from "@project-serum/anchor";
 import idl from "../idl.json";
 
@@ -9,8 +14,13 @@ const preflightCommitment = "processed";
 const commitment = "processed";
 const programID = new PublicKey(idl.metadata.address);
 let workspace = null;
+let metaplex = null;
 
 export const useWorkspace = () => workspace;
+
+export const useMetaplex = () => {
+	return { metaplex };
+};
 
 export const initWorkspace = () => {
 	const wallet = useAnchorWallet();
@@ -30,4 +40,15 @@ export const initWorkspace = () => {
 		provider,
 		program,
 	};
+};
+
+export const initMetaplex = () => {
+	const connection = new Connection(clusterApiUrl("devnet"));
+	const { wallet } = useWallet();
+
+	metaplex = Metaplex.make(connection)
+		.use(keypairIdentity(wallet))
+		.use(bundlrStorage());
+
+	console.log(metaplex);
 };

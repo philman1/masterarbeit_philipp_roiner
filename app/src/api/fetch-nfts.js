@@ -46,9 +46,14 @@ export const fetchNfts = async () => {
 export const fetchMetadataFromIpfs = (nfts) =>
 	Promise.all(
 		nfts.map(async (nft) => {
-			if (nft.data.uri) {
-				let chunks = [];
-				for await (const chunk of ipfs.cat(nft.data.uri)) {
+			if (nft.data.uri && !nft.data.uri.includes("ipfs://")) {
+				let chunks = [],
+					uri = nft.data.uri;
+				if (uri.includes("ipfs")) {
+					uri = uri.substring(21);
+				}
+				console.log(nft.data.uri, uri);
+				for await (const chunk of ipfs.cat(uri)) {
 					chunks.push(chunk);
 				}
 
@@ -67,9 +72,18 @@ export const fetchImageFromIpfs = async (metadata) => {
 };
 
 async function loadImgURL(cid) {
-	if (cid == "" || cid == null || cid == undefined) {
+	if (
+		cid == "" ||
+		cid == null ||
+		cid == undefined ||
+		cid.includes("ipfs://")
+	) {
 		return;
 	}
-	const res = await fetch("http://localhost:8080/ipfs/" + cid);
+	let uri = cid;
+	if (cid.includes("ipfs")) {
+		uri = uri.substring(21);
+	}
+	const res = await fetch("http://localhost:8080/ipfs/" + uri);
 	return res.url;
 }

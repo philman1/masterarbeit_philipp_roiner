@@ -1,12 +1,15 @@
 <script setup>
-import { saveToIpfs, mintNft } from "@/api";
+import { saveToIpfs, mintNft, printEdition } from "@/api";
 import { computed, ref } from "vue";
+import { PublicKey } from "@metaplex-foundation/js";
+import { useMetaplex } from "@/composables";
 
 const name = ref("");
 const symbol = ref("");
 const description = ref("");
 const image = ref(null);
 const validName = computed(() => name.value && name.value.length > 0);
+const { metaplex } = useMetaplex();
 
 const handleFiles = async (event) => {
 	event.stopPropagation();
@@ -15,6 +18,7 @@ const handleFiles = async (event) => {
 };
 
 const mint = async () => {
+	console.log("mint", validName.value, image.value);
 	if (!validName.value || !image.value) return;
 	const cids = await saveToIpfs(image.value);
 
@@ -22,8 +26,17 @@ const mint = async () => {
 		name: name.value,
 		symbol: symbol.value,
 		description: description.value,
-		image: cids[0],
+		image: `https://ipfs.io/ipfs/${cids[0]}`,
 	});
+};
+
+const print = async () => {
+	const mintAddress = new PublicKey(
+		"EwXaxjJ51DQkfUqLvh26X5iLiELzPJEzvTEnn5FJMQ8d"
+	);
+
+	const nft = await metaplex.nfts().findByMint({ mintAddress });
+	await printEdition(nft);
 };
 </script>
 
@@ -106,4 +119,6 @@ const mint = async () => {
 			</div>
 		</form>
 	</div>
+	<div>Print Edition</div>
+	<button @click="print">Print</button>
 </template>

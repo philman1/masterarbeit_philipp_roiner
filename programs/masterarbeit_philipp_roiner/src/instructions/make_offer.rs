@@ -37,7 +37,7 @@ pub fn make_offer_handler(
 #[derive(Accounts)]
 #[instruction(escrow_bump: u8)]
 pub struct MakeOffer<'info> {
-    #[account(init, payer = who_made_the_offer, space = 8 + 32 + 32 + 8 + 1)]
+    #[account(init, payer = who_made_the_offer, space = Offer::LEN)]
     pub offer: Account<'info, Offer>,
 
     #[account(mut)]

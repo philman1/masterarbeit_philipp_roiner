@@ -6,7 +6,7 @@
 </template>
 
 <script setup>
-import { initWorkspace } from "@/composables";
+import { initMetaplex, initWorkspace } from "@/composables";
 import NavBar from "./components/NavBar.vue";
 
 import {
@@ -19,6 +19,7 @@ const wallets = [new PhantomWalletAdapter(), new SolflareWalletAdapter()];
 
 initWallet({ wallets, autoConnect: true });
 initWorkspace();
+initMetaplex();
 
 const { connected, publicKey } = useWallet();
 </script>
