@@ -84,32 +84,6 @@ pub mod masterarbeit_philipp_roiner {
             account_info.as_slice(),
         )?;
         msg!("Metadata Account Created !!!");
-        // let master_edition_infos = vec![
-        //     ctx.accounts.master_edition.to_account_info(),
-        //     ctx.accounts.mint.to_account_info(),
-        //     ctx.accounts.mint_authority.to_account_info(),
-        //     ctx.accounts.payer.to_account_info(),
-        //     ctx.accounts.metadata.to_account_info(),
-        //     ctx.accounts.token_metadata_program.to_account_info(),
-        //     ctx.accounts.token_program.to_account_info(),
-        //     ctx.accounts.system_program.to_account_info(),
-        //     ctx.accounts.rent.to_account_info(),
-        // ];
-        // msg!("Master Edition Account Infos Assigned");
-        // invoke(
-        //     &create_master_edition_v3(
-        //         ctx.accounts.token_metadata_program.key(),
-        //         ctx.accounts.master_edition.key(),
-        //         ctx.accounts.mint.key(),
-        //         ctx.accounts.payer.key(),
-        //         ctx.accounts.mint_authority.key(),
-        //         ctx.accounts.metadata.key(),
-        //         ctx.accounts.payer.key(),
-        //         None,
-        //     ),
-        //     master_edition_infos.as_slice(),
-        // )?;
-        // msg!("Master Edition Nft Minted !!!");
         Ok(())
     }
 

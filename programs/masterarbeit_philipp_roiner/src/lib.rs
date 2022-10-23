@@ -26,6 +26,23 @@ pub mod masterarbeit_philipp_roiner {
         mint_nft_handler(ctx, creator_key, name, symbol, uri, allowed_license_types)
     }
 
+    pub fn create_metadata_account(
+        ctx: Context<CreateMetadataAccount>,
+        creator_key: Pubkey,
+        name: String,
+        symbol: String,
+        uri: String,
+    ) -> Result<()> {
+        create_metadata_account_handler(ctx, creator_key, uri, name, symbol)
+    }
+
+    pub fn create_master_edition(
+        ctx: Context<CreateMasterEdition>,
+        max_supply: Option<u64>,
+    ) -> Result<()> {
+        create_master_edition_handler(ctx, max_supply)
+    }
+
     pub fn mint_edition(ctx: Context<MintPrintEdition>, edition: u64) -> Result<()> {
         mint_print_edition_handler(ctx, edition)
     }

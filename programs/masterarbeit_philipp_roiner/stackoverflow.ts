@@ -249,7 +249,6 @@ const dodo = async () => {
 				tokenAccount: NftTokenAccount,
 				newMetadataUpdateAuthority: wallet.publicKey,
 				metadata: metadataAddress,
-				tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
 				tokenProgram: TOKEN_PROGRAM_ID,
 				systemProgram: SystemProgram.programId,
 				rent: anchor.web3.SYSVAR_RENT_PUBKEY,

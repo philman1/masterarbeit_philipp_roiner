@@ -1,5 +1,5 @@
 import * as anchor from "@project-serum/anchor";
-import { Program, Wallet } from "@project-serum/anchor";
+import { Program } from "@project-serum/anchor";
 import { MasterarbeitPhilippRoiner } from "../target/types/masterarbeit_philipp_roiner";
 import {
 	TOKEN_PROGRAM_ID,
@@ -17,7 +17,7 @@ import { create } from "ipfs-http-client";
 import { BN } from "bn.js";
 import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet";
 import { assert } from "chai";
-const { SystemProgram, PublicKey } = anchor.web3;
+const { SystemProgram } = anchor.web3;
 
 const TOKEN_METADATA_PROGRAM_ID = new anchor.web3.PublicKey(
 	"metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
@@ -31,15 +31,11 @@ const nftSymbol = "Portugal";
 let metadataUri = `https://ipfs.infura.io/ipfs/`;
 
 let masterMintId = null;
-let ata = null;
 let ataMaster = null;
 let metadataAddressMaster = null;
 
 const provider = anchor.AnchorProvider.env();
 anchor.setProvider(provider);
-const wallet = provider.wallet as Wallet;
-
-const mintKey: anchor.web3.Keypair = anchor.web3.Keypair.generate();
 
 const createMetadata = async () => {
 	// Upload image to IPFS
@@ -110,6 +106,45 @@ const getTokenAmount = async (accountPublicKey, provider) => {
 	return accountInfo.amount.toString();
 };
 
+const getNewEdition = async (
+	mint: anchor.web3.PublicKey
+): Promise<anchor.web3.PublicKey> => {
+	return (
+		await anchor.web3.PublicKey.findProgramAddress(
+			[
+				Buffer.from("metadata"),
+				TOKEN_METADATA_PROGRAM_ID.toBuffer(),
+				mint.toBuffer(),
+				Buffer.from("edition"),
+			],
+			TOKEN_METADATA_PROGRAM_ID
+		)
+	)[0];
+};
+
+const getEditionMarkPda = async (): Promise<anchor.web3.PublicKey> => {
+	const EDITION_MARKER_BIT_SIZE = 248;
+	let edition = 1;
+
+	let editionNumber = new anchor.BN(
+		Math.floor(edition / EDITION_MARKER_BIT_SIZE)
+	);
+	console.log("editionNumber: ", editionNumber.toString());
+
+	return (
+		await anchor.web3.PublicKey.findProgramAddress(
+			[
+				Buffer.from("metadata"),
+				TOKEN_METADATA_PROGRAM_ID.toBuffer(),
+				masterMintId.publicKey.toBuffer(),
+				Buffer.from("edition"),
+				Buffer.from(editionNumber.toString()),
+			],
+			TOKEN_METADATA_PROGRAM_ID
+		)
+	)[0];
+};
+
 async function mintNft() {
 	// Configure the client to use the local cluster.
 	try {
@@ -133,7 +168,7 @@ async function mintNft() {
 			mintKey.publicKey,
 			provider.wallet.publicKey
 		);
-		console.log("NFT Account: ", ataMaster.toBase58());
+		console.log("ATA MASTER: ", ataMaster.toBase58());
 
 		// Fires a list of instructions
 		const mint_tx = new anchor.web3.Transaction().add(
@@ -208,61 +243,6 @@ async function mintNft() {
 }
 
 async function mint_print_edition() {
-	const getNewEdition = async (
-		mint: anchor.web3.PublicKey
-	): Promise<anchor.web3.PublicKey> => {
-		return (
-			await anchor.web3.PublicKey.findProgramAddress(
-				[
-					Buffer.from("metadata"),
-					TOKEN_METADATA_PROGRAM_ID.toBuffer(),
-					mint.toBuffer(),
-					Buffer.from("edition"),
-				],
-				TOKEN_METADATA_PROGRAM_ID
-			)
-		)[0];
-	};
-
-	const getMasterEdition = async (
-		mint: anchor.web3.PublicKey
-	): Promise<anchor.web3.PublicKey> => {
-		return (
-			await anchor.web3.PublicKey.findProgramAddress(
-				[
-					Buffer.from("metadata"),
-					TOKEN_METADATA_PROGRAM_ID.toBuffer(),
-					masterMintId.publicKey.toBuffer(),
-					Buffer.from("edition"),
-				],
-				TOKEN_METADATA_PROGRAM_ID
-			)
-		)[0];
-	};
-
-	const getEditionMarkPda = async (): Promise<anchor.web3.PublicKey> => {
-		const EDITION_MARKER_BIT_SIZE = 248;
-		let edition = 1;
-
-		let editionNumber = new anchor.BN(
-			Math.floor(edition / EDITION_MARKER_BIT_SIZE)
-		);
-		console.log("editionNumber: ", editionNumber.toString());
-
-		return (
-			await anchor.web3.PublicKey.findProgramAddress(
-				[
-					Buffer.from("metadata"),
-					TOKEN_METADATA_PROGRAM_ID.toBuffer(),
-					masterMintId.publicKey.toBuffer(),
-					Buffer.from("edition"),
-					Buffer.from(editionNumber.toString()),
-				],
-				TOKEN_METADATA_PROGRAM_ID
-			)
-		)[0];
-	};
-
 	// Configure the client to use the local cluster.
 	try {
 		const provider = anchor.AnchorProvider.env();
@@ -287,7 +267,7 @@ async function mint_print_edition() {
 			newMint.publicKey,
 			provider.wallet.publicKey
 		);
-		console.log("NFT Account: ", ata.toBase58());
+		console.log("ATA: ", ata.toBase58());
 
 		const tx2 = new anchor.web3.Transaction().add(
 			anchor.web3.SystemProgram.createAccount({
@@ -330,32 +310,65 @@ async function mint_print_edition() {
 		console.log("Mint key: ", newMint.publicKey.toString());
 		console.log("User: ", provider.wallet.publicKey.toString());
 
-		// Executes our code to mint our token into our specified ATA
-		const metadataAddress = await getMetadata(newMint.publicKey);
+		const newMetadataAddress = await getMetadata(newMint.publicKey);
+		// const tx3 = await program.methods
+		// 	.createMetadataAccount(
+		// 		newMint.publicKey,
+		// 		nftName,
+		// 		nftSymbol,
+		// 		metadataUri
+		// 	)
+		// 	.accounts({
+		// 		mintAuthority: provider.wallet.publicKey,
+		// 		mint: newMint.publicKey,
+		// 		tokenProgram: TOKEN_PROGRAM_ID,
+		// 		metadata: newMetadataAddress,
+		// 		tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
+		// 		payer: provider.wallet.publicKey,
+		// 		systemProgram: SystemProgram.programId,
+		// 		rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+		// 	})
+		// 	.rpc();
+		// console.log("Your transaction signature", tx3);
 
 		const newEditionAddress = await getNewEdition(newMint.publicKey);
+		// const tx4 = await program.methods
+		// 	.createMasterEdition(null)
+		// 	.accounts({
+		// 		mintAuthority: provider.wallet.publicKey,
+		// 		mint: newMint.publicKey,
+		// 		tokenProgram: TOKEN_PROGRAM_ID,
+		// 		metadata: newMetadataAddress,
+		// 		tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
+		// 		payer: provider.wallet.publicKey,
+		// 		systemProgram: SystemProgram.programId,
+		// 		rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+		// 		masterEdition: newEditionAddress,
+		// 	})
+		// 	.rpc();
+		// console.log("Your transaction signature", tx4);
 
 		const masterEditionAddress = await getMasterEdition(newMint.publicKey);
 
 		const editionMarkPda = await getEditionMarkPda();
 
-		console.log("MetadataAddress: ", metadataAddress.toBase58());
+		console.log("newMetadataAddress: ", newMetadataAddress.toBase58());
 		console.log(
-			"MetadataAddress master: ",
+			"MetadataAddressmaster: ",
 			metadataAddressMaster.toBase58()
 		);
 		console.log("newEditionAddress: ", newEditionAddress.toBase58());
 		console.log("masterEditionAddress: ", masterEditionAddress.toBase58());
 		console.log("editionMarkPda: ", editionMarkPda.toBase58());
 
-		const tx = await program.methods
-			.mintEdition((1)[0])
-			.accounts({
+		console.log(
+			JSON.stringify({
 				originalMint: masterMintId.publicKey,
-				newMetadata: metadataAddress,
+				newMetadata: newMetadataAddress,
 				newEdition: newEditionAddress,
 				masterEdition: masterEditionAddress,
 				newMint: newMint.publicKey,
+				newTokenAccount: ata,
 				editionMarkPda: editionMarkPda,
 				newMintAuthority: provider.wallet.publicKey,
 				payer: provider.wallet.publicKey,
@@ -363,6 +376,30 @@ async function mint_print_edition() {
 				tokenAccount: ataMaster,
 				newMetadataUpdateAuthority: provider.wallet.publicKey,
 				metadata: metadataAddressMaster,
+				tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
+				tokenProgram: TOKEN_PROGRAM_ID,
+				systemProgram: anchor.web3.SystemProgram.programId,
+				rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+			})
+		);
+
+		const tx = await program.methods
+			.mintEdition((1)[0])
+			.accounts({
+				originalMint: masterMintId.publicKey,
+				newMetadata: newMetadataAddress,
+				newEdition: newEditionAddress,
+				masterEdition: masterEditionAddress,
+				newMint: newMint.publicKey,
+				newTokenAccount: ata,
+				editionMarkPda: editionMarkPda,
+				newMintAuthority: provider.wallet.publicKey,
+				payer: provider.wallet.publicKey,
+				tokenAccountOwner: provider.wallet.publicKey,
+				tokenAccount: ataMaster,
+				newMetadataUpdateAuthority: provider.wallet.publicKey,
+				metadata: metadataAddressMaster,
+				tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
 				tokenProgram: TOKEN_PROGRAM_ID,
 				systemProgram: anchor.web3.SystemProgram.programId,
 				rent: anchor.web3.SYSVAR_RENT_PUBKEY,
