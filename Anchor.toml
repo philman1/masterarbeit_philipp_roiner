@@ -12,7 +12,7 @@ masterarbeit_philipp_roiner = "GUuZwvAnu8wmbA4fYUqnnBgpdjEPyB2kWZXCEvxcRKuf"
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "devnet"
+cluster = "localnet"
 wallet = "/Users/philipproiner/.config/solana/keypair.json"
 
 [scripts]

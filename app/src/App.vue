@@ -9,13 +9,10 @@
 import { initMetaplex, initWorkspace } from "@/composables";
 import NavBar from "./components/NavBar.vue";
 
-import {
-	PhantomWalletAdapter,
-	SolflareWalletAdapter,
-} from "@solana/wallet-adapter-wallets";
+import { PhantomWalletAdapter } from "@solana/wallet-adapter-wallets";
 import { initWallet, useWallet } from "solana-wallets-vue";
 
-const wallets = [new PhantomWalletAdapter(), new SolflareWalletAdapter()];
+const wallets = [new PhantomWalletAdapter()];
 
 initWallet({ wallets, autoConnect: true });
 initWorkspace();

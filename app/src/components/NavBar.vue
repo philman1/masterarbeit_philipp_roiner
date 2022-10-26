@@ -3,7 +3,7 @@ import { ref } from "vue";
 import { WalletMultiButton } from "solana-wallets-vue";
 import { useWallet } from "solana-wallets-vue";
 
-const { connected } = useWallet();
+const { connected, publicKey } = useWallet();
 let isOpen = ref(false);
 </script>
 
@@ -39,7 +39,7 @@ let isOpen = ref(false);
 		<nav
 			:class="isOpen ? 'block' : 'hidden'"
 			class="px-2 pt-2 pb-4 sm:flex sm:p-0"
-			v-if="connected"
+			v-if="connected && publicKey != null"
 		>
 			<router-link
 				:to="{ name: 'Home' }"

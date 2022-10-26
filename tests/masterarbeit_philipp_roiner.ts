@@ -36,6 +36,8 @@ let metadataAddressMaster = null;
 
 const provider = anchor.AnchorProvider.env();
 anchor.setProvider(provider);
+const program = anchor.workspace
+	.MasterarbeitPhilippRoiner as Program<MasterarbeitPhilippRoiner>;
 
 const createMetadata = async () => {
 	// Upload image to IPFS
@@ -704,4 +706,189 @@ async function closeAccounts() {
 	}
 }
 
-closeAccounts();
+const author = anchor.web3.Keypair.generate();
+console.log("Author: ", author.publicKey.toBase58());
+
+async function initialize() {
+	try {
+		const mint = new anchor.web3.PublicKey(
+			"9BNbUeRimzCA3ihmrEPYV1nSMFiT4Jc93eSmb5JNGeRe"
+		);
+		const [lock_account, bump] =
+			await anchor.web3.PublicKey.findProgramAddress(
+				[provider.wallet.publicKey.toBuffer(), mint.toBuffer()],
+				program.programId
+			);
+		const [lock_escrow_account, escrow_bump] =
+			await anchor.web3.PublicKey.findProgramAddress(
+				[
+					provider.wallet.publicKey.toBuffer(),
+					Buffer.from("escrow"),
+					mint.toBuffer(),
+				],
+				program.programId
+			);
+		//const utf8encoded = Buffer.from(bio);
+		// Execute the RPC call
+		console.log(lock_account.toBase58());
+		console.log(lock_escrow_account.toBase58(), escrow_bump);
+
+		const tx = await program.methods
+			.initializeOffer(bump, escrow_bump)
+			.accounts({
+				offerAccount: lock_account,
+				offerEscrowAccount: lock_escrow_account, // publickey for our new account
+				offerMaker: provider.wallet.publicKey, // publickey of our anchor wallet provider
+				mint: mint,
+				author: author.publicKey,
+				systemProgram: SystemProgram.programId, // just for Anchor reference
+			})
+			// .signers([lock])
+			.rpc(); // acc must sign this Tx, to prove we have the private key too
+
+		console.log(
+			`Successfully intialized lock ID: ${lock_account} with escrow ${lock_escrow_account} for user ${provider.wallet.publicKey} \n tx: ${tx}`
+		);
+	} catch (e) {
+		console.log(e);
+	}
+}
+
+async function payin() {
+	try {
+		const mint = new anchor.web3.PublicKey(
+			"9BNbUeRimzCA3ihmrEPYV1nSMFiT4Jc93eSmb5JNGeRe"
+		);
+		const [lock_account, bump] =
+			await anchor.web3.PublicKey.findProgramAddress(
+				[provider.wallet.publicKey.toBuffer(), mint.toBuffer()],
+				program.programId
+			);
+		const [lock_escrow_account, escrow_bump] =
+			await anchor.web3.PublicKey.findProgramAddress(
+				[
+					provider.wallet.publicKey.toBuffer(),
+					Buffer.from("escrow"),
+					mint.toBuffer(),
+				],
+				program.programId
+			);
+		console.log(lock_escrow_account.toBase58(), escrow_bump);
+
+		const tx = await program.methods
+			.makeOffer(new BN(anchor.web3.LAMPORTS_PER_SOL))
+			.accounts({
+				offerAccount: lock_account, // publickey for our new account
+				offerEscrowAccount: lock_escrow_account,
+				offerMaker: provider.wallet.publicKey,
+				systemProgram: SystemProgram.programId, // just for Anchor reference
+			})
+			.rpc();
+
+		console.log(
+			`Successfully payed in lock ID: ${lock_account.toBase58()}`
+		);
+	} catch (e) {
+		console.log(e);
+	}
+}
+async function withdraw() {
+	try {
+		const mint = new anchor.web3.PublicKey(
+			"9BNbUeRimzCA3ihmrEPYV1nSMFiT4Jc93eSmb5JNGeRe"
+		);
+		const [lock_account, bump] =
+			await anchor.web3.PublicKey.findProgramAddress(
+				[provider.wallet.publicKey.toBuffer(), mint.toBuffer()],
+				program.programId
+			);
+		const [lock_escrow_account, escrow_bump] =
+			await anchor.web3.PublicKey.findProgramAddress(
+				[
+					provider.wallet.publicKey.toBuffer(),
+					Buffer.from("escrow"),
+					mint.toBuffer(),
+				],
+				program.programId
+			);
+
+		const tx = await program.methods
+			.cancelOffer()
+			.accounts({
+				offerAccount: lock_account, // publickey for our new account
+				offerEscrowAccount: lock_escrow_account,
+				offerMaker: provider.wallet.publicKey,
+				// lockProgram: lock_account_pda, // just for Anchor reference,
+				systemProgram: SystemProgram.programId, // just for Anchor reference
+			})
+			.rpc();
+
+		console.log(
+			`Successfully withdraw from lock ID: ${lock_account.toBase58()}`
+		);
+	} catch (e) {
+		console.log(e);
+	}
+}
+
+async function acceptOffer() {
+	try {
+		const mint = new anchor.web3.PublicKey(
+			"9BNbUeRimzCA3ihmrEPYV1nSMFiT4Jc93eSmb5JNGeRe"
+		);
+		const [lock_account, bump] =
+			await anchor.web3.PublicKey.findProgramAddress(
+				[provider.wallet.publicKey.toBuffer(), mint.toBuffer()],
+				program.programId
+			);
+		const [lock_escrow_account, escrow_bump] =
+			await anchor.web3.PublicKey.findProgramAddress(
+				[
+					provider.wallet.publicKey.toBuffer(),
+					Buffer.from("escrow"),
+					mint.toBuffer(),
+				],
+				program.programId
+			);
+
+		const [license_account, license_bump] =
+			await anchor.web3.PublicKey.findProgramAddress(
+				[
+					provider.wallet.publicKey.toBuffer(),
+					Buffer.from("license"),
+					mint.toBuffer(),
+				],
+				program.programId
+			);
+
+		console.log("license account: ", license_account.toBase58());
+
+		const tx = await program.methods
+			.acceptOffer()
+			.accounts({
+				license: license_account,
+				offerAccount: lock_account, // publickey for our new account
+				offerEscrowAccount: lock_escrow_account,
+				offerMaker: provider.wallet.publicKey,
+				author: author.publicKey,
+				systemProgram: SystemProgram.programId, // just for Anchor reference
+			})
+			.signers([author])
+			.rpc();
+
+		console.log(
+			`Successfully accepted offer with lock ID: ${lock_account.toBase58()}`
+		);
+
+		const license = await program.account.license.fetch(license_account);
+		console.log("license owner: ", license.owner.toBase58());
+	} catch (e) {
+		console.log(e);
+	}
+}
+
+// withdraw();
+initialize().then(() => payin().then(() => acceptOffer()));
+
+// payin();
+// acceptOffer();

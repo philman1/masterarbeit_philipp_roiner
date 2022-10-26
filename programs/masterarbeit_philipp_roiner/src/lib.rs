@@ -2,11 +2,12 @@ use anchor_lang::prelude::*;
 
 mod instructions;
 mod state;
-use crate::accept_offer::*;
-use crate::cancel_offer::*;
-use crate::close_account::*;
-use crate::make_offer::*;
+// use crate::accept_offer::*;
+// use crate::cancel_offer::*;
+// use crate::close_account::*;
+// use crate::make_offer::*;
 use crate::mint_nft::*;
+use crate::offer::*;
 use instructions::*;
 
 declare_id!("GUuZwvAnu8wmbA4fYUqnnBgpdjEPyB2kWZXCEvxcRKuf");
@@ -48,29 +49,50 @@ pub mod masterarbeit_philipp_roiner {
         mint_print_edition_handler(ctx, edition)
     }
 
-    pub fn make_offer(
-        ctx: Context<MakeOffer>,
-        escrowed_tokens_of_offer_maker_bump: u8,
-        im_offering_this_much: u64,
-        how_much_i_want_of_what_you_have: u64,
+    pub fn initialize_offer(
+        ctx: Context<InitializeOffer>,
+        bump: u8,
+        escrow_bump: u8,
+        offer_uri: String,
     ) -> Result<()> {
-        make_offer_handler(
-            ctx,
-            escrowed_tokens_of_offer_maker_bump,
-            im_offering_this_much,
-            how_much_i_want_of_what_you_have,
-        )
+        initialize_offer_handler(ctx, bump, escrow_bump, offer_uri)
     }
 
-    pub fn accept_offer(ctx: Context<AcceptOffer>) -> Result<()> {
-        accept_offer_handler(ctx)
+    pub fn make_offer(ctx: Context<MakeOffer>, lamports: u64) -> Result<()> {
+        make_offer_handler(ctx, lamports)
     }
 
     pub fn cancel_offer(ctx: Context<CancelOffer>) -> Result<()> {
         cancel_offer_handler(ctx)
     }
 
-    pub fn close_account(ctx: Context<Close>) -> Result<()> {
-        close_account_handler(ctx)
+    pub fn accept_offer(ctx: Context<AcceptOffer>) -> Result<()> {
+        accept_offer_handler(ctx)
     }
+
+    // pub fn make_offer(
+    //     ctx: Context<MakeOffer>,
+    //     escrowed_tokens_of_offer_maker_bump: u8,
+    //     im_offering_this_much: u64,
+    //     // how_much_i_want_of_what_you_have: u64,
+    // ) -> Result<()> {
+    //     make_offer_handler(
+    //         ctx,
+    //         escrowed_tokens_of_offer_maker_bump,
+    //         im_offering_this_much,
+    //         // how_much_i_want_of_what_you_have,
+    //     )
+    // }
+
+    // pub fn accept_offer(ctx: Context<AcceptOffer>) -> Result<()> {
+    //     accept_offer_handler(ctx)
+    // }
+
+    // pub fn cancel_offer(ctx: Context<CancelOffer>) -> Result<()> {
+    //     cancel_offer_handler(ctx)
+    // }
+
+    // pub fn close_account(ctx: Context<Close>) -> Result<()> {
+    //     close_account_handler(ctx)
+    // }
 }

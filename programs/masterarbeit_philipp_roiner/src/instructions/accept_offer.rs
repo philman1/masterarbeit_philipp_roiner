@@ -4,23 +4,23 @@ use anchor_spl::token::{Mint, Token, TokenAccount};
 
 pub fn accept_offer_handler(ctx: Context<AcceptOffer>) -> Result<()> {
     // Transfer token to who started the offer
-    anchor_spl::token::transfer(
-        CpiContext::new(
-            ctx.accounts.token_program.to_account_info(),
-            anchor_spl::token::Transfer {
-                from: ctx
-                    .accounts
-                    .account_holding_what_receiver_will_give
-                    .to_account_info(),
-                to: ctx
-                    .accounts
-                    .account_holding_what_maker_will_get
-                    .to_account_info(),
-                authority: ctx.accounts.who_is_taking_the_offer.to_account_info(),
-            },
-        ),
-        ctx.accounts.offer.amount_received_if_offer_accepted,
-    )?;
+    // anchor_spl::token::transfer(
+    //     CpiContext::new(
+    //         ctx.accounts.token_program.to_account_info(),
+    //         anchor_spl::token::Transfer {
+    //             from: ctx
+    //                 .accounts
+    //                 .account_holding_what_receiver_will_give
+    //                 .to_account_info(),
+    //             to: ctx
+    //                 .accounts
+    //                 .account_holding_what_maker_will_get
+    //                 .to_account_info(),
+    //             authority: ctx.accounts.who_is_taking_the_offer.to_account_info(),
+    //         },
+    //     ),
+    //     ctx.accounts.offer.amount_received_if_offer_accepted,
+    // )?;
 
     // Transfer what's on the escrowed account to the offer reciever.
     anchor_spl::token::transfer(
