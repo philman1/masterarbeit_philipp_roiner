@@ -39,7 +39,7 @@ let isOpen = ref(false);
 		<nav
 			:class="isOpen ? 'block' : 'hidden'"
 			class="px-2 pt-2 pb-4 sm:flex sm:p-0"
-			v-if="!(connected && publicKey != null)"
+			v-if="connected"
 		>
 			<router-link
 				:to="{ name: 'Home' }"
@@ -50,11 +50,6 @@ let isOpen = ref(false);
 				:to="{ name: 'MintNft' }"
 				class="block px-2 py-1 text-white font-semibold rounded hover:bg-gray-800"
 				>Mint Nft</router-link
-			>
-			<a
-				href="#"
-				class="mt-1 block px-2 py-1 text-white font-semibold rounded hover:bg-gray-800 sm:mt-0 sm:ml-2"
-				>Messages</a
 			>
 		</nav>
 	</header>

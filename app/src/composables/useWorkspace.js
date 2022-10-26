@@ -49,6 +49,4 @@ export const initMetaplex = () => {
 	metaplex = Metaplex.make(connection)
 		.use(keypairIdentity(wallet))
 		.use(bundlrStorage());
-
-	console.log(metaplex);
 };

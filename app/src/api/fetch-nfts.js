@@ -1,58 +1,91 @@
-import {
-	Metaplex,
-	keypairIdentity,
-	bundlrStorage,
-} from "@metaplex-foundation/js";
-import { Connection, clusterApiUrl } from "@solana/web3.js";
-import {
-	getParsedNftAccountsByOwner,
-	isValidSolanaAddress,
-	createConnectionConfig,
-} from "@nfteyez/sol-rayz";
+// import { Connection, clusterApiUrl } from "@solana/web3.js";
+// import {
+// 	// getParsedAccountByMint,
+// 	getParsedNftAccountsByOwner,
+// 	isValidSolanaAddress,
+// 	createConnectionConfig,
+// } from "@nfteyez/sol-rayz";
 import { create } from "ipfs-http-client";
 import { concat } from "uint8arrays";
-import { useWorkspace } from "@/composables";
+import { PublicKey } from "@metaplex-foundation/js";
+import { useMetaplex, useWorkspace } from "@/composables";
+import store from "@/store";
 
-const connection = new Connection(clusterApiUrl("devnet"));
+// const connection = new Connection(clusterApiUrl("devnet"));
 const ipfs = create({
 	url: "http://localhost:5001",
 });
 
-export const fetchNfts = async () => {
-	const { wallet, provider } = useWorkspace();
+export const fetchNft = async (mint) => {
 	try {
-		const connect = createConnectionConfig(clusterApiUrl("devnet"));
-		let ownerToken = provider.value.publicKey;
-		const valid = isValidSolanaAddress(ownerToken);
-		if (!valid) throw "error";
-		const nfts = await getParsedNftAccountsByOwner({
-			publicAddress: ownerToken,
-			connection: connect,
-			serialization: true,
+		const { metaplex } = useMetaplex();
+		const mintAddress = new PublicKey(mint);
+		let nft = await metaplex.nfts().findByMint({ mintAddress });
+
+		if (!nft.jsonLoaded) nft = await fetchMetadataFromIpfs(nft);
+
+		const image = await fetchImageFromIpfs(nft);
+		return { imageUri: image, ...nft };
+	} catch (error) {
+		console.log(error);
+	}
+};
+
+export const fetchNfts = async () => {
+	const { program } = useWorkspace();
+	try {
+		const { metaplex } = useMetaplex();
+		// const nfts = await metaplex.nfts().findAllByOwner({
+		// 	owner: provider.value.publicKey,
+		// });
+
+		const imageAccounts = await program.value.account.image.all();
+		const mints = imageAccounts.map((i) => i.account.mintAddress);
+		const metadatas = await metaplex.nfts().findAllByMintList({
+			mints,
 		});
+		const nfts = await Promise.all(
+			metadatas.map(
+				async (metadata) => await metaplex.nfts().load({ metadata })
+			)
+		);
+
+		// console.log(metadatas, nfts);
+
 		return nfts;
 	} catch (error) {
 		console.log(error);
 	}
+};
 
-	const creator = wallet.value.publicKey;
-
-	const metaplex = Metaplex.make(connection)
-		.use(keypairIdentity(wallet.value))
-		.use(bundlrStorage());
-	return await metaplex.nfts().findAllByCreator({ creator, position: 2 }); // Equivalent to the previous line.
+export const fetchNftsByCreator = async (creator) => {
+	try {
+		const { metaplex } = useMetaplex();
+		const metadatas = await metaplex.nfts().findAllByCreator({
+			creator,
+		});
+		const nfts = await Promise.all(
+			metadatas.map(
+				async (metadata) => await metaplex.nfts().load({ metadata })
+			)
+		);
+		return nfts;
+	} catch (e) {
+		console.log(e);
+	}
 };
 
 export const fetchMetadataFromIpfs = (nfts) =>
 	Promise.all(
 		nfts.map(async (nft) => {
-			if (nft.data.uri && !nft.data.uri.includes("ipfs://")) {
+			if (nft.jsonLoaded) return nft;
+			if (nft.uri && !nft.uri.includes("ipfs://")) {
 				let chunks = [],
-					uri = nft.data.uri;
+					uri = nft.uri;
 				if (uri.includes("ipfs")) {
 					uri = uri.substring(21);
 				}
-				console.log(nft.data.uri, uri);
+				// console.log(nft.uri, uri);
 				for await (const chunk of ipfs.cat(uri)) {
 					chunks.push(chunk);
 				}
@@ -61,13 +94,19 @@ export const fetchMetadataFromIpfs = (nfts) =>
 				const decodedData = JSON.parse(
 					new TextDecoder().decode(data).toString()
 				);
-				return { ...nft, offchainMetadata: decodedData };
+				return { ...nft, json: decodedData };
 			}
 		})
 	);
 
-export const fetchImageFromIpfs = async (metadata) => {
+export const fetchImageFromIpfs = async (nft) => {
+	const metadata = nft.json;
 	const img = await loadImgURL(metadata.image);
+	const mint = nft.mintAddress ? nft.mintAddress : nft.mint.address;
+	store.commit("setImgDataForNft", {
+		mint: mint.toBase58(),
+		uri: img,
+	});
 	return img;
 };
 

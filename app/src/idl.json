@@ -85,8 +85,134 @@
 			]
 		},
 		{
+			"name": "createMetadataAccount",
+			"accounts": [
+				{
+					"name": "mintAuthority",
+					"isMut": true,
+					"isSigner": true
+				},
+				{
+					"name": "mint",
+					"isMut": true,
+					"isSigner": false
+				},
+				{
+					"name": "tokenProgram",
+					"isMut": false,
+					"isSigner": false
+				},
+				{
+					"name": "metadata",
+					"isMut": true,
+					"isSigner": false
+				},
+				{
+					"name": "tokenMetadataProgram",
+					"isMut": false,
+					"isSigner": false
+				},
+				{
+					"name": "payer",
+					"isMut": true,
+					"isSigner": false
+				},
+				{
+					"name": "systemProgram",
+					"isMut": false,
+					"isSigner": false
+				},
+				{
+					"name": "rent",
+					"isMut": false,
+					"isSigner": false
+				}
+			],
+			"args": [
+				{
+					"name": "creatorKey",
+					"type": "publicKey"
+				},
+				{
+					"name": "name",
+					"type": "string"
+				},
+				{
+					"name": "symbol",
+					"type": "string"
+				},
+				{
+					"name": "uri",
+					"type": "string"
+				}
+			]
+		},
+		{
+			"name": "createMasterEdition",
+			"accounts": [
+				{
+					"name": "mintAuthority",
+					"isMut": true,
+					"isSigner": true
+				},
+				{
+					"name": "mint",
+					"isMut": true,
+					"isSigner": false
+				},
+				{
+					"name": "tokenProgram",
+					"isMut": false,
+					"isSigner": false
+				},
+				{
+					"name": "metadata",
+					"isMut": true,
+					"isSigner": false
+				},
+				{
+					"name": "tokenMetadataProgram",
+					"isMut": false,
+					"isSigner": false
+				},
+				{
+					"name": "payer",
+					"isMut": true,
+					"isSigner": false
+				},
+				{
+					"name": "systemProgram",
+					"isMut": false,
+					"isSigner": false
+				},
+				{
+					"name": "rent",
+					"isMut": false,
+					"isSigner": false
+				},
+				{
+					"name": "masterEdition",
+					"isMut": true,
+					"isSigner": false
+				}
+			],
+			"args": [
+				{
+					"name": "maxSupply",
+					"type": {
+						"option": "u64"
+					}
+				}
+			]
+		},
+		{
 			"name": "mintEdition",
 			"accounts": [
+				{
+					"name": "originalMint",
+					"isMut": true,
+					"isSigner": false
+				},
 				{
 					"name": "newMetadata",
 					"isMut": true,
@@ -104,6 +230,11 @@
 				},
 				{
 					"name": "newMint",
+					"isMut": true,
+					"isSigner": false
+				},
+				{
+					"name": "newTokenAccount",
 					"isMut": true,
 					"isSigner": false
 				},
@@ -163,7 +294,12 @@
 					"isSigner": false
 				}
 			],
-			"args": []
+			"args": [
+				{
+					"name": "edition",
+					"type": "u64"
+				}
+			]
 		},
 		{
 			"name": "makeOffer",
@@ -320,6 +456,22 @@
 				}
 			],
 			"args": []
+		},
+		{
+			"name": "closeAccount",
+			"accounts": [
+				{
+					"name": "account",
+					"isMut": true,
+					"isSigner": false
+				},
+				{
+					"name": "author",
+					"isMut": true,
+					"isSigner": false
+				}
+			],
+			"args": []
 		}
 	],
 	"accounts": [
@@ -337,7 +489,7 @@
 						"type": "i64"
 					},
 					{
-						"name": "nftTokenAddress",
+						"name": "mintAddress",
 						"type": "publicKey"
 					},
 					{
@@ -413,6 +565,6 @@
 		}
 	],
 	"metadata": {
-		"address": "4euwMgqxB9GkxVBY7uXKRRuC68yhkNbsVUhDPYS1mbhD"
+		"address": "GUuZwvAnu8wmbA4fYUqnnBgpdjEPyB2kWZXCEvxcRKuf"
 	}
 }

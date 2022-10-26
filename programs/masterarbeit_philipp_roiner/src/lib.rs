@@ -4,11 +4,12 @@ mod instructions;
 mod state;
 use crate::accept_offer::*;
 use crate::cancel_offer::*;
+use crate::close_account::*;
 use crate::make_offer::*;
 use crate::mint_nft::*;
 use instructions::*;
 
-declare_id!("4euwMgqxB9GkxVBY7uXKRRuC68yhkNbsVUhDPYS1mbhD");
+declare_id!("GUuZwvAnu8wmbA4fYUqnnBgpdjEPyB2kWZXCEvxcRKuf");
 
 #[program]
 pub mod masterarbeit_philipp_roiner {
@@ -67,5 +68,9 @@ pub mod masterarbeit_philipp_roiner {
 
     pub fn cancel_offer(ctx: Context<CancelOffer>) -> Result<()> {
         cancel_offer_handler(ctx)
+    }
+
+    pub fn close_account(ctx: Context<Close>) -> Result<()> {
+        close_account_handler(ctx)
     }
 }

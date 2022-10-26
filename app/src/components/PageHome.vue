@@ -1,21 +1,26 @@
 <script setup>
 import { ref } from "vue";
 import { fetchNfts, fetchMetadataFromIpfs } from "@/api";
+import store from "@/store";
 import NftList from "./NftList.vue";
 
 const nfts = ref([]);
 const loading = ref(true);
 
-fetchNfts()
-	.then((fetchedNfts) => {
-		// nfts.value = fetchedNfts;
-		fetchMetadataFromIpfs(fetchedNfts).then((nftsWithMetadata) => {
+fetchNfts().then((fetchedNfts) => {
+	if (!nfts.value) return;
+	fetchMetadataFromIpfs(fetchedNfts)
+		.then((nftsWithMetadata) => {
 			nfts.value = nftsWithMetadata;
+			console.log(nftsWithMetadata[0]);
+		})
+		.then(() => {
+			store.commit("set", { nfts: nfts.value });
+			loading.value = false;
 		});
-	})
-	.finally(() => (loading.value = false));
+});
 </script>
 
 <template>
-	<nft-list :nfts="nfts" />
+	<nft-list v-if="nfts" :nfts="nfts" />
 </template>

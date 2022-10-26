@@ -109,11 +109,11 @@ pub fn mint_nft_handler(
 
     let image = &mut ctx.accounts.image;
     let clock: Clock = Clock::get().unwrap();
-    let nft_token_address = &mut ctx.accounts.token_account;
+    let mint_address = &mut ctx.accounts.mint;
 
     image.author = creator_key;
     image.timestamp = clock.unix_timestamp;
-    image.nft_token_address = *nft_token_address.key;
+    image.mint_address = *mint_address.key;
     image.allowed_license_types = allowed_license_types;
 
     Ok(())
@@ -148,6 +148,7 @@ pub fn mint_print_edition_handler(ctx: Context<MintPrintEdition>, edition: u64) 
         ctx.accounts.new_metadata_update_authority.to_account_info(),
         ctx.accounts.metadata.to_account_info(),
         ctx.accounts.token_program.to_account_info(),
+        ctx.accounts.token_metadata_program.to_account_info(),
         ctx.accounts.system_program.to_account_info(),
         ctx.accounts.rent.to_account_info(),
     ];
@@ -156,7 +157,7 @@ pub fn mint_print_edition_handler(ctx: Context<MintPrintEdition>, edition: u64) 
 
     invoke(
         &mint_new_edition_from_master_edition_via_token(
-            ctx.accounts.token_program.key(),
+            ctx.accounts.token_metadata_program.key(),
             ctx.accounts.new_metadata.key(),
             ctx.accounts.new_edition.key(),
             ctx.accounts.master_edition.key(),

@@ -298,10 +298,6 @@ async function mint_print_edition() {
 			)
 		);
 
-		// const mintResult = await connection.sendTransaction(tx, [
-		// 	wallet.payer,
-		// 	newMint,
-		// ]);
 		// sends and create the transaction
 		const res = await program.provider.sendAndConfirm(tx2, [newMint]);
 
@@ -311,44 +307,12 @@ async function mint_print_edition() {
 		console.log("User: ", provider.wallet.publicKey.toString());
 
 		const newMetadataAddress = await getMetadata(newMint.publicKey);
-		// const tx3 = await program.methods
-		// 	.createMetadataAccount(
-		// 		newMint.publicKey,
-		// 		nftName,
-		// 		nftSymbol,
-		// 		metadataUri
-		// 	)
-		// 	.accounts({
-		// 		mintAuthority: provider.wallet.publicKey,
-		// 		mint: newMint.publicKey,
-		// 		tokenProgram: TOKEN_PROGRAM_ID,
-		// 		metadata: newMetadataAddress,
-		// 		tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
-		// 		payer: provider.wallet.publicKey,
-		// 		systemProgram: SystemProgram.programId,
-		// 		rent: anchor.web3.SYSVAR_RENT_PUBKEY,
-		// 	})
-		// 	.rpc();
-		// console.log("Your transaction signature", tx3);
 
 		const newEditionAddress = await getNewEdition(newMint.publicKey);
-		// const tx4 = await program.methods
-		// 	.createMasterEdition(null)
-		// 	.accounts({
-		// 		mintAuthority: provider.wallet.publicKey,
-		// 		mint: newMint.publicKey,
-		// 		tokenProgram: TOKEN_PROGRAM_ID,
-		// 		metadata: newMetadataAddress,
-		// 		tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
-		// 		payer: provider.wallet.publicKey,
-		// 		systemProgram: SystemProgram.programId,
-		// 		rent: anchor.web3.SYSVAR_RENT_PUBKEY,
-		// 		masterEdition: newEditionAddress,
-		// 	})
-		// 	.rpc();
-		// console.log("Your transaction signature", tx4);
 
-		const masterEditionAddress = await getMasterEdition(newMint.publicKey);
+		const masterEditionAddress = await getMasterEdition(
+			masterMintId.publicKey
+		);
 
 		const editionMarkPda = await getEditionMarkPda();
 
@@ -384,7 +348,7 @@ async function mint_print_edition() {
 		);
 
 		const tx = await program.methods
-			.mintEdition((1)[0])
+			.mintEdition(new anchor.BN(1))
 			.accounts({
 				originalMint: masterMintId.publicKey,
 				newMetadata: newMetadataAddress,
@@ -411,7 +375,7 @@ async function mint_print_edition() {
 	}
 }
 
-mintNft().then(() => mint_print_edition());
+// mintNft().then(() => mint_print_edition());
 
 async function makeAndAcceptOffer() {
 	// Configure the client to use the local cluster.
@@ -713,3 +677,31 @@ async function makeAndCancelOffer() {
 
 // makeAndAcceptOffer();
 // makeAndCancelOffer();
+
+async function closeAccounts() {
+	try {
+		const program = anchor.workspace
+			.MasterarbeitPhilippRoiner as Program<MasterarbeitPhilippRoiner>;
+
+		const images = await program.account.image.all();
+		console.log(images.length);
+		const del = images[0];
+
+		const tx = await program.methods
+			.closeAccount()
+			.accounts({
+				account: del.publicKey,
+				author: provider.wallet.publicKey,
+			})
+			.rpc();
+
+		const i = await program.account.image.fetchNullable(del.publicKey);
+		console.log(i);
+		const images2 = await program.account.image.all();
+		console.log(images2.length);
+	} catch (e) {
+		console.log(e);
+	}
+}
+
+closeAccounts();

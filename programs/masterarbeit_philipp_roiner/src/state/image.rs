@@ -4,7 +4,7 @@ use anchor_lang::prelude::*;
 pub struct Image {
     pub author: Pubkey,
     pub timestamp: i64,
-    pub nft_token_address: Pubkey,
+    pub mint_address: Pubkey,
     pub allowed_license_types: u64, // e.g. 3 -> allow type 0, 1, 2 and 3
 }
 

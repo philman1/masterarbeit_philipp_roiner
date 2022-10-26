@@ -9,22 +9,24 @@ const props = defineProps({
 const { nft } = toRefs(props);
 const img = ref("");
 
-fetchImageFromIpfs(nft.value.offchainMetadata).then(
-	(image) => (img.value = image)
-);
+fetchImageFromIpfs(nft.value).then((image) => (img.value = image));
 </script>
 
 <template>
-	<div
+	<router-link
+		:to="{
+			name: 'NftDetail',
+			params: { mint: nft.mint.address.toBase58() },
+		}"
 		class="w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/6 mb-4 max-w-sm rounded overflow-hidden shadow-lg m-3"
 	>
 		<img class="w-full" :src="img" alt="" />
 		<div class="px-6 py-4">
 			<div class="font-bold text-xl mb-2">
-				{{ nft.offchainMetadata.name }}
+				{{ nft.json.name }}
 			</div>
 			<p class="text-gray-700 text-base">
-				{{ nft.offchainMetadata.description }}
+				{{ nft.json.description }}
 			</p>
 		</div>
 		<div class="px-6 pt-4 pb-2">
@@ -33,5 +35,5 @@ fetchImageFromIpfs(nft.value.offchainMetadata).then(
 					>#photography</span
 				> -->
 		</div>
-	</div>
+	</router-link>
 </template>

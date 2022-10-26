@@ -9,4 +9,10 @@ export default [
 		path: "/mint/nft",
 		component: require("@/components/PageMintNft").default,
 	},
+	{
+		name: "NftDetail",
+		path: "/nft/:mint/details",
+		component: require("@/components/PageNftDetail").default,
+		props: true,
+	},
 ];
