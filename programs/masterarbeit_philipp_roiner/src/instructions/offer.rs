@@ -144,13 +144,13 @@ pub struct CancelOffer<'info> {
 pub struct AcceptOffer<'info> {
     #[account(
         init,
-        payer = offer_maker,
+        payer = author,
         space = License::LEN,
         seeds = [offer_maker.key().as_ref(), b"license", offer_account.mint.key().as_ref()],
         bump
     )]
     pub license: Account<'info, License>,
-    #[account(mut, has_one=offer_maker, close=offer_maker)]
+    #[account(mut, has_one=offer_maker, close=author)]
     pub offer_account: Account<'info, Offer>,
     #[account(mut)]
     /// CHECK: This is not dangerous because we don't read or write from this account

@@ -2,7 +2,7 @@
 import { ref } from "vue";
 import { fetchNfts, fetchMetadataFromIpfs } from "@/api";
 import store from "@/store";
-import NftList from "./NftList.vue";
+import NftList from "../NftList.vue";
 
 const nfts = ref([]);
 const loading = ref(true);

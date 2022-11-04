@@ -51,6 +51,16 @@ let isOpen = ref(false);
 				class="block px-2 py-1 text-white font-semibold rounded hover:bg-gray-800"
 				>Mint Nft</router-link
 			>
+			<router-link
+				:to="{ name: 'Offers' }"
+				class="block px-2 py-1 text-white font-semibold rounded hover:bg-gray-800"
+				>Offers</router-link
+			>
+			<router-link
+				:to="{ name: 'Licenses' }"
+				class="block px-2 py-1 text-white font-semibold rounded hover:bg-gray-800"
+				>Licenses</router-link
+			>
 		</nav>
 	</header>
 </template>
