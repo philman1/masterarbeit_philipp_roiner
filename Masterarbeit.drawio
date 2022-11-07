@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2022-11-07T14:23:12.711Z" agent="5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36" etag="ZvjkFo33MpyD3DIDkC7y" version="20.5.2" type="github" pages="13">
+<mxfile host="app.diagrams.net" modified="2022-11-07T21:09:28.063Z" agent="5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36" etag="eIZzSZUWcz8vOzsxwi66" version="20.5.2" type="github" pages="13">
   <diagram id="kT1Ein2Pf54u76fYX_wG" name="Windows Media Rights Management">
     <mxGraphModel dx="1436" dy="1399" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
@@ -1015,7 +1015,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="DFkJmjAoyofzvxASpBOn" name="Structs">
-    <mxGraphModel dx="1436" dy="1399" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+    <mxGraphModel dx="1494" dy="1405" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -3356,7 +3356,7 @@
     </mxGraphModel>
   </diagram>
   <diagram name="Offer accepted" id="HArpJWfB7Q7TdCqr9c5d">
-    <mxGraphModel dx="1689" dy="1646" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+    <mxGraphModel dx="1758" dy="1653" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
       <root>
         <mxCell id="48joZFeMQXha1qT1JiXT-0" />
         <mxCell id="48joZFeMQXha1qT1JiXT-1" parent="48joZFeMQXha1qT1JiXT-0" />
@@ -3467,7 +3467,7 @@
         <mxCell id="vCfZZSMKW8KXHaim1qL2-7" value="Escrow PDA" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="vCfZZSMKW8KXHaim1qL2-0">
           <mxGeometry y="182" width="140" height="26" as="geometry" />
         </mxCell>
-        <mxCell id="vCfZZSMKW8KXHaim1qL2-8" value="Offer Account" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#fff2cc;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;strokeColor=#d6b656;glass=0;swimlaneFillColor=none;swimlaneLine=1;swimlaneBody=1;swimlaneHead=1;separatorColor=none;fixDash=0;treeFolding=0;enumerate=0;comic=0;backgroundOutline=0;container=0;" vertex="1" parent="48joZFeMQXha1qT1JiXT-1">
+        <mxCell id="vCfZZSMKW8KXHaim1qL2-8" value="Offer Escrow Account" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#fff2cc;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;strokeColor=#d6b656;glass=0;swimlaneFillColor=none;swimlaneLine=1;swimlaneBody=1;swimlaneHead=1;separatorColor=none;fixDash=0;treeFolding=0;enumerate=0;comic=0;backgroundOutline=0;container=0;" vertex="1" parent="48joZFeMQXha1qT1JiXT-1">
           <mxGeometry x="888" y="783" width="140" height="104" as="geometry" />
         </mxCell>
         <mxCell id="vCfZZSMKW8KXHaim1qL2-9" value="Owner" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="vCfZZSMKW8KXHaim1qL2-8">
