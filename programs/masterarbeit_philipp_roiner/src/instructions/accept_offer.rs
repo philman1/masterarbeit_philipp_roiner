@@ -1,115 +1,55 @@
 use anchor_lang::prelude::*;
-use crate::state::{offer::*, license::*};
-use anchor_spl::token::{Mint, Token, TokenAccount};
+
+use crate::state::{license::*, offer::*};
 
 pub fn accept_offer_handler(ctx: Context<AcceptOffer>) -> Result<()> {
-    // Transfer token to who started the offer
-    // anchor_spl::token::transfer(
-    //     CpiContext::new(
-    //         ctx.accounts.token_program.to_account_info(),
-    //         anchor_spl::token::Transfer {
-    //             from: ctx
-    //                 .accounts
-    //                 .account_holding_what_receiver_will_give
-    //                 .to_account_info(),
-    //             to: ctx
-    //                 .accounts
-    //                 .account_holding_what_maker_will_get
-    //                 .to_account_info(),
-    //             authority: ctx.accounts.who_is_taking_the_offer.to_account_info(),
-    //         },
-    //     ),
-    //     ctx.accounts.offer.amount_received_if_offer_accepted,
-    // )?;
+    let offer_escrow_account = &mut ctx.accounts.offer_escrow_account;
 
-    // Transfer what's on the escrowed account to the offer reciever.
-    anchor_spl::token::transfer(
-        CpiContext::new_with_signer(
-            ctx.accounts.token_program.to_account_info(),
-            anchor_spl::token::Transfer {
-                from: ctx
-                    .accounts
-                    .escrowed_tokens_of_offer_maker
-                    .to_account_info(),
-                to: ctx
-                    .accounts
-                    .account_holding_what_receiver_will_get
-                    .to_account_info(),
-                authority: ctx
-                    .accounts
-                    .escrowed_tokens_of_offer_maker
-                    .to_account_info(),
-            },
-            &[&[
-                ctx.accounts.offer.key().as_ref(),
-                &[ctx.accounts.offer.escrowed_tokens_of_offer_maker_bump],
-            ]],
-        ),
-        ctx.accounts.escrowed_tokens_of_offer_maker.amount,
-    )?;
+    let amount: u64 = **offer_escrow_account
+        .to_account_info()
+        .try_borrow_lamports()?;
 
-    // Close the escrow account
-    anchor_spl::token::close_account(CpiContext::new_with_signer(
-        ctx.accounts.token_program.to_account_info(),
-        anchor_spl::token::CloseAccount {
-            account: ctx
-                .accounts
-                .escrowed_tokens_of_offer_maker
-                .to_account_info(),
-            destination: ctx.accounts.who_made_the_offer.to_account_info(),
-            authority: ctx
-                .accounts
-                .escrowed_tokens_of_offer_maker
-                .to_account_info(),
-        },
-        &[&[
-            ctx.accounts.offer.key().as_ref(),
-            &[ctx.accounts.offer.escrowed_tokens_of_offer_maker_bump],
-        ]],
-    ))
+    **offer_escrow_account
+        .to_account_info()
+        .try_borrow_mut_lamports()? -= amount;
+    **ctx
+        .accounts
+        .author
+        .to_account_info()
+        .try_borrow_mut_lamports()? += amount;
+
+    let license = &mut ctx.accounts.license;
+    let clock: Clock = Clock::get().unwrap();
+
+    license.license_type = 0;
+    license.owner = ctx.accounts.offer_maker.key();
+    license.licensed_image = ctx.accounts.offer_account.mint.key();
+    license.timestamp = clock.unix_timestamp;
+    license.license_information = ctx.accounts.offer_account.offer_uri.clone();
+
+    Ok(())
 }
 
 #[derive(Accounts)]
 pub struct AcceptOffer<'info> {
-    #[account(init, payer = who_made_the_offer, space = License::LEN)]
+    #[account(
+        init,
+        payer = author,
+        space = License::LEN,
+        seeds = [offer_maker.key().as_ref(), b"license", offer_account.mint.key().as_ref()],
+        bump
+    )]
     pub license: Account<'info, License>,
-
-    #[account(
-        mut,
-        constraint = offer.who_made_the_offer == who_made_the_offer.key(),
-        close = who_made_the_offer 
-    )]
-    pub offer: Account<'info, Offer>,
-
+    #[account(mut, has_one=offer_maker, close=author)]
+    pub offer_account: Account<'info, Offer>,
     #[account(mut)]
-    pub escrowed_tokens_of_offer_maker: Account<'info, TokenAccount>,
-
     /// CHECK: This is not dangerous because we don't read or write from this account
-    #[account(mut)]
-    pub who_made_the_offer: AccountInfo<'info>,
-
-    pub who_is_taking_the_offer: Signer<'info>,
-
-    #[account(
-        mut,
-        associated_token::mint = kind_of_token_wanted_in_return,
-        associated_token::authority = who_made_the_offer
-    )]
-    pub account_holding_what_maker_will_get: Box<Account<'info, TokenAccount>>,
-
-    #[account(
-        mut,
-        constraint = account_holding_what_receiver_will_give.mint == offer.kind_of_token_wanted_in_return
-    )]
-    pub account_holding_what_receiver_will_give: Account<'info, TokenAccount>,
-
-    #[account(mut)]
-    pub account_holding_what_receiver_will_get: Account<'info, TokenAccount>,
-
-    #[account(address = offer.kind_of_token_wanted_in_return)]
-    pub kind_of_token_wanted_in_return: Account<'info, Mint>,
-
-    pub token_program: Program<'info, Token>,
+    pub offer_maker: AccountInfo<'info>,
+    #[account(mut, constraint = offer_account.author.key() == author.key())]
+    /// CHECK: This is not dangerous because we don't read or write from this account
+    pub author: Signer<'info>,
     pub system_program: Program<'info, System>,
-    // pub rent: Sysvar<'info, Rent>,
+    #[account(mut, constraint = offer_account.escrow_pda == offer_escrow_account.to_account_info().key())]
+    //#[account( mut)]
+    pub offer_escrow_account: Account<'info, EscrowAccount>,
 }

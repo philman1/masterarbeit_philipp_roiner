@@ -6,15 +6,15 @@ const props = defineProps({
 	hashType: { type: String, required: false, default: "account" },
 	cluster: { type: String, required: false, default: "devnet" },
 });
+console.log(props.hash.substring(0, 4));
+console.log(props.hash.substring(props.hash.length - 4));
 </script>
 
 <template>
 	<a
-		:href="`https://solscan.io/${props.hashType}/${props.hash}?cluster=${props.cluster}`"
+		:href="`https://solscan.io/${hashType}/${hash}?cluster=${cluster}`"
 		target="_blank"
 	>
-		{{ props.hash.substring(0, 4) }}..{{
-			props.hash.substring(props.hash.length - 4)
-		}}
+		{{ hash.substring(0, 4) }}..{{ hash.substring(hash.length - 4) }}
 	</a>
 </template>

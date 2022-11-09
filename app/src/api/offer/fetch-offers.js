@@ -1,6 +1,7 @@
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { useWorkspace } from "@/composables";
 import bs58 from "bs58";
+import { Offer } from "@/models";
 
 export const fetchOffers = async (filters = []) => {
 	const { connection, program } = useWorkspace();
@@ -9,13 +10,14 @@ export const fetchOffers = async (filters = []) => {
 	return Promise.all(
 		offers.map(async (offer) => {
 			const price = await connection.getBalance(offer.account.escrowPda);
-			return {
+			const o = {
 				...offer,
 				account: {
 					...offer.account,
 					offerPrice: price / LAMPORTS_PER_SOL,
 				},
 			};
+			return new Offer(o.publicKey, o.account);
 		})
 	);
 };

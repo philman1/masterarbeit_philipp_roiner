@@ -8,25 +8,32 @@ import {
 	mintEdition,
 } from "@/api";
 import { useWorkspace } from "@/composables";
-import HashLink from "../HashLink.vue";
-import IpfsLink from "../IpfsLink.vue";
 import { web3 } from "@project-serum/anchor";
 import store from "@/store";
+import ActionTable from "../ActionTable.vue";
 
 const authorOffers = ref([]);
+const actions = ref([]);
 
 onMounted(async () => {
 	const { wallet } = useWorkspace();
 	authorOffers.value = await fetchOffers([
 		authorFilter(wallet.value.publicKey.toBase58()),
 	]);
+
+	console.log(authorOffers.value);
+
+	actions.value = [
+		{ fn: acceptOfferAndCreateLicense, label: "Accept offer" },
+		{ fn: declineOffer, label: "Decline offer" },
+	];
 });
 
-const acceptOfferAndCreateLicense = async (offerMaker, mint) => {
-	await acceptOffer(new web3.PublicKey(offerMaker), new web3.PublicKey(mint));
-	let nft = store.getters.findNftByMint(mint);
+const acceptOfferAndCreateLicense = async (offer) => {
+	await acceptOffer(offer.offerMaker, offer.mint);
+	let nft = store.getters.findNftByMint(offer.mintB58);
 	if (!nft) {
-		nft = await fetchNft(mint);
+		nft = await fetchNft(offer.mintB58);
 	}
 
 	console.log(nft.mint.address.toBase58(), nft.metadataAddress.toBase58());
@@ -36,6 +43,8 @@ const acceptOfferAndCreateLicense = async (offerMaker, mint) => {
 		1
 	);
 };
+
+const declineOffer = async () => {};
 </script>
 
 <template>
@@ -49,7 +58,20 @@ const acceptOfferAndCreateLicense = async (offerMaker, mint) => {
 			</p>
 		</div>
 
-		<div class="overflow-hidden rounded relative m-5">
+		<action-table
+			:headings="[
+				'Offer',
+				'Offer maker',
+				'Mint',
+				'Author',
+				'Price',
+				'Offer uri',
+				'',
+			]"
+			:data="authorOffers"
+			:actions="actions"
+		/>
+		<!-- <div class="overflow-hidden rounded relative m-5">
 			<table class="w-full text-sm text-left text-gray-500">
 				<thead class="text-xs text-gray-900 uppercase bg-gray-100">
 					<tr>
@@ -108,6 +130,6 @@ const acceptOfferAndCreateLicense = async (offerMaker, mint) => {
 					</tr>
 				</tbody>
 			</table>
-		</div>
+		</div> -->
 	</div>
 </template>

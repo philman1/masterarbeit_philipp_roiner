@@ -18,6 +18,7 @@ const LICENSE_INFORMATION_LENGTH: usize = 50 * 4; // 50 chars max.
 
 impl License {
     pub const LEN: usize = DISCRIMINATOR_LENGTH
+        + LICENS_TYPE_LENGTH
         + PUBLIC_KEY_LENGTH // Owner.
         + PUBLIC_KEY_LENGTH // Licensed image.
         + TIMESTAMP_LENGTH // Timestamp.

@@ -31,9 +31,10 @@ onMounted(async () => {
 	mint_pk.value = new web3.PublicKey(nft.value.mint.address);
 
 	console.log(nft.value);
-	isCreator.value =
-		wallet.value.publicKey.toBase58() ===
-		nft.value.creators[1].address.toBase58();
+	isCreator.value = nft.value.creators.some(
+		(creator) =>
+			wallet.value.publicKey.toBase58() === creator.address.toBase58()
+	);
 	// fetchEditions();
 });
 
@@ -48,7 +49,7 @@ const initAndMakeOffer = async () => {
 
 	await initializeOffer(
 		mint_pk.value,
-		new web3.PublicKey(nft.value.creators[1].address),
+		new web3.PublicKey(nft.value.creators[0].address),
 		offerUri.value
 	).then(async () => {
 		await makeOffer(price.value, mint_pk.value).then(() => {

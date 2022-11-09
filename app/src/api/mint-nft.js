@@ -96,7 +96,7 @@ export const mintNft = async (metadata) => {
 
 		const tx = await program.value.methods
 			.mintNft(
-				mintKey.publicKey,
+				wallet.value.publicKey,
 				metadata.name,
 				metadata.symbol,
 				metadataUri,
