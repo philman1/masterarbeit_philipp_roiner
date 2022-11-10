@@ -1,4 +1,3 @@
-// import dayjs from "dayjs";
 import { PublicKey } from "@metaplex-foundation/js";
 import { CID } from "./CID";
 
