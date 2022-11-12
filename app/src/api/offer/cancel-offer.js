@@ -2,7 +2,7 @@ import { web3 } from "@project-serum/anchor";
 import { useWorkspace } from "@/composables";
 
 export const cancelOffer = async (offer_maker, mint) => {
-	const { program } = useWorkspace();
+	const { wallet, program } = useWorkspace();
 
 	try {
 		const [offer_account] = await web3.PublicKey.findProgramAddress(
@@ -24,6 +24,7 @@ export const cancelOffer = async (offer_maker, mint) => {
 				offerAccount: offer_account,
 				offerEscrowAccount: offer_escrow_account,
 				offerMaker: offer_maker,
+				author: wallet.value.pubicKey,
 				systemProgram: web3.SystemProgram.programId,
 			})
 			.rpc();

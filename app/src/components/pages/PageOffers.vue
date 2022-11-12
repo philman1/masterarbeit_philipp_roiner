@@ -4,6 +4,7 @@ import {
 	fetchOffers,
 	authorFilter,
 	acceptOffer,
+	cancelOffer,
 	fetchNft,
 	mintEdition,
 } from "@/api";
@@ -44,7 +45,11 @@ const acceptOfferAndCreateLicense = async (offer) => {
 	);
 };
 
-const declineOffer = async () => {};
+const declineOffer = async (offer) => {
+	console.log("decline");
+	const res = await cancelOffer(offer.offerMaker, offer.mint);
+	console.log(res);
+};
 </script>
 
 <template>
