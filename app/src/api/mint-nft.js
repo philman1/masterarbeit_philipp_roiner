@@ -17,19 +17,42 @@ const TOKEN_METADATA_PROGRAM_ID = new web3.PublicKey(
 const ipfs = create();
 
 export const saveToIpfs = async (files) => {
-	const source = ipfs.addAll([...files], {
-		progress: (prog) => console.log(`received: ${prog}`),
-	});
-	try {
-		let cids = [];
-		for await (const file of source) {
-			console.log(file);
-			cids.push(file.path);
-		}
-		return cids;
-	} catch (err) {
-		console.error(err);
+	const formData = new FormData();
+
+	for (var i = 0; i < files.length; i++) {
+		formData.append("data", files[i]);
 	}
+
+	await fetch("http://localhost:3000/multiple-upload", {
+		method: "POST",
+		body: formData,
+	})
+		.then((res) => res.json())
+		.then((json) => console.log(json));
+
+	// const formData2 = new FormData();
+	// formData2.append("data", "QmfQpdhbu41fqHNpH36NgD9NmXYA4WaB7RZfQSR3hNKwJU");
+
+	// await fetch("http://localhost:3000/decrypt-image", {
+	// 	method: "POST",
+	// 	body: formData2,
+	// })
+	// 	.then((res) => res.json())
+	// 	.then((json) => console.log(json));
+
+	// const source = ipfs.addAll([...files], {
+	// 	progress: (prog) => console.log(`received: ${prog}`),
+	// });
+	// try {
+	// 	let cids = [];
+	// 	for await (const file of source) {
+	// 		console.log(file);
+	// 		cids.push(file.path);
+	// 	}
+	// 	return cids;
+	// } catch (err) {
+	// 	console.error(err);
+	// }
 };
 
 export const mintNft = async (metadata) => {
