@@ -11,17 +11,19 @@ export default createStore({
 			return state.nfts;
 		},
 		findNftByMint: (state) => (mint) => {
-			return state.nfts.find(
-				(nft) => nft.mint.address.toBase58() === mint
-			);
+			return state.nfts.find((nft) => nft.mint.address.toBase58() === mint);
 		},
 	},
 	mutations: {
 		/**
 		 * Initializes the states data
 		 */
-		set(state, data) {
-			state.nfts = data.nfts;
+		add(state, data) {
+			const isNew = !state.nfts.some(
+				(nft) =>
+					nft.mint.address.toBase58() === data.nft.mint.address.toBase58()
+			);
+			if (isNew) state.nfts = [...state.nfts, data.nft];
 		},
 
 		setImgDataForNft(state, { mint, uri }) {

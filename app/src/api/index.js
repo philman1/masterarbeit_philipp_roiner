@@ -7,3 +7,4 @@ export * from "./offer/accept-offer";
 export * from "./offer/cancel-offer";
 export * from "./offer/fetch-offers";
 export * from "./fetch-licenses";
+export * from "./decrypt-image";

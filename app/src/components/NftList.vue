@@ -1,5 +1,5 @@
 <script setup>
-import { toRefs } from "vue";
+import { ref, toRefs, onBeforeMount } from "vue";
 import NftCard from "./NftCard.vue";
 
 const props = defineProps({
@@ -8,35 +8,36 @@ const props = defineProps({
 });
 
 const { nfts, loading } = toRefs(props);
-// const firstPart = ref([]);
-// const secondPart = ref([]);
-// const thirdPart = ref([]);
+const colsWithData = ref([]);
+const totalCols = 3;
 
-const getDataForCol = (numCols, col) => {
-	const tmp = [...nfts.value];
-	const index = Math.ceil(tmp.length / numCols);
-	let d;
-	for (let i = 1; i <= numCols; i++) {
-		d = tmp.splice(-index);
-		if (i == col) return d;
-	}
-	return null;
+onBeforeMount(() => {
+	colsWithData.value = getDataForCols();
+});
+
+const getDataForCols = (
+	tmp = [...nfts.value],
+	result = [],
+	remainingCols = totalCols
+) => {
+	if (tmp.length <= 0) return result;
+	const index = Math.ceil(tmp.length / remainingCols);
+	result.push(tmp.splice(-index));
+	return getDataForCols(tmp, result, --remainingCols);
 };
-
-console.log(getDataForCol(3, 1));
 </script>
 
 <template>
 	<div v-if="loading" class="p-8 text-gray-500 text-center">Loading...</div>
 	<div v-else class="image-gallery m-4">
-		<div v-for="col in 3" :key="col" class="column">
+		<div v-for="col in totalCols" :key="col" class="column">
 			<div
-				v-for="nft of getDataForCol(3, col)"
-				:key="nft.mint.address.toBase58()"
+				v-for="nft of colsWithData[--col]"
+				:key="nft.address.toBase58()"
 				class="image-item"
 			>
 				<!-- <div class="w-full p-1 md:p-2"> -->
-				<nft-card :nft="nft" :imgOnly="true" />
+				<nft-card :metadata="nft" :imgOnly="true" />
 				<!-- </div> -->
 				<!-- </div> -->
 			</div>
@@ -59,6 +60,7 @@ console.log(getDataForCol(3, 1));
 	display: flex;
 	flex-direction: column;
 	gap: 1rem;
+	width: 33%;
 }
 
 .image-item img {

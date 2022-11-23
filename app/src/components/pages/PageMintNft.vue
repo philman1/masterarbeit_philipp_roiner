@@ -1,5 +1,5 @@
 <script setup>
-import { saveToIpfs } from "@/api";
+import { saveToIpfs, mintNft } from "@/api";
 import { computed, ref } from "vue";
 
 const name = ref("");
@@ -15,16 +15,16 @@ const handleFiles = async (event) => {
 };
 
 const mint = async () => {
-	console.log("mint", validName.value, image.value);
 	if (!validName.value || !image.value) return;
-	const cids = await saveToIpfs(image.value);
-	console.log(cids);
-	// await mintNft({
-	// 	name: name.value,
-	// 	symbol: symbol.value,
-	// 	description: description.value,
-	// 	image: `https://ipfs.io/ipfs/${cids[0]}`,
-	// });
+	const { cidsEncrypted, cidsThumbnails } = await saveToIpfs(image.value);
+	console.log(cidsEncrypted, cidsThumbnails);
+	await mintNft({
+		name: name.value,
+		symbol: symbol.value,
+		description: description.value,
+		image: `https://ipfs.io/ipfs/${cidsThumbnails[0]}`,
+		fullResImg: cidsEncrypted[0],
+	});
 };
 </script>
 
@@ -33,10 +33,7 @@ const mint = async () => {
 	<div class="w-full max-w-xs">
 		<form class="px-8 pt-6 pb-8 mb-4">
 			<div class="mb-4">
-				<label
-					class="block text-gray-700 text-sm font-bold mb-2"
-					for="name"
-				>
+				<label class="block text-gray-700 text-sm font-bold mb-2" for="name">
 					Name
 				</label>
 				<input
@@ -52,10 +49,7 @@ const mint = async () => {
 				</p>
 			</div>
 			<div class="mb-6">
-				<label
-					class="block text-gray-700 text-sm font-bold mb-2"
-					for="symbol"
-				>
+				<label class="block text-gray-700 text-sm font-bold mb-2" for="symbol">
 					Symbol
 				</label>
 				<input
@@ -82,10 +76,7 @@ const mint = async () => {
 				/>
 			</div>
 			<div class="mb-6">
-				<label
-					class="block text-gray-700 text-sm font-bold mb-2"
-					for="images"
-				>
+				<label class="block text-gray-700 text-sm font-bold mb-2" for="images">
 					Images
 				</label>
 				<input

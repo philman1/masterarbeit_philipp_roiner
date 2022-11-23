@@ -6,7 +6,7 @@ import store from "@/store";
 
 // const connection = new Connection(clusterApiUrl("devnet"));
 const ipfs = create({
-	url: "http://localhost:5001",
+	url: "http://127.0.0.1:5001",
 });
 
 export const fetchNft = async (mint) => {
@@ -37,15 +37,15 @@ export const fetchNfts = async () => {
 		const metadatas = await metaplex.nfts().findAllByMintList({
 			mints,
 		});
-		const nfts = await Promise.all(
-			metadatas.map(
-				async (metadata) => await metaplex.nfts().load({ metadata })
-			)
-		);
+
+		return metadatas;
+		// return metadatas.map(
+		// 	async (metadata) => await metaplex.nfts().load({ metadata })
+		// );
 
 		// console.log(metadatas, nfts);
 
-		return nfts;
+		// return nfts;
 	} catch (error) {
 		console.log(error);
 	}
@@ -68,31 +68,28 @@ export const fetchNftsByCreator = async (creator) => {
 	}
 };
 
-export const fetchMetadataFromIpfs = (nfts) =>
-	Promise.all(
-		nfts.map(async (nft) => {
-			if (nft.jsonLoaded) return nft;
-			if (nft.uri && !nft.uri.includes("ipfs://")) {
-				let chunks = [],
-					uri = nft.uri;
-				if (uri.includes("ipfs")) {
-					uri = uri.substring(21);
-				}
-				// console.log(nft.uri, uri);
-				for await (const chunk of ipfs.cat(uri)) {
-					chunks.push(chunk);
-				}
+export const fetchMetadataFromIpfs = async (nft) => {
+	if (nft.jsonLoaded) return nft;
+	if (nft.uri && !nft.uri.includes("ipfs://")) {
+		let chunks = [],
+			uri = nft.uri;
+		if (uri.includes("ipfs")) {
+			uri = uri.substring(21);
+		}
+		// console.log(nft.uri, uri);
+		for await (const chunk of ipfs.cat(uri)) {
+			chunks.push(chunk);
+		}
 
-				const data = concat(chunks);
-				const decodedData = JSON.parse(
-					new TextDecoder().decode(data).toString()
-				);
-				return { ...nft, json: decodedData };
-			}
-		})
-	);
+		const data = concat(chunks);
+		console.log(data);
+		const decodedData = JSON.parse(new TextDecoder().decode(data).toString());
+		return { ...nft, json: decodedData };
+	}
+};
 
 export const fetchImageFromIpfs = async (nft) => {
+	// console.log(nft);
 	const metadata = nft.json;
 	const img = await loadImgURL(metadata.image);
 	const mint = nft.mintAddress ? nft.mintAddress : nft.mint.address;
@@ -104,12 +101,7 @@ export const fetchImageFromIpfs = async (nft) => {
 };
 
 async function loadImgURL(cid) {
-	if (
-		cid == "" ||
-		cid == null ||
-		cid == undefined ||
-		cid.includes("ipfs://")
-	) {
+	if (cid == "" || cid == null || cid == undefined || cid.includes("ipfs://")) {
 		return;
 	}
 	let uri = cid;
@@ -117,5 +109,10 @@ async function loadImgURL(cid) {
 		uri = uri.substring(21);
 	}
 	const res = await fetch("http://localhost:8080/ipfs/" + uri);
+	// const chunks = [];
+	// for await (const chunk of ipfs.cat(uri)) {
+	// 	chunks.push(chunk);
+	// }
+	// console.log(chunks);
 	return res.url;
 }

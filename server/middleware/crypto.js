@@ -1,36 +1,31 @@
 const ipfsClient = require("ipfs-http-client");
-const ipfsEndPoint = "http://localhost:5001";
+const ipfsEndPoint = "http://127.0.0.1:5001";
 const ipfs = ipfsClient(ipfsEndPoint);
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 
-async function encryptFiles(filePaths) {
+async function encryptFiles(files) {
 	try {
 		let encryptedFiles = [];
 
 		//listing all files using forEach
-		await Promise.all(
-			filePaths.map(async (file) => {
-				const buff = await fs.promises.readFile(
-					path.join(__dirname, "../upload/", file)
-				);
-				const key = crypto.randomBytes(16).toString("hex"); // 16 bytes -> 32 chars
-				const iv = crypto.randomBytes(8).toString("hex"); // 8 bytes -> 16 chars
-				const ekey = encryptRSA(key); // 32 chars -> 684 chars
-				const ebuff = encryptAES(buff, key, iv);
+		files.map(async ({ name, buff }) => {
+			const key = crypto.randomBytes(16).toString("hex"); // 16 bytes -> 32 chars
+			const iv = crypto.randomBytes(8).toString("hex"); // 8 bytes -> 16 chars
+			const ekey = encryptRSA(key); // 32 chars -> 684 chars
+			const ebuff = encryptAES(buff, key, iv);
 
-				encryptedFiles.push({
-					name: file.split(".")[0],
-					buff: Buffer.concat([
-						// headers: encrypted key and IV (len: 700=684+16)
-						Buffer.from(ekey, "utf8"), // char length: 684
-						Buffer.from(iv, "utf8"), // char length: 16
-						Buffer.from(ebuff, "utf8"),
-					]),
-				});
-			})
-		);
+			encryptedFiles.push({
+				name: name,
+				buff: Buffer.concat([
+					// headers: encrypted key and IV (len: 700=684+16)
+					Buffer.from(ekey, "utf8"), // char length: 684
+					Buffer.from(iv, "utf8"), // char length: 16
+					Buffer.from(ebuff, "utf8"),
+				]),
+			});
+		});
 
 		return encryptedFiles;
 
@@ -54,6 +49,7 @@ async function toArray(asyncIterator) {
 
 async function downloadFileDecrypted(cid) {
 	try {
+		console.log(cid);
 		// let file_data = await ipfs.files.read(ipfspath);
 		const chunks = [];
 		for await (const chunk of ipfs.cat(cid)) {
@@ -61,7 +57,7 @@ async function downloadFileDecrypted(cid) {
 		}
 
 		const edata = Buffer.concat(chunks);
-
+		console.log(edata);
 		const key = decryptRSA(edata.slice(0, 684).toString("utf8"));
 		const iv = edata.slice(684, 700).toString("utf8");
 		const econtent = edata.slice(700).toString("utf8");

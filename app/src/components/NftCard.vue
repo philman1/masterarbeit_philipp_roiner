@@ -1,23 +1,47 @@
 <script setup>
-import { ref, toRefs } from "vue";
-import { fetchImageFromIpfs } from "@/api";
+import { ref, onMounted } from "vue";
+import { fetchMetadataFromIpfs, fetchImageFromIpfs } from "@/api";
+import { useMetaplex } from "@/composables";
+import store from "@/store";
+import Spinner from "./Spinner.vue";
 
 const props = defineProps({
-	nft: Object,
+	metadata: Object,
 	imgOnly: Boolean,
 });
 
-const { nft } = toRefs(props);
+const nft = ref(props.metadata);
 const img = ref("");
 
-fetchImageFromIpfs(nft.value).then((image) => (img.value = image));
+const randomHeight = () => {
+	const heights = [16, 18, 20, 24];
+	return `height: ${heights[Math.floor(Math.random() * heights.length)]}rem;`;
+};
+
+onMounted(async () => {
+	const { metaplex } = useMetaplex();
+	const n = await metaplex.nfts().load({ metadata: nft.value });
+	// console.log(n);
+
+	const nftsWithMetadata = await fetchMetadataFromIpfs(n);
+	// console.log(nftsWithMetadata);
+	nft.value = nftsWithMetadata;
+	// console.log(nft.value);
+	store.commit("add", { nft: nftsWithMetadata });
+	// loading.value = false;
+
+	await fetchImageFromIpfs(nftsWithMetadata).then(
+		(image) => (img.value = image)
+	);
+});
 </script>
 
 <template>
 	<router-link
+		v-if="img.length"
 		:to="{
 			name: 'NftDetail',
-			params: { mint: nft.mint.address.toBase58() },
+			params: { mint: nft.address.toBase58() },
 		}"
 		class="w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/6 max-w-sm rounded overflow-hidden shadow-lg"
 	>
@@ -37,4 +61,11 @@ fetchImageFromIpfs(nft.value).then((image) => (img.value = image));
 			>
 		</div> -->
 	</router-link>
+	<div
+		v-else
+		class="w-full rounded overflow-hidden shadow-lg flex justify-center items-center"
+		:style="randomHeight()"
+	>
+		<spinner />
+	</div>
 </template>

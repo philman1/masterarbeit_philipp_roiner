@@ -1,7 +1,8 @@
 const multer = require("multer");
 const ipfsClient = require("ipfs-http-client");
-const ipfsEndPoint = "http://localhost:5001";
+const ipfsEndPoint = "http://127.0.0.1:5001";
 const ipfs = ipfsClient(ipfsEndPoint);
+const sharp = require("sharp");
 
 var storage = multer.diskStorage({
 	destination: (req, file, callback) => {
@@ -23,10 +24,10 @@ var storage = multer.diskStorage({
 var uploadFilesToFs = multer({ storage: storage }).array("data", 10);
 // var uploadFilesMiddleware = util.promisify(uploadFiles);
 
-const uploadEncryptedFilesToIpfs = async (files) => {
+const uploadImagesToIpfs = async (files, path) => {
 	const getCids = async () => {
 		const cids = [];
-		for await (const file of ipfs.files.ls("/encrypted/images")) {
+		for await (const file of ipfs.files.ls(`/images/${path}`)) {
 			if (files.map((f) => f.name).includes(file.name))
 				cids.push(file.cid.toString());
 		}
@@ -35,14 +36,10 @@ const uploadEncryptedFilesToIpfs = async (files) => {
 
 	await Promise.all(
 		files.map(async (f) => {
-			return await ipfs.files.write(
-				"/encrypted/images/" + f.name,
-				f.buff,
-				{
-					create: true,
-					parents: true,
-				}
-			);
+			return await ipfs.files.write(`/images/${path}/` + f.name, f.buff, {
+				create: true,
+				parents: true,
+			});
 		})
 	);
 
@@ -51,5 +48,5 @@ const uploadEncryptedFilesToIpfs = async (files) => {
 
 module.exports = {
 	toFs: uploadFilesToFs,
-	toIpfs: uploadEncryptedFilesToIpfs,
+	toIpfs: uploadImagesToIpfs,
 };

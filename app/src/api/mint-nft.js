@@ -23,26 +23,12 @@ export const saveToIpfs = async (files) => {
 		formData.append("data", files[i]);
 	}
 
-	await fetch("http://localhost:3000/multiple-upload", {
+	return await fetch("http://localhost:3000/multiple-upload", {
 		method: "POST",
 		body: formData,
 	})
 		.then((res) => res.json())
-		.then((json) => console.log(json));
-
-	// const source = ipfs.addAll([...files], {
-	// 	progress: (prog) => console.log(`received: ${prog}`),
-	// });
-	// try {
-	// 	let cids = [];
-	// 	for await (const file of source) {
-	// 		console.log(file);
-	// 		cids.push(file.path);
-	// 	}
-	// 	return cids;
-	// } catch (err) {
-	// 	console.error(err);
-	// }
+		.then((json) => json.data);
 };
 
 export const mintNft = async (metadata) => {
