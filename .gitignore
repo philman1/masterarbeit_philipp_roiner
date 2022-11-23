@@ -6,3 +6,5 @@ target
 node_modules
 test-ledger
 server/upload
+server/public.pem
+server/private.pem

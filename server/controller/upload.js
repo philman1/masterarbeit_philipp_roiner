@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const upload = require("../middleware/upload");
-const encrypt = require("../middleware/encrypt");
+const encrypt = require("../middleware/crypto");
 
 const multipleUpload = async (req, res, next) => {
 	try {

@@ -1,5 +1,5 @@
 <script setup>
-import { saveToIpfs, mintNft } from "@/api";
+import { saveToIpfs } from "@/api";
 import { computed, ref } from "vue";
 
 const name = ref("");

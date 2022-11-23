@@ -30,16 +30,6 @@ export const saveToIpfs = async (files) => {
 		.then((res) => res.json())
 		.then((json) => console.log(json));
 
-	// const formData2 = new FormData();
-	// formData2.append("data", "QmfQpdhbu41fqHNpH36NgD9NmXYA4WaB7RZfQSR3hNKwJU");
-
-	// await fetch("http://localhost:3000/decrypt-image", {
-	// 	method: "POST",
-	// 	body: formData2,
-	// })
-	// 	.then((res) => res.json())
-	// 	.then((json) => console.log(json));
-
 	// const source = ipfs.addAll([...files], {
 	// 	progress: (prog) => console.log(`received: ${prog}`),
 	// });

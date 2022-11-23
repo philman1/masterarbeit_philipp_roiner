@@ -5,7 +5,7 @@ const decryptImageController = require("./controller/decryptImage");
 
 let routes = (app) => {
 	router.post("/multiple-upload", uploadController.multipleUpload);
-	// router.post("/decrypt-image", decryptImageController.decryptImage);
+	router.post("/decrypt-image", decryptImageController.decryptImage);
 
 	return app.use("/", router);
 };

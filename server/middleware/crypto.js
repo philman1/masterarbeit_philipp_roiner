@@ -52,13 +52,15 @@ async function toArray(asyncIterator) {
 	return arr;
 }
 
-async function downloadFileEncrypted(ipfspath) {
+async function downloadFileDecrypted(cid) {
 	try {
-		let file_data = await ipfs.files.read(ipfspath);
+		// let file_data = await ipfs.files.read(ipfspath);
+		const chunks = [];
+		for await (const chunk of ipfs.cat(cid)) {
+			chunks.push(chunk);
+		}
 
-		let edata = [];
-		for await (const chunk of file_data) edata.push(chunk);
-		edata = Buffer.concat(edata);
+		const edata = Buffer.concat(chunks);
 
 		const key = decryptRSA(edata.slice(0, 684).toString("utf8"));
 		const iv = edata.slice(684, 700).toString("utf8");
@@ -156,4 +158,5 @@ function decryptRSA(toDecrypt, privkeyPath = "private.pem") {
 
 module.exports = {
 	encryptFiles: encryptFiles,
+	downloadFileDecrypted: downloadFileDecrypted,
 };

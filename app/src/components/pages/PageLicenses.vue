@@ -11,8 +11,6 @@ onMounted(async () => {
 	licenses.value = await fetchLicenses([
 		licenseOwnerFilter(wallet.value.publicKey.toBase58()),
 	]);
-
-	console.log(licenses.value);
 });
 </script>
 
