@@ -22,5 +22,5 @@ fetchNfts().then((fetchedNfts) => {
 </script>
 
 <template>
-	<nft-list v-if="nfts" :nfts="nfts" />
+	<nft-list v-if="nfts.length > 0" :nfts="nfts" />
 </template>

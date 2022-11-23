@@ -1,5 +1,5 @@
 <script setup>
-import { saveToIpfs, mintNft } from "@/api";
+import { saveToIpfs } from "@/api";
 import { computed, ref } from "vue";
 
 const name = ref("");
@@ -18,13 +18,13 @@ const mint = async () => {
 	console.log("mint", validName.value, image.value);
 	if (!validName.value || !image.value) return;
 	const cids = await saveToIpfs(image.value);
-
-	await mintNft({
-		name: name.value,
-		symbol: symbol.value,
-		description: description.value,
-		image: `https://ipfs.io/ipfs/${cids[0]}`,
-	});
+	console.log(cids);
+	// await mintNft({
+	// 	name: name.value,
+	// 	symbol: symbol.value,
+	// 	description: description.value,
+	// 	image: `https://ipfs.io/ipfs/${cids[0]}`,
+	// });
 };
 </script>
 

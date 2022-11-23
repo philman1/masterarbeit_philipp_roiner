@@ -4,6 +4,7 @@ import {
 	fetchOffers,
 	authorFilter,
 	acceptOffer,
+	cancelOffer,
 	fetchNft,
 	mintEdition,
 } from "@/api";
@@ -44,7 +45,11 @@ const acceptOfferAndCreateLicense = async (offer) => {
 	);
 };
 
-const declineOffer = async () => {};
+const declineOffer = async (offer) => {
+	console.log("decline");
+	const res = await cancelOffer(offer.offerMaker, offer.mint);
+	console.log(res);
+};
 </script>
 
 <template>
@@ -59,77 +64,17 @@ const declineOffer = async () => {};
 		</div>
 
 		<action-table
-			:headings="[
-				'Offer',
-				'Offer maker',
-				'Mint',
-				'Author',
-				'Price',
-				'Offer uri',
-				'',
+			:cols="[
+				{ attr: 'publicKey', heading: 'Offer' },
+				{ attr: 'offerMaker', heading: 'Offer maker' },
+				{ attr: 'mint', heading: 'Mint' },
+				{ attr: 'author', heading: 'Author' },
+				{ attr: 'offerPrice', heading: 'Price' },
+				{ attr: 'offerUri', heading: 'Offer uri' },
+				{ attr: null, heading: '' },
 			]"
 			:data="authorOffers"
 			:actions="actions"
 		/>
-		<!-- <div class="overflow-hidden rounded relative m-5">
-			<table class="w-full text-sm text-left text-gray-500">
-				<thead class="text-xs text-gray-900 uppercase bg-gray-100">
-					<tr>
-						<th scope="col" class="py-3 px-6">Mint</th>
-						<th scope="col" class="py-3 px-6">Offer maker</th>
-						<th scope="col" class="py-3 px-6">Offer uri</th>
-						<th scope="col" class="py-3 px-6">Price</th>
-						<th scope="col" class="py-3 px-6"></th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr
-						v-for="{ account } of authorOffers"
-						:key="
-							account.offerMaker.toBase58() +
-							account.mint.toBase58()
-						"
-						class="bg-white border-b"
-					>
-						<th
-							scope="row"
-							class="py-4 px-6 font-medium text-gray-900 whitespace-nowrap"
-						>
-							<hash-link :hash="account.mint.toBase58()" />
-						</th>
-						<td class="py-4 px-6">
-							<hash-link :hash="account.offerMaker.toBase58()" />
-						</td>
-						<td class="py-4 px-6">
-							<ipfs-link :cid="account.offerUri" />
-						</td>
-						<td class="py-4 px-6">
-							{{ account.offerPrice }} SOL <br />
-							Minus network fees
-						</td>
-						<td class="py-4 px-6">
-							<button
-								class="flex ml-auto text-white bg-blue-500 border-0 py-2 px-6 mb-2 focus:outline-none hover:bg-red-600 rounded"
-								@click="
-									() =>
-										acceptOfferAndCreateLicense(
-											account.offerMaker,
-											account.mint
-										)
-								"
-							>
-								Accept offer
-							</button>
-							<button
-								class="flex ml-auto text-white bg-blue-500 border-0 py-2 px-6 focus:outline-none hover:bg-red-600 rounded"
-								@click="declineOffer"
-							>
-								Decline offer
-							</button>
-						</td>
-					</tr>
-				</tbody>
-			</table>
-		</div> -->
 	</div>
 </template>

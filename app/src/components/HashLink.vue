@@ -1,13 +1,11 @@
 <script setup>
 import { defineProps } from "vue";
 
-const props = defineProps({
+defineProps({
 	hash: { type: String, required: true },
 	hashType: { type: String, required: false, default: "account" },
 	cluster: { type: String, required: false, default: "devnet" },
 });
-console.log(props.hash.substring(0, 4));
-console.log(props.hash.substring(props.hash.length - 4));
 </script>
 
 <template>

@@ -2,7 +2,7 @@
 import { ref, onMounted } from "vue";
 import { fetchLicenses, licenseOwnerFilter } from "@/api";
 import { useWorkspace } from "@/composables";
-import HashLink from "../HashLink.vue";
+import ActionTable from "../ActionTable.vue";
 
 const licenses = ref([]);
 
@@ -11,8 +11,6 @@ onMounted(async () => {
 	licenses.value = await fetchLicenses([
 		licenseOwnerFilter(wallet.value.publicKey.toBase58()),
 	]);
-
-	console.log(licenses.value);
 });
 </script>
 
@@ -25,46 +23,17 @@ onMounted(async () => {
 			<p class="mt-1 max-w-2xl text-sm text-gray-500">that you own.</p>
 		</div>
 
-		<div class="overflow-hidden rounded relative m-5">
-			<table class="w-full text-sm text-left text-gray-500">
-				<thead class="text-xs text-gray-900 uppercase bg-gray-100">
-					<tr>
-						<th scope="col" class="py-3 px-6">Licensed NFT</th>
-						<th scope="col" class="py-3 px-6">License Type</th>
-						<th scope="col" class="py-3 px-6">Created at</th>
-						<th scope="col" class="py-3 px-6">
-							License information
-						</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr
-						v-for="{ account } of licenses"
-						:key="account.licensedImage.toBase58()"
-						class="bg-white border-b"
-					>
-						<th
-							scope="row"
-							class="py-4 px-6 font-medium text-gray-900 whitespace-nowrap"
-						>
-							<hash-link
-								:hash="account.licensedImage.toBase58()"
-							/>
-						</th>
-						<td class="py-4 px-6">{{ account.licenseType }}</td>
-						<td class="py-4 px-6">
-							{{
-								new Date(
-									Number(account.timestamp) * 1000
-								).toLocaleDateString("de-DE")
-							}}
-						</td>
-						<td class="py-4 px-6">
-							{{ account.licenseInformation }}
-						</td>
-					</tr>
-				</tbody>
-			</table>
-		</div>
+		<action-table
+			:cols="[
+				{ attr: 'publicKey', heading: 'License' },
+				{ attr: 'licenseTypeAsText', heading: 'License type' },
+				{ attr: 'owner', heading: 'Owner' },
+				{ attr: 'licensedImage', heading: 'Licensed image' },
+				{ attr: 'createdAt', heading: 'Created at' },
+				{ attr: 'createdAgo', heading: 'Created ago' },
+				{ attr: 'licenseInformation', heading: 'Conditions' },
+			]"
+			:data="licenses"
+		/>
 	</div>
 </template>

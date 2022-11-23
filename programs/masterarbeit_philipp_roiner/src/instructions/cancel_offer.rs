@@ -24,7 +24,7 @@ pub fn cancel_offer_handler(ctx: Context<CancelOffer>) -> Result<()> {
 pub struct CancelOffer<'info> {
     #[account(mut, has_one=offer_maker, close=offer_maker)]
     pub offer_account: Account<'info, Offer>,
-    #[account(mut, signer)]
+    #[account(mut)]
     /// CHECK: This is not dangerous because we don't read or write from this account
     pub offer_maker: AccountInfo<'info>,
     pub system_program: Program<'info, System>,
