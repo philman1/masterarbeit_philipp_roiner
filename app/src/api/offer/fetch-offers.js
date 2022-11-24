@@ -24,13 +24,20 @@ export const fetchOffers = async (filters = []) => {
 
 export const getEscrowedSolForOffer = async () => {};
 
-export const authorFilter = (offerMakerBase58PublicKey) => ({
+export const offerMakerFilter = (offerMakerBase58PublicKey) => ({
+	memcmp: {
+		offset: 8, // Discriminator
+		bytes: offerMakerBase58PublicKey,
+	},
+});
+
+export const authorFilter = (authorBase58PublicKey) => ({
 	memcmp: {
 		offset:
 			8 + // Discriminator
 			32 + // OfferMaker public key
 			32, // Mint public key
-		bytes: offerMakerBase58PublicKey,
+		bytes: authorBase58PublicKey,
 	},
 });
 

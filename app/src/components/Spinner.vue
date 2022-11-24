@@ -1,7 +1,13 @@
 <template>
 	<div class="v-bounce v-bounce1" v-bind:style="spinnerBasicStyle">
-		<div class="v-bounce v-bounce2" v-bind:style="spinnerStyle"></div>
-		<div class="v-bounce v-bounce3" v-bind:style="spinnerStyle"></div>
+		<div
+			class="v-bounce v-bounce2 bg-sol-green"
+			v-bind:style="spinnerStyle"
+		></div>
+		<div
+			class="v-bounce v-bounce3 bg-sol-green"
+			v-bind:style="spinnerStyle"
+		></div>
 	</div>
 </template>
 
@@ -10,10 +16,6 @@ export default {
 	name: "BounceLoader",
 
 	props: {
-		color: {
-			type: String,
-			default: "#5dc596",
-		},
 		size: {
 			type: String,
 			default: "60px",
@@ -30,7 +32,6 @@ export default {
 	data() {
 		return {
 			spinnerStyle: {
-				backgroundColor: this.color,
 				height: this.size,
 				width: this.size,
 				borderRadius: this.radius,

@@ -4,7 +4,7 @@ import { web3 } from "@project-serum/anchor";
 import store from "@/store";
 import { fetchNft, initializeOffer, makeOffer } from "@/api";
 import { useWorkspace } from "@/composables";
-import HashLink from "../HashLink.vue";
+import HashLink from "../basic/HashLink.vue";
 
 const { wallet } = useWorkspace();
 

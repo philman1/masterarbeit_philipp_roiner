@@ -7,6 +7,7 @@ import {
 } from "@/api";
 import { useWorkspace } from "@/composables";
 import ActionTable from "../ActionTable.vue";
+import DuoHeadline from "../basic/DuoHeadline.vue";
 
 const licenses = ref([]);
 const actions = ref([]);
@@ -32,10 +33,11 @@ const downloadImage = async (license) => {
 
 <template>
 	<div v-if="licenses.length > 0">
-		<div class="px-4 py-5 sm:px-6">
-			<h3 class="text-lg font-medium leading-6 text-gray-900">Licenses</h3>
-			<p class="mt-1 max-w-2xl text-sm text-gray-500">that you own.</p>
-		</div>
+		<duo-headline
+			importance="1"
+			headline="Licenses"
+			sub-headline="that you own."
+		></duo-headline>
 
 		<action-table
 			:cols="[

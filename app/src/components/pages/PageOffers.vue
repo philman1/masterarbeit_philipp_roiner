@@ -2,6 +2,7 @@
 import { ref, onMounted } from "vue";
 import {
 	fetchOffers,
+	offerMakerFilter,
 	authorFilter,
 	acceptOffer,
 	cancelOffer,
@@ -12,19 +13,26 @@ import { useWorkspace } from "@/composables";
 import { web3 } from "@project-serum/anchor";
 import store from "@/store";
 import ActionTable from "../ActionTable.vue";
+import DuoHeadline from "../basic/DuoHeadline.vue";
 
+const offerMakerOffers = ref([]);
+const offerMakerActions = ref([]);
 const authorOffers = ref([]);
-const actions = ref([]);
+const authorActions = ref([]);
 
 onMounted(async () => {
 	const { wallet } = useWorkspace();
+	offerMakerOffers.value = await fetchOffers([
+		offerMakerFilter(wallet.value.publicKey.toBase58()),
+	]);
+
+	offerMakerActions.value = [{ fn: declineOffer, label: "Cancel offer" }];
+
 	authorOffers.value = await fetchOffers([
 		authorFilter(wallet.value.publicKey.toBase58()),
 	]);
 
-	console.log(authorOffers.value);
-
-	actions.value = [
+	authorActions.value = [
 		{ fn: acceptOfferAndCreateLicense, label: "Accept offer" },
 		{ fn: declineOffer, label: "Decline offer" },
 	];
@@ -53,11 +61,33 @@ const declineOffer = async (offer) => {
 </script>
 
 <template>
+	<div v-if="offerMakerOffers.length > 0">
+		<duo-headline
+			importance="1"
+			headline="Your offers"
+			sub-headline="Open offers that you created."
+		></duo-headline>
+
+		<action-table
+			:cols="[
+				{ attr: 'publicKey', heading: 'Offer' },
+				{ attr: 'offerMaker', heading: 'Offer maker' },
+				{ attr: 'mint', heading: 'Mint' },
+				{ attr: 'author', heading: 'Author' },
+				{ attr: 'offerPrice', heading: 'Price' },
+				{ attr: 'offerUri', heading: 'Offer uri' },
+				{ attr: null, heading: '' },
+			]"
+			:data="offerMakerOffers"
+			:actions="offerMakerActions"
+		/>
+	</div>
 	<div v-if="authorOffers.length > 0">
-		<div class="px-4 py-5 sm:px-6">
-			<h3 class="text-lg font-medium leading-6 text-gray-900">Open offers</h3>
-			<p class="mt-1 max-w-2xl text-sm text-gray-500">you are the author.</p>
-		</div>
+		<duo-headline
+			importance="1"
+			headline="For you"
+			sub-headline="Offers for your work."
+		></duo-headline>
 
 		<action-table
 			:cols="[
@@ -70,7 +100,7 @@ const declineOffer = async (offer) => {
 				{ attr: null, heading: '' },
 			]"
 			:data="authorOffers"
-			:actions="actions"
+			:actions="authorActions"
 		/>
 	</div>
 </template>
