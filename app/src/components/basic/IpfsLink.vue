@@ -4,7 +4,6 @@ import { defineProps } from "vue";
 const props = defineProps({
 	cid: { type: String, required: true },
 });
-console.log(props);
 </script>
 
 <template>

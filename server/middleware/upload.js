@@ -1,8 +1,7 @@
-const multer = require("multer");
-const ipfsClient = require("ipfs-http-client");
+import multer from "multer";
+import ipfsClient from "ipfs-http-client";
 const ipfsEndPoint = "http://127.0.0.1:5001";
 const ipfs = ipfsClient(ipfsEndPoint);
-const sharp = require("sharp");
 
 var storage = multer.diskStorage({
 	destination: (req, file, callback) => {
@@ -21,10 +20,10 @@ var storage = multer.diskStorage({
 	},
 });
 
-var uploadFilesToFs = multer({ storage: storage }).array("data", 10);
+export const toFs = multer({ storage: storage }).array("data", 10);
 // var uploadFilesMiddleware = util.promisify(uploadFiles);
 
-const uploadImagesToIpfs = async (files, path) => {
+export const toIpfs = async (files, path) => {
 	const getCids = async () => {
 		const cids = [];
 		for await (const file of ipfs.files.ls(`/images/${path}`)) {
@@ -44,9 +43,4 @@ const uploadImagesToIpfs = async (files, path) => {
 	);
 
 	return await getCids();
-};
-
-module.exports = {
-	toFs: uploadFilesToFs,
-	toIpfs: uploadImagesToIpfs,
 };

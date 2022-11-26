@@ -1,11 +1,11 @@
-const ipfsClient = require("ipfs-http-client");
+import fs from "fs";
+import path from "path";
+import crypto from "crypto";
+import ipfsClient from "ipfs-http-client";
 const ipfsEndPoint = "http://127.0.0.1:5001";
 const ipfs = ipfsClient(ipfsEndPoint);
-const fs = require("fs");
-const path = require("path");
-const crypto = require("crypto");
 
-async function encryptFiles(files) {
+export async function encryptFiles(files) {
 	try {
 		let encryptedFiles = [];
 
@@ -47,7 +47,7 @@ async function toArray(asyncIterator) {
 	return arr;
 }
 
-async function downloadFileDecrypted(cid) {
+export async function downloadFileDecrypted(cid) {
 	try {
 		console.log(cid);
 		// let file_data = await ipfs.files.read(ipfspath);
@@ -151,8 +151,3 @@ function decryptRSA(toDecrypt, privkeyPath = "private.pem") {
 	);
 	return decrypted.toString("utf8");
 }
-
-module.exports = {
-	encryptFiles: encryptFiles,
-	downloadFileDecrypted: downloadFileDecrypted,
-};

@@ -1,13 +1,15 @@
-const fs = require("fs");
-const path = require("path");
-const upload = require("../middleware/upload");
-const encrypt = require("../middleware/crypto");
-const image = require("../middleware/image");
-const sizeOf = require("image-size");
+import fs from "fs";
+import path from "path";
+import sizeOf from "image-size";
+import { toFs, toIpfs } from "../middleware/upload.js";
+import { encryptFiles } from "../middleware/crypto.js";
+import { createThumbnails } from "../middleware/image.js";
+import { authorizedPk } from "../middleware/web3Auth.js";
 
-const multipleUpload = async (req, res, next) => {
+export const multipleUpload = async (req, res) => {
+	console.log(authorizedPk(res));
 	try {
-		await upload.toFs(req, res, async (err) => {
+		await toFs(req, res, async (err) => {
 			if (err) {
 				return res.send(err);
 			} else {
@@ -30,11 +32,11 @@ const multipleUpload = async (req, res, next) => {
 					})
 				);
 
-				const encryptedFiles = await encrypt.encryptFiles(files);
-				const cidsEncrypted = await upload.toIpfs(encryptedFiles, "encrypted");
+				const encryptedFiles = await encryptFiles(files);
+				const cidsEncrypted = await toIpfs(encryptedFiles, "encrypted");
 
-				const thumbnails = await image.createThumbnails(files);
-				const cidsThumbnails = await upload.toIpfs(thumbnails, "thumbnail");
+				const thumbnails = await createThumbnails(files);
+				const cidsThumbnails = await toIpfs(thumbnails, "thumbnail");
 
 				filePaths.forEach((filePath) => {
 					fs.unlink(filePath, (err) => {
@@ -63,8 +65,4 @@ const multipleUpload = async (req, res, next) => {
 		}
 		return res.send(`Error when trying upload many files: ${error}`);
 	}
-};
-
-module.exports = {
-	multipleUpload: multipleUpload,
 };
