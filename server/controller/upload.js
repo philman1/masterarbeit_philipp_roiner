@@ -6,8 +6,13 @@ import { encryptFiles } from "../middleware/crypto.js";
 import { createThumbnails } from "../middleware/image.js";
 import { authorizedPk } from "../middleware/web3Auth.js";
 
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 export const multipleUpload = async (req, res) => {
-	console.log(authorizedPk(res));
 	try {
 		await toFs(req, res, async (err) => {
 			if (err) {

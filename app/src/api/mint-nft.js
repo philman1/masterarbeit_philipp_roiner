@@ -20,24 +20,21 @@ const ipfs = create();
 
 export const saveToIpfs = async (files) => {
 	const { publicKey, signMessage } = useWallet();
-	if (signMessage) {
-		console.log(signMessage("test"));
-		const formData = new FormData();
+	const formData = new FormData();
 
-		for (var i = 0; i < files.length; i++) {
-			formData.append("data", files[i]);
-		}
-
-		req(
-			{
-				method: "POST",
-				url: "http://localhost:3000/multiple-upload",
-				data: formData,
-			},
-			"upload:images",
-			{ publicKey, signMessage }
-		).then((res) => console.log(res));
+	for (var i = 0; i < files.length; i++) {
+		formData.append("data", files[i]);
 	}
+
+	req(
+		{
+			method: "POST",
+			url: "http://localhost:3000/multiple-upload",
+			data: formData,
+		},
+		"upload:images",
+		{ publicKey: publicKey.value, signMessage: signMessage.value }
+	).then((res) => console.log(res));
 
 	// return await fetch("http://localhost:3000/multiple-upload", {
 	// 	method: "POST",

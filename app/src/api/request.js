@@ -36,7 +36,6 @@ export const createAuthToken = async (action, wallet, exp = 5) => {
 			exp: DateTime.local().toUTC().plus({ minutes: exp }).toUnixInteger(),
 		})
 	);
-	console.log(wallet);
 	const signature = await wallet.signMessage(encodedMessage);
 	const pk = wallet.publicKey.toBase58();
 	const msg = b58.encode(encodedMessage);
