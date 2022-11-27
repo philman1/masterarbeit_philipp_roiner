@@ -11,7 +11,11 @@ let routes = (app) => {
 		web3Auth({ action: "upload:images" }),
 		multipleUpload
 	);
-	router.post("/decrypt-image", decryptImage);
+	router.post(
+		"/decrypt-image",
+		web3Auth({ action: "decrypt:image" }),
+		decryptImage
+	);
 
 	return app.use("/", router);
 };

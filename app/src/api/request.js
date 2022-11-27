@@ -1,5 +1,3 @@
-// import { web3 } from "@project-serum/anchor";
-// import axios, { Method } from "axios";
 import { DateTime } from "luxon";
 import b58 from "bs58";
 
@@ -48,7 +46,7 @@ export const createAuthToken = async (action, wallet, exp = 5) => {
  * authentication via wallet signer.
  */
 export const req = async (contents, action, wallet, exp = 5) => {
-	const { method, url, data } = contents;
+	const { method, url, headers, data } = contents;
 
 	let authToken;
 	if (action === "skip") {
@@ -72,11 +70,9 @@ export const req = async (contents, action, wallet, exp = 5) => {
 		authToken = await createAuthToken(action, wallet, exp);
 	}
 
-	const response = await fetch(url, {
-		headers: { Authorization: `Bearer ${authToken}` },
+	return fetch(url, {
+		headers: { Authorization: `Bearer ${authToken}`, ...headers },
 		method: method,
 		body: data,
 	});
-
-	return response.data;
 };

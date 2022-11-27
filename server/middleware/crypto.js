@@ -49,15 +49,12 @@ async function toArray(asyncIterator) {
 
 export async function downloadFileDecrypted(cid) {
 	try {
-		console.log(cid);
-		// let file_data = await ipfs.files.read(ipfspath);
 		const chunks = [];
 		for await (const chunk of ipfs.cat(cid)) {
 			chunks.push(chunk);
 		}
 
 		const edata = Buffer.concat(chunks);
-		console.log(edata);
 		const key = decryptRSA(edata.slice(0, 684).toString("utf8"));
 		const iv = edata.slice(684, 700).toString("utf8");
 		const econtent = edata.slice(700).toString("utf8");
