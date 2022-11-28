@@ -37,7 +37,10 @@ export const downloadDecryptedImage = async (mint) => {
 				"Content-Type": "application/json",
 			},
 			data: JSON.stringify({
-				data: cid,
+				data: {
+					mint,
+					cid,
+				},
 			}),
 		},
 		"decrypt:image",

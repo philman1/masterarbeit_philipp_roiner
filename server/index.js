@@ -3,6 +3,7 @@ import morgan from "morgan";
 import cors from "cors";
 
 import initRoutes from "./routes.js";
+import { initWorkspace } from "./middleware/workspace.js";
 
 const rest_port = 3000;
 
@@ -21,6 +22,8 @@ app.all("*", (req, res, next) => {
 	res.status(404).send({ error: "404 Not Found" });
 });
 
-app.listen(rest_port, () => {
+app.listen(rest_port, async () => {
 	console.log("Server running on port 3000");
+
+	initWorkspace();
 });

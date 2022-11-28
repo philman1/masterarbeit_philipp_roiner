@@ -1,0 +1,438 @@
+{
+	"version": "0.1.0",
+	"name": "masterarbeit_philipp_roiner",
+	"instructions": [
+		{
+			"name": "mintNft",
+			"accounts": [
+				{
+					"name": "image",
+					"isMut": true,
+					"isSigner": true
+				},
+				{
+					"name": "mintAuthority",
+					"isMut": true,
+					"isSigner": true
+				},
+				{
+					"name": "mint",
+					"isMut": true,
+					"isSigner": false
+				},
+				{
+					"name": "tokenProgram",
+					"isMut": false,
+					"isSigner": false
+				},
+				{
+					"name": "metadata",
+					"isMut": true,
+					"isSigner": false
+				},
+				{
+					"name": "masterEdition",
+					"isMut": true,
+					"isSigner": false
+				},
+				{
+					"name": "tokenAccount",
+					"isMut": true,
+					"isSigner": false
+				},
+				{
+					"name": "tokenMetadataProgram",
+					"isMut": false,
+					"isSigner": false
+				},
+				{
+					"name": "payer",
+					"isMut": true,
+					"isSigner": false
+				},
+				{
+					"name": "systemProgram",
+					"isMut": false,
+					"isSigner": false
+				},
+				{
+					"name": "rent",
+					"isMut": false,
+					"isSigner": false
+				}
+			],
+			"args": [
+				{
+					"name": "creatorKey",
+					"type": "publicKey"
+				},
+				{
+					"name": "name",
+					"type": "string"
+				},
+				{
+					"name": "symbol",
+					"type": "string"
+				},
+				{
+					"name": "uri",
+					"type": "string"
+				},
+				{
+					"name": "allowedLicenseTypes",
+					"type": "u64"
+				}
+			]
+		},
+		{
+			"name": "mintEdition",
+			"accounts": [
+				{
+					"name": "originalMint",
+					"isMut": true,
+					"isSigner": false
+				},
+				{
+					"name": "newMetadata",
+					"isMut": true,
+					"isSigner": false
+				},
+				{
+					"name": "newEdition",
+					"isMut": true,
+					"isSigner": false
+				},
+				{
+					"name": "masterEdition",
+					"isMut": true,
+					"isSigner": false
+				},
+				{
+					"name": "newMint",
+					"isMut": true,
+					"isSigner": false
+				},
+				{
+					"name": "newTokenAccount",
+					"isMut": true,
+					"isSigner": false
+				},
+				{
+					"name": "editionMarkPda",
+					"isMut": true,
+					"isSigner": false
+				},
+				{
+					"name": "newMintAuthority",
+					"isMut": true,
+					"isSigner": true
+				},
+				{
+					"name": "payer",
+					"isMut": true,
+					"isSigner": false
+				},
+				{
+					"name": "tokenAccountOwner",
+					"isMut": true,
+					"isSigner": false
+				},
+				{
+					"name": "tokenAccount",
+					"isMut": true,
+					"isSigner": false
+				},
+				{
+					"name": "newMetadataUpdateAuthority",
+					"isMut": true,
+					"isSigner": false
+				},
+				{
+					"name": "metadata",
+					"isMut": true,
+					"isSigner": false
+				},
+				{
+					"name": "tokenMetadataProgram",
+					"isMut": false,
+					"isSigner": false
+				},
+				{
+					"name": "tokenProgram",
+					"isMut": false,
+					"isSigner": false
+				},
+				{
+					"name": "systemProgram",
+					"isMut": false,
+					"isSigner": false
+				},
+				{
+					"name": "rent",
+					"isMut": false,
+					"isSigner": false
+				}
+			],
+			"args": [
+				{
+					"name": "edition",
+					"type": "u64"
+				}
+			]
+		},
+		{
+			"name": "initializeOffer",
+			"accounts": [
+				{
+					"name": "offerAccount",
+					"isMut": true,
+					"isSigner": false
+				},
+				{
+					"name": "offerMaker",
+					"isMut": true,
+					"isSigner": true
+				},
+				{
+					"name": "mint",
+					"isMut": false,
+					"isSigner": false
+				},
+				{
+					"name": "author",
+					"isMut": false,
+					"isSigner": false
+				},
+				{
+					"name": "systemProgram",
+					"isMut": false,
+					"isSigner": false
+				},
+				{
+					"name": "offerEscrowAccount",
+					"isMut": true,
+					"isSigner": false
+				}
+			],
+			"args": [
+				{
+					"name": "bump",
+					"type": "u8"
+				},
+				{
+					"name": "escrowBump",
+					"type": "u8"
+				},
+				{
+					"name": "offerUri",
+					"type": "string"
+				}
+			]
+		},
+		{
+			"name": "makeOffer",
+			"accounts": [
+				{
+					"name": "offerAccount",
+					"isMut": false,
+					"isSigner": false
+				},
+				{
+					"name": "offerMaker",
+					"isMut": false,
+					"isSigner": true
+				},
+				{
+					"name": "systemProgram",
+					"isMut": false,
+					"isSigner": false
+				},
+				{
+					"name": "offerEscrowAccount",
+					"isMut": true,
+					"isSigner": false
+				}
+			],
+			"args": [
+				{
+					"name": "lamports",
+					"type": "u64"
+				}
+			]
+		},
+		{
+			"name": "cancelOffer",
+			"accounts": [
+				{
+					"name": "offerAccount",
+					"isMut": true,
+					"isSigner": false
+				},
+				{
+					"name": "offerMaker",
+					"isMut": true,
+					"isSigner": false
+				},
+				{
+					"name": "systemProgram",
+					"isMut": false,
+					"isSigner": false
+				},
+				{
+					"name": "offerEscrowAccount",
+					"isMut": true,
+					"isSigner": false
+				}
+			],
+			"args": []
+		},
+		{
+			"name": "acceptOffer",
+			"accounts": [
+				{
+					"name": "license",
+					"isMut": true,
+					"isSigner": false
+				},
+				{
+					"name": "offerAccount",
+					"isMut": true,
+					"isSigner": false
+				},
+				{
+					"name": "offerMaker",
+					"isMut": true,
+					"isSigner": false
+				},
+				{
+					"name": "author",
+					"isMut": true,
+					"isSigner": true
+				},
+				{
+					"name": "systemProgram",
+					"isMut": false,
+					"isSigner": false
+				},
+				{
+					"name": "offerEscrowAccount",
+					"isMut": true,
+					"isSigner": false
+				}
+			],
+			"args": []
+		}
+	],
+	"accounts": [
+		{
+			"name": "Image",
+			"type": {
+				"kind": "struct",
+				"fields": [
+					{
+						"name": "author",
+						"type": "publicKey"
+					},
+					{
+						"name": "timestamp",
+						"type": "i64"
+					},
+					{
+						"name": "mintAddress",
+						"type": "publicKey"
+					},
+					{
+						"name": "allowedLicenseTypes",
+						"type": "u64"
+					}
+				]
+			}
+		},
+		{
+			"name": "License",
+			"type": {
+				"kind": "struct",
+				"fields": [
+					{
+						"name": "licenseType",
+						"type": "u8"
+					},
+					{
+						"name": "owner",
+						"type": "publicKey"
+					},
+					{
+						"name": "licensedImage",
+						"type": "publicKey"
+					},
+					{
+						"name": "timestamp",
+						"type": "i64"
+					},
+					{
+						"name": "licenseInformation",
+						"type": "string"
+					}
+				]
+			}
+		},
+		{
+			"name": "Offer",
+			"type": {
+				"kind": "struct",
+				"fields": [
+					{
+						"name": "offerMaker",
+						"type": "publicKey"
+					},
+					{
+						"name": "mint",
+						"type": "publicKey"
+					},
+					{
+						"name": "author",
+						"type": "publicKey"
+					},
+					{
+						"name": "offerUri",
+						"type": "string"
+					},
+					{
+						"name": "bump",
+						"type": "u8"
+					},
+					{
+						"name": "escrowBump",
+						"type": "u8"
+					},
+					{
+						"name": "escrowPda",
+						"type": "publicKey"
+					}
+				]
+			}
+		},
+		{
+			"name": "EscrowAccount",
+			"type": {
+				"kind": "struct",
+				"fields": []
+			}
+		}
+	],
+	"errors": [
+		{
+			"code": 6000,
+			"name": "MintFailed",
+			"msg": "Mint failed!"
+		},
+		{
+			"code": 6001,
+			"name": "MetadataCreateFailed",
+			"msg": "Metadata account create failed!"
+		}
+	],
+	"metadata": {
+		"address": "GUuZwvAnu8wmbA4fYUqnnBgpdjEPyB2kWZXCEvxcRKuf"
+	}
+}
