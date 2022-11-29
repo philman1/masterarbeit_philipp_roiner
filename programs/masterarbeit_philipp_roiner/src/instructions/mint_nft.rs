@@ -87,7 +87,7 @@ pub fn mint_nft_handler(
             ctx.accounts.mint_authority.key(),
             ctx.accounts.metadata.key(),
             ctx.accounts.mint_authority.key(),
-            Some(0),
+            None,
         ),
         &[
             ctx.accounts.master_edition.to_account_info(),

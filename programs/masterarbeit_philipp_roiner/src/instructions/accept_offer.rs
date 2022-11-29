@@ -40,7 +40,7 @@ pub struct AcceptOffer<'info> {
         bump
     )]
     pub license: Account<'info, License>,
-    #[account(mut, has_one=offer_maker, close=author)]
+    #[account(mut, has_one=offer_maker, close=offer_maker)]
     pub offer_account: Account<'info, Offer>,
     #[account(mut)]
     /// CHECK: This is not dangerous because we don't read or write from this account
