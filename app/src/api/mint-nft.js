@@ -26,7 +26,7 @@ export const saveToIpfs = async (files) => {
 		formData.append("data", files[i]);
 	}
 
-	req(
+	const res = await req(
 		{
 			method: "POST",
 			url: "http://localhost:3000/multiple-upload",
@@ -34,7 +34,8 @@ export const saveToIpfs = async (files) => {
 		},
 		"upload:images",
 		{ publicKey: publicKey.value, signMessage: signMessage.value }
-	).then((res) => console.log(res));
+	);
+	return await res.json();
 
 	// return await fetch("http://localhost:3000/multiple-upload", {
 	// 	method: "POST",

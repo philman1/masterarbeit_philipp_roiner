@@ -1,5 +1,5 @@
 <script setup>
-import { saveToIpfs } from "@/api";
+import { saveToIpfs, mintNft } from "@/api";
 import { computed, ref } from "vue";
 import DuoHeadline from "../basic/DuoHeadline.vue";
 import SimpleButton from "../basic/SimpleButton.vue";
@@ -20,15 +20,16 @@ const handleFiles = async (event) => {
 
 const mint = async () => {
 	if (!validName.value || !image.value) return;
-	const { cidsEncrypted, cidsThumbnails } = await saveToIpfs(image.value);
+	const res = await saveToIpfs(image.value);
+	const { cidsEncrypted, cidsThumbnails } = res.data;
 	console.log(cidsEncrypted, cidsThumbnails);
-	// await mintNft({
-	// 	name: name.value,
-	// 	symbol: symbol.value,
-	// 	description: description.value,
-	// 	image: `https://ipfs.io/ipfs/${cidsThumbnails[0]}`,
-	// 	fullResImg: cidsEncrypted[0],
-	// });
+	await mintNft({
+		name: name.value,
+		symbol: symbol.value,
+		description: description.value,
+		image: `https://ipfs.io/ipfs/${cidsThumbnails[0]}`,
+		fullResImg: cidsEncrypted[0],
+	});
 };
 </script>
 

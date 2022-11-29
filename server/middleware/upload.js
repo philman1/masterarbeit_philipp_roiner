@@ -31,7 +31,7 @@ export const toIpfs = async (files, path) => {
 			if (f)
 				cids.push({
 					cid: file.cid.toString(),
-					key: f.key,
+					key: f.key ? f.key : "",
 				});
 		}
 		return cids;

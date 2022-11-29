@@ -31,5 +31,5 @@ export const addEntry = (hash, key) => {
 };
 
 export const getEntry = async (hash) => {
-	return await query(`SELECT * FROM keys WHERE keys.ipfs_hash LIKE '${hash}'`);
+	return await query(`SELECT * FROM keys WHERE keys.ipfs_hash = '${hash}'`);
 };

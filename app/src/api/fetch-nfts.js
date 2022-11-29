@@ -14,7 +14,7 @@ export const fetchNft = async (mint) => {
 		const { metaplex } = useMetaplex();
 		const mintAddress = new PublicKey(mint);
 		let nft = await metaplex.nfts().findByMint({ mintAddress });
-
+		console.log(nft);
 		if (!nft.jsonLoaded) nft = await fetchMetadataFromIpfs(nft);
 
 		const image = await fetchImageFromIpfs(nft);
@@ -89,7 +89,7 @@ export const fetchMetadataFromIpfs = async (nft) => {
 };
 
 export const fetchImageFromIpfs = async (nft) => {
-	// console.log(nft);
+	console.log(nft);
 	const metadata = nft.json;
 	const img = await loadImgURL(metadata.image);
 	const mint = nft.mintAddress ? nft.mintAddress : nft.mint.address;

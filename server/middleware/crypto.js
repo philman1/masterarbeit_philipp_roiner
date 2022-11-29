@@ -39,8 +39,9 @@ export async function downloadFileDecrypted(cid) {
 		}
 
 		const edata = Buffer.concat(chunks);
-		const key = await getEntry(cid)[0]["aes_key"];
-		console.log(key);
+		const db_entry = await getEntry(cid);
+		if (db_entry.length <= 0) return null;
+		const key = db_entry[0].aes_key;
 		const iv = edata.slice(0, 16).toString("utf8");
 		const econtent = edata.slice(16).toString("utf8");
 		const ebuf = Buffer.from(econtent, "hex");
