@@ -1,13 +1,21 @@
-const fs = require("fs");
-const path = require("path");
-const upload = require("../middleware/upload");
-const encrypt = require("../middleware/crypto");
-const image = require("../middleware/image");
-const sizeOf = require("image-size");
+import fs from "fs";
+import path from "path";
+import sizeOf from "image-size";
+import { toFs, toIpfs } from "../middleware/upload.js";
+import { encryptFiles } from "../middleware/crypto.js";
+import { createThumbnails } from "../middleware/image.js";
+import { authorizedPk } from "../middleware/web3Auth.js";
 
-const multipleUpload = async (req, res, next) => {
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+import { addEntry } from "../db/index.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+export const multipleUpload = async (req, res) => {
 	try {
-		await upload.toFs(req, res, async (err) => {
+		await toFs(req, res, async (err) => {
 			if (err) {
 				return res.send(err);
 			} else {
@@ -30,11 +38,14 @@ const multipleUpload = async (req, res, next) => {
 					})
 				);
 
-				const encryptedFiles = await encrypt.encryptFiles(files);
-				const cidsEncrypted = await upload.toIpfs(encryptedFiles, "encrypted");
+				const encryptedFiles = await encryptFiles(files);
+				const cidsEncrypted = await toIpfs(encryptedFiles, "encrypted");
+				cidsEncrypted.forEach(async ({ cid, key }) => {
+					await addEntry(cid, key);
+				});
 
-				const thumbnails = await image.createThumbnails(files);
-				const cidsThumbnails = await upload.toIpfs(thumbnails, "thumbnail");
+				const thumbnails = await createThumbnails(files);
+				const cidsThumbnails = await toIpfs(thumbnails, "thumbnail");
 
 				filePaths.forEach((filePath) => {
 					fs.unlink(filePath, (err) => {
@@ -49,7 +60,7 @@ const multipleUpload = async (req, res, next) => {
 					return res.send({ msg: "sth went wrong" });
 				} else {
 					return res.send({
-						msg: `Files has been uploaded.`,
+						msg: `Files have been uploaded.`,
 						data: { cidsEncrypted, cidsThumbnails },
 					});
 				}
@@ -63,8 +74,4 @@ const multipleUpload = async (req, res, next) => {
 		}
 		return res.send(`Error when trying upload many files: ${error}`);
 	}
-};
-
-module.exports = {
-	multipleUpload: multipleUpload,
 };

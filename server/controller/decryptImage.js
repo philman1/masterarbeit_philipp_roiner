@@ -1,17 +1,11 @@
-const fs = require("fs");
-const path = require("path");
-const upload = require("../middleware/upload");
-const crypto = require("../middleware/crypto");
+import { downloadFileDecrypted } from "../middleware/crypto.js";
+("../middleware/crypto.js");
 
-const decryptImage = async (req, res, next) => {
-	console.log(req.body);
-	if(!req.body.data) return res.send({msg: "no cid provided"});
-	const d = await crypto.downloadFileDecrypted(req.body.data);
+export const decryptImage = async (req, res) => {
+	if (!req.body.data) return res.send({ msg: "no cid provided" });
+	const { cid } = req.body.data;
+	const d = await downloadFileDecrypted(cid);
 	// to buffer
 	const buff = Buffer.from(d).toString("base64");
-	res.send({msg: "success", buff});
-};
-
-module.exports = {
-	decryptImage: decryptImage,
+	res.send({ msg: "success", buff });
 };

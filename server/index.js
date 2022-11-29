@@ -1,79 +1,32 @@
-const ipfsClient = require("ipfs-http-client");
-// const { globSource } = ipfsClient;
-const ipfsEndPoint = "http://localhost:5001";
-const ipfs = ipfsClient(ipfsEndPoint);
+import express from "express";
+import morgan from "morgan";
+import cors from "cors";
+import crypto from "crypto";
 
-const fs = require("fs");
-const initRoutes = require("./routes");
-
-// generateKeys();
-// _testing()
-
-async function _testing() {
-	const file = "package.json"; // file to upload
-	const ipfspath = "/encrypted/data/" + file; // ipfspath
-
-	// upload to ipfs path
-	await uploadFileEncrypted(file, ipfspath);
-
-	// download from ipfs path
-	const dl = await downloadFileEncrypted(ipfspath);
-
-	// to buffer
-	const buff = Buffer.from(dl, "hex");
-
-	// save buffer to file
-	const outfile = ipfspath.replace(/\//g, "_");
-	console.log("writing:", outfile);
-	fs.writeFile(outfile, buff, function (err) {
-		if (err) throw err;
-	});
-}
-
-////////////////////////////////
-///////// REST API /////////////
-////////////////////////////////
+import initRoutes from "./routes.js";
+import { initWorkspace } from "./middleware/workspace.js";
+import { initDb, addEntry, query, getEntry } from "./db/index.js";
 
 const rest_port = 3000;
-const express = require("express");
-const cors = require("cors");
+
 const app = express();
 
 app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
-
-// enable CORS
+// Middleware
+app.use(morgan("combined"));
 app.use(cors());
+app.use(express.json());
 
 initRoutes(app);
 
-// app.get("/", (req, res) => {
-// 	res.sendFile(__dirname + "/index.html");
-// });
-
-// app.get("/api/files", async (req, res, next) => {
-// 	try {
-// 		res.json(await getUploadedFiles());
-// 	} catch (e) {
-// 		// when /encrypted/ path not exists (~ no uploads): catch ipfs http error
-// 		res.json({ error: e.toString() });
-// 	}
-// });
-
-// app.get(/^\/api\/file(\/.*)$/, async (req, res, next) => {
-// 	try {
-// 		const ipfspath = req.params[0];
-// 		const content = await downloadFileEncrypted(ipfspath);
-// 		res.send(content);
-// 	} catch (err) {
-// 		res.send("error: " + err);
-// 	}
-// });
-
-app.listen(rest_port, () => {
-	console.log("Server running on port 3000");
+// Handle 404
+app.all("*", (req, res, next) => {
+	res.status(404).send({ error: "404 Not Found" });
 });
 
-////////////////////////////////
-////////////////////////////////
-////////////////////////////////
+app.listen(rest_port, async () => {
+	console.log("Server running on port 3000");
+
+	initDb();
+	initWorkspace();
+});

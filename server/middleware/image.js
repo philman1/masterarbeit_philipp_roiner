@@ -1,6 +1,6 @@
-const sharp = require("sharp");
+import sharp from "sharp";
 
-const createThumbnails = async (files) => {
+export const createThumbnails = async (files) => {
 	return await Promise.all(
 		files.map(async (file) => {
 			// Create thumbnail:
@@ -27,8 +27,4 @@ const createThumbnails = async (files) => {
 			};
 		})
 	);
-};
-
-module.exports = {
-	createThumbnails: createThumbnails,
 };

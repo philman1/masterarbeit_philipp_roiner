@@ -8,6 +8,8 @@ import {
 import { BN, web3 } from "@project-serum/anchor";
 import { create } from "ipfs-http-client";
 import { useWorkspace } from "@/composables";
+import { req } from "@/api";
+import { useWallet } from "solana-wallets-vue";
 
 const TOKEN_METADATA_PROGRAM_ID = new web3.PublicKey(
 	"metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
@@ -17,18 +19,29 @@ const TOKEN_METADATA_PROGRAM_ID = new web3.PublicKey(
 const ipfs = create();
 
 export const saveToIpfs = async (files) => {
+	const { publicKey, signMessage } = useWallet();
 	const formData = new FormData();
 
 	for (var i = 0; i < files.length; i++) {
 		formData.append("data", files[i]);
 	}
 
-	return await fetch("http://localhost:3000/multiple-upload", {
-		method: "POST",
-		body: formData,
-	})
-		.then((res) => res.json())
-		.then((json) => json.data);
+	req(
+		{
+			method: "POST",
+			url: "http://localhost:3000/multiple-upload",
+			data: formData,
+		},
+		"upload:images",
+		{ publicKey: publicKey.value, signMessage: signMessage.value }
+	).then((res) => console.log(res));
+
+	// return await fetch("http://localhost:3000/multiple-upload", {
+	// 	method: "POST",
+	// 	body: formData,
+	// })
+	// 	.then((res) => res.json())
+	// 	.then((json) => json.data);
 };
 
 export const mintNft = async (metadata) => {
