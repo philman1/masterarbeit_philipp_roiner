@@ -3,10 +3,10 @@ seeds = false
 skip-lint = false
 
 [programs.localnet]
-masterarbeit_philipp_roiner = "GUuZwvAnu8wmbA4fYUqnnBgpdjEPyB2kWZXCEvxcRKuf"
+masterarbeit_philipp_roiner = "DEn3pakYmxKiaJAjVaJZVBW8AiZ2JeEGggdSBiF8vsFX"
 
 [programs.devnet]
-masterarbeit_philipp_roiner = "GUuZwvAnu8wmbA4fYUqnnBgpdjEPyB2kWZXCEvxcRKuf"
+masterarbeit_philipp_roiner = "DEn3pakYmxKiaJAjVaJZVBW8AiZ2JeEGggdSBiF8vsFX"
 
 [registry]
 url = "https://api.apr.dev"

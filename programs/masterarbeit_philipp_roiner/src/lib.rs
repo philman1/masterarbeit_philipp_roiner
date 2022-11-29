@@ -10,7 +10,7 @@ use crate::mint_nft::*;
 use crate::print_edition::*;
 use instructions::*;
 
-declare_id!("GUuZwvAnu8wmbA4fYUqnnBgpdjEPyB2kWZXCEvxcRKuf");
+declare_id!("DEn3pakYmxKiaJAjVaJZVBW8AiZ2JeEGggdSBiF8vsFX");
 
 #[program]
 pub mod masterarbeit_philipp_roiner {
