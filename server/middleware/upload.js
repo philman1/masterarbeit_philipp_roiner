@@ -27,8 +27,12 @@ export const toIpfs = async (files, path) => {
 	const getCids = async () => {
 		const cids = [];
 		for await (const file of ipfs.files.ls(`/images/${path}`)) {
-			if (files.map((f) => f.name).includes(file.name))
-				cids.push(file.cid.toString());
+			const f = files.find((f) => f.name === file.name);
+			if (f)
+				cids.push({
+					cid: file.cid.toString(),
+					key: f.key,
+				});
 		}
 		return cids;
 	};

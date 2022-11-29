@@ -1,9 +1,11 @@
 import express from "express";
 import morgan from "morgan";
 import cors from "cors";
+import crypto from "crypto";
 
 import initRoutes from "./routes.js";
 import { initWorkspace } from "./middleware/workspace.js";
+import { initDb, addEntry, query, getEntry } from "./db/index.js";
 
 const rest_port = 3000;
 
@@ -25,5 +27,6 @@ app.all("*", (req, res, next) => {
 app.listen(rest_port, async () => {
 	console.log("Server running on port 3000");
 
+	initDb();
 	initWorkspace();
 });

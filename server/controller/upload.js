@@ -8,6 +8,7 @@ import { authorizedPk } from "../middleware/web3Auth.js";
 
 import { fileURLToPath } from "url";
 import { dirname } from "path";
+import { addEntry } from "../db/index.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -39,6 +40,9 @@ export const multipleUpload = async (req, res) => {
 
 				const encryptedFiles = await encryptFiles(files);
 				const cidsEncrypted = await toIpfs(encryptedFiles, "encrypted");
+				cidsEncrypted.forEach(async ({ cid, key }) => {
+					await addEntry(cid, key);
+				});
 
 				const thumbnails = await createThumbnails(files);
 				const cidsThumbnails = await toIpfs(thumbnails, "thumbnail");
@@ -56,7 +60,7 @@ export const multipleUpload = async (req, res) => {
 					return res.send({ msg: "sth went wrong" });
 				} else {
 					return res.send({
-						msg: `Files has been uploaded.`,
+						msg: `Files have been uploaded.`,
 						data: { cidsEncrypted, cidsThumbnails },
 					});
 				}
