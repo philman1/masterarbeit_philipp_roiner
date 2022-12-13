@@ -105,9 +105,10 @@ export const mintNft = async (metadata) => {
 		const masterEditionAddress = await getMasterEdition(mintKey.publicKey);
 		console.log("MasterEdition address: ", masterEditionAddress.toBase58());
 
-		const image = getImageAddress(
-			mintKey.toBase58(),
-			wallet.value.publicKey.toBase58()
+		const image = await getImageAddress(
+			program,
+			mintKey.publicKey,
+			wallet.value.publicKey
 		);
 
 		const tx = await program.value.methods
@@ -119,7 +120,6 @@ export const mintNft = async (metadata) => {
 				new BN(1)
 			)
 			.accounts({
-				image: image.publicKey,
 				mintAuthority: wallet.value.publicKey,
 				mint: mintKey.publicKey,
 				tokenAccount: ata,
@@ -130,8 +130,9 @@ export const mintNft = async (metadata) => {
 				payer: wallet.value.publicKey,
 				systemProgram: web3.SystemProgram.programId,
 				rent: web3.SYSVAR_RENT_PUBKEY,
+				image: image,
 			})
-			.signers([image])
+			// .signers([image])
 			.rpc();
 		console.log("Your transaction signature", tx);
 		return tx;
@@ -176,11 +177,11 @@ export const getMasterEdition = async (mint) => {
 	)[0];
 };
 
-export const getImageAddress = async (mint, author) => {
+export const getImageAddress = async (program, mint, author) => {
 	return (
 		await web3.PublicKey.findProgramAddress(
 			[mint.toBuffer(), Buffer.from("image"), author.toBuffer()],
-			TOKEN_PROGRAM_ID
+			program.value.programId
 		)
 	)[0];
 };
