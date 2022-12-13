@@ -1,4 +1,4 @@
-// import dayjs from "dayjs";
+import { dateFromTimestamp, pastDateFromTimeStamp } from "@/composables";
 import { PublicKey } from "@metaplex-foundation/js";
 import { CID } from "./CID";
 
@@ -29,16 +29,11 @@ export class License {
 	}
 
 	get createdAt() {
-		return new Date(Number(this.timestamp) * 1000).toLocaleDateString(
-			"de-DE"
-		);
+		return dateFromTimestamp(this.timestamp);
 	}
 
 	get createdAgo() {
-		return `${(
-			(new Date() - new Date(Number(this.timestamp) * 1000)) /
-			(1000 * 60 * 60 * 24)
-		).toFixed()} days ago`;
+		return pastDateFromTimeStamp(this.timestamp);
 	}
 
 	get licenseInformationCID() {

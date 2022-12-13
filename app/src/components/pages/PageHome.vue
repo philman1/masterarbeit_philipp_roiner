@@ -9,6 +9,7 @@ const nfts = ref([]);
 
 fetchNfts().then((fetchedNfts) => {
 	if (!nfts.value) return;
+	console.log(fetchedNfts);
 	nfts.value = fetchedNfts;
 });
 </script>

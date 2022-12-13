@@ -3,7 +3,8 @@ import { concat } from "uint8arrays";
 import { PublicKey } from "@metaplex-foundation/js";
 import { useMetaplex } from "@/composables";
 import store from "@/store";
-import { fetchImages } from "./fetch-images";
+import { availabilityFilter, fetchImages } from "./fetch-images";
+import { bs58 } from "@project-serum/anchor/dist/cjs/utils/bytes";
 
 // const connection = new Connection(clusterApiUrl("devnet"));
 const ipfs = create({
@@ -28,24 +29,16 @@ export const fetchNft = async (mint) => {
 export const fetchNfts = async () => {
 	try {
 		const { metaplex } = useMetaplex();
-		// const nfts = await metaplex.nfts().findAllByOwner({
-		// 	owner: provider.value.publicKey,
-		// });
-
-		const imageAccounts = await fetchImages();
-		const mints = imageAccounts.map((i) => i.account.mintAddress);
+		const imageAccounts = await fetchImages([
+			availabilityFilter(bs58.encode(Uint8Array.from([1]))),
+		]);
+		console.log(imageAccounts);
+		const mints = imageAccounts.map((i) => i.mintAddress);
 		const metadatas = await metaplex.nfts().findAllByMintList({
 			mints,
 		});
 
 		return metadatas;
-		// return metadatas.map(
-		// 	async (metadata) => await metaplex.nfts().load({ metadata })
-		// );
-
-		// console.log(metadatas, nfts);
-
-		// return nfts;
 	} catch (error) {
 		console.log(error);
 	}

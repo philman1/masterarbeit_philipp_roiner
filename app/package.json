@@ -4,9 +4,11 @@
 	"private": true,
 	"scripts": {
 		"serve": "vue-cli-service serve",
+		"serve:localnet": "vue-cli-service serve --mode localnet",
 		"serve:devnet": "vue-cli-service serve --mode devnet",
 		"serve:mainnet": "vue-cli-service serve --mode mainnet",
 		"build": "vue-cli-service build",
+		"build:localnet": "vue-cli-service build --mode localnet",
 		"build:devnet": "vue-cli-service build --mode devnet",
 		"build:mainnet": "vue-cli-service build --mode mainnet",
 		"lint": "vue-cli-service lint"

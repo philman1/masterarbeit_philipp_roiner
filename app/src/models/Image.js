@@ -1,4 +1,5 @@
 import { PublicKey } from "@metaplex-foundation/js";
+import { dateFromTimestamp, pastDateFromTimeStamp } from "@/composables";
 
 export class Image {
 	constructor(publicKey, data) {
@@ -19,16 +20,11 @@ export class Image {
 	}
 
 	get createdAt() {
-		return new Date(Number(this.timestamp) * 1000).toLocaleDateString(
-			"de-DE"
-		);
+		return dateFromTimestamp(this.timestamp);
 	}
 
 	get createdAgo() {
-		return `${(
-			(new Date() - new Date(Number(this.timestamp) * 1000)) /
-			(1000 * 60 * 60 * 24)
-		).toFixed()} days ago`;
+		return pastDateFromTimeStamp(this.timestamp);
 	}
 
 	get mintAddressB58() {
@@ -36,7 +32,7 @@ export class Image {
 	}
 
 	get availability() {
-		return this.available ? "public" : "private";
+		return this.available ? "Public" : "Private";
 	}
 
 	get allowedLicenseTypesAsText() {
