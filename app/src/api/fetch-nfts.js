@@ -83,7 +83,9 @@ export const fetchMetadataFromIpfs = async (nft) => {
 
 		const data = concat(chunks);
 		console.log(data);
-		const decodedData = JSON.parse(new TextDecoder().decode(data).toString());
+		const decodedData = JSON.parse(
+			new TextDecoder().decode(data).toString()
+		);
 		return { ...nft, json: decodedData };
 	}
 };
@@ -101,13 +103,19 @@ export const fetchImageFromIpfs = async (nft) => {
 };
 
 async function loadImgURL(cid) {
-	if (cid == "" || cid == null || cid == undefined || cid.includes("ipfs://")) {
+	if (
+		cid == "" ||
+		cid == null ||
+		cid == undefined ||
+		cid.includes("ipfs://")
+	) {
 		return;
 	}
 	let uri = cid;
 	if (cid.includes("ipfs")) {
 		uri = uri.substring(21);
 	}
+
 	const res = await fetch("http://localhost:8080/ipfs/" + uri);
 	// const chunks = [];
 	// for await (const chunk of ipfs.cat(uri)) {

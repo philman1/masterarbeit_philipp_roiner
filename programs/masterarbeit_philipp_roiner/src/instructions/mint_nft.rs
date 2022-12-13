@@ -113,9 +113,6 @@ pub fn mint_nft_handler(
 
 #[derive(Accounts)]
 pub struct MintNFT<'info> {
-    #[account(init, payer = payer, space = Image::LEN)]
-    pub image: Account<'info, Image>,
-
     #[account(mut)]
     pub mint_authority: Signer<'info>,
 
@@ -148,4 +145,13 @@ pub struct MintNFT<'info> {
 
     /// CHECK: This is not dangerous because we don't read or write from this account
     pub rent: AccountInfo<'info>,
+
+    #[account(
+        init,
+        payer = payer,
+        space = Image::LEN,
+        seeds = [mint.key().as_ref(), b"image", mint_authority.key().as_ref()],
+        bump
+    )]
+    pub image: Account<'info, Image>,
 }

@@ -105,7 +105,10 @@ export const mintNft = async (metadata) => {
 		const masterEditionAddress = await getMasterEdition(mintKey.publicKey);
 		console.log("MasterEdition address: ", masterEditionAddress.toBase58());
 
-		const image = web3.Keypair.generate();
+		const image = getImageAddress(
+			mintKey.toBase58(),
+			wallet.value.publicKey.toBase58()
+		);
 
 		const tx = await program.value.methods
 			.mintNft(
@@ -169,6 +172,15 @@ export const getMasterEdition = async (mint) => {
 				Buffer.from("edition"),
 			],
 			TOKEN_METADATA_PROGRAM_ID
+		)
+	)[0];
+};
+
+export const getImageAddress = async (mint, author) => {
+	return (
+		await web3.PublicKey.findProgramAddress(
+			[mint.toBuffer(), Buffer.from("image"), author.toBuffer()],
+			TOKEN_PROGRAM_ID
 		)
 	)[0];
 };
