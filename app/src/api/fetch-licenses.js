@@ -17,3 +17,13 @@ export const licenseOwnerFilter = (ownerBase58PublicKey) => ({
 		bytes: ownerBase58PublicKey,
 	},
 });
+
+export const licensesForImage = (imageBase58PubKey) => ({
+	memcmp: {
+		offset:
+			8 + // Discriminator
+			1 + // License type
+			32, // License owner
+		bytes: imageBase58PubKey,
+	},
+});
