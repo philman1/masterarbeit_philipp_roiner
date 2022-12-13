@@ -2,7 +2,13 @@
 import { ref, defineProps, onMounted } from "vue";
 import { web3 } from "@project-serum/anchor";
 import store from "@/store";
-import { fetchNft, initializeOffer, makeOffer } from "@/api";
+import {
+	fetchNft,
+	initializeOffer,
+	makeOffer,
+	fetchImages,
+	mintAddressFilter,
+} from "@/api";
 import { useWorkspace } from "@/composables";
 import HashLink from "../basic/HashLink.vue";
 import SimpleButton from "../basic/SimpleButton.vue";
@@ -14,6 +20,7 @@ const props = defineProps({
 });
 
 const nft = ref(null);
+const image = ref(null);
 const mint_pk = ref(null);
 const isCreator = ref(false);
 
@@ -36,6 +43,11 @@ onMounted(async () => {
 			wallet.value.publicKey.toBase58() === creator.address.toBase58()
 	);
 	// fetchEditions();
+
+	const img = await fetchImages([
+		mintAddressFilter(nft.value.mint.address.toBase58()),
+	]);
+	if (img.length > 0) image.value = img[0];
 });
 
 const initAndMakeOffer = async () => {
@@ -204,6 +216,9 @@ const initAndMakeOffer = async () => {
 							:click-handler="initAndMakeOffer"
 							label="Make offer"
 						/>
+					</div>
+					<div v-else class="flex">
+						{{ image.createdAt }}
 					</div>
 				</div>
 			</div>

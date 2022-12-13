@@ -79,8 +79,12 @@
 					"type": "string"
 				},
 				{
+					"name": "available",
+					"type": "bool"
+				},
+				{
 					"name": "allowedLicenseTypes",
-					"type": "u64"
+					"type": "u8"
 				}
 			]
 		},
@@ -342,8 +346,12 @@
 						"type": "publicKey"
 					},
 					{
+						"name": "available",
+						"type": "bool"
+					},
+					{
 						"name": "allowedLicenseTypes",
-						"type": "u64"
+						"type": "u8"
 					}
 				]
 			}
@@ -367,6 +375,10 @@
 					},
 					{
 						"name": "timestamp",
+						"type": "i64"
+					},
+					{
+						"name": "validUntil",
 						"type": "i64"
 					},
 					{

@@ -1,12 +1,13 @@
 import { create } from "ipfs-http-client";
 import { concat } from "uint8arrays";
 import { PublicKey } from "@metaplex-foundation/js";
-import { useMetaplex, useWorkspace } from "@/composables";
+import { useMetaplex } from "@/composables";
 import store from "@/store";
+import { fetchImages } from "./fetch-images";
 
 // const connection = new Connection(clusterApiUrl("devnet"));
 const ipfs = create({
-	url: "http://127.0.0.1:5001",
+	url: "http://127.0.0.1:5001/",
 });
 
 export const fetchNft = async (mint) => {
@@ -25,14 +26,13 @@ export const fetchNft = async (mint) => {
 };
 
 export const fetchNfts = async () => {
-	const { program } = useWorkspace();
 	try {
 		const { metaplex } = useMetaplex();
 		// const nfts = await metaplex.nfts().findAllByOwner({
 		// 	owner: provider.value.publicKey,
 		// });
 
-		const imageAccounts = await program.value.account.image.all();
+		const imageAccounts = await fetchImages();
 		const mints = imageAccounts.map((i) => i.account.mintAddress);
 		const metadatas = await metaplex.nfts().findAllByMintList({
 			mints,

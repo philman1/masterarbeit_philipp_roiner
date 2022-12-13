@@ -1,11 +1,10 @@
 import express from "express";
 import morgan from "morgan";
 import cors from "cors";
-import crypto from "crypto";
 
 import initRoutes from "./routes.js";
 import { initWorkspace } from "./middleware/workspace.js";
-import { initDb, addEntry, query, getEntry } from "./db/index.js";
+import { initDb } from "./db/index.js";
 
 const rest_port = 3000;
 

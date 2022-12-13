@@ -23,9 +23,18 @@ pub mod masterarbeit_philipp_roiner {
         name: String,
         symbol: String,
         uri: String,
-        allowed_license_types: u64,
+        available: bool,
+        allowed_license_types: u8,
     ) -> Result<()> {
-        mint_nft_handler(ctx, creator_key, name, symbol, uri, allowed_license_types)
+        mint_nft_handler(
+            ctx,
+            creator_key,
+            name,
+            symbol,
+            uri,
+            available,
+            allowed_license_types,
+        )
     }
 
     pub fn mint_edition(ctx: Context<MintPrintEdition>, edition: u64) -> Result<()> {

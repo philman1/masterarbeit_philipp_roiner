@@ -116,6 +116,7 @@ export const mintNft = async (metadata) => {
 				metadata.name,
 				metadata.symbol,
 				metadataUri,
+				false,
 				new BN(1)
 			)
 			.accounts({

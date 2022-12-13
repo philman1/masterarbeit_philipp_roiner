@@ -6,6 +6,7 @@ pub struct License {
     pub owner: Pubkey,
     pub licensed_image: Pubkey,
     pub timestamp: i64,
+    pub valid_until: i64,
     pub license_information: String,
 }
 
@@ -22,5 +23,6 @@ impl License {
         + PUBLIC_KEY_LENGTH // Owner.
         + PUBLIC_KEY_LENGTH // Licensed image.
         + TIMESTAMP_LENGTH // Timestamp.
+        + TIMESTAMP_LENGTH // Valid until.
         + STRING_LENGTH_PREFIX + LICENSE_INFORMATION_LENGTH;
 }
