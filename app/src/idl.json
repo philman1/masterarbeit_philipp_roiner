@@ -6,11 +6,6 @@
 			"name": "mintNft",
 			"accounts": [
 				{
-					"name": "image",
-					"isMut": true,
-					"isSigner": true
-				},
-				{
 					"name": "mintAuthority",
 					"isMut": true,
 					"isSigner": true
@@ -58,6 +53,11 @@
 				{
 					"name": "rent",
 					"isMut": false,
+					"isSigner": false
+				},
+				{
+					"name": "image",
+					"isMut": true,
 					"isSigner": false
 				}
 			],
