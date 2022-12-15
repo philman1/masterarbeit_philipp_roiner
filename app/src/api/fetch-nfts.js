@@ -28,24 +28,13 @@ export const fetchNft = async (mint) => {
 export const fetchNfts = async () => {
 	try {
 		const { metaplex } = useMetaplex();
-		// const nfts = await metaplex.nfts().findAllByOwner({
-		// 	owner: provider.value.publicKey,
-		// });
-
 		const imageAccounts = await fetchImages();
-		const mints = imageAccounts.map((i) => i.account.mintAddress);
+		const mints = imageAccounts.map((i) => i.mintAddress);
 		const metadatas = await metaplex.nfts().findAllByMintList({
 			mints,
 		});
 
 		return metadatas;
-		// return metadatas.map(
-		// 	async (metadata) => await metaplex.nfts().load({ metadata })
-		// );
-
-		// console.log(metadatas, nfts);
-
-		// return nfts;
 	} catch (error) {
 		console.log(error);
 	}
@@ -83,9 +72,7 @@ export const fetchMetadataFromIpfs = async (nft) => {
 
 		const data = concat(chunks);
 		console.log(data);
-		const decodedData = JSON.parse(
-			new TextDecoder().decode(data).toString()
-		);
+		const decodedData = JSON.parse(new TextDecoder().decode(data).toString());
 		return { ...nft, json: decodedData };
 	}
 };
@@ -103,12 +90,7 @@ export const fetchImageFromIpfs = async (nft) => {
 };
 
 async function loadImgURL(cid) {
-	if (
-		cid == "" ||
-		cid == null ||
-		cid == undefined ||
-		cid.includes("ipfs://")
-	) {
+	if (cid == "" || cid == null || cid == undefined || cid.includes("ipfs://")) {
 		return;
 	}
 	let uri = cid;
