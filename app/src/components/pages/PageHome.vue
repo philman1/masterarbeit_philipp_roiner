@@ -1,19 +1,21 @@
 <script setup>
 import { ref } from "vue";
-import { fetchNfts } from "@/api";
-// import store from "@/store";
+import { bs58 } from "@project-serum/anchor/dist/cjs/utils/bytes";
+import { fetchNfts, availabilityFilter } from "@/api";
 import NftList from "../NftList.vue";
 
-const nfts = ref([]);
+const data = ref([]);
 // const loading = ref(true);
 
-fetchNfts().then((fetchedNfts) => {
-	if (!nfts.value) return;
-	console.log(fetchedNfts);
-	nfts.value = fetchedNfts;
+const filters = [availabilityFilter(bs58.encode(Uint8Array.from([1])))];
+
+fetchNfts(filters).then((data) => {
+	if (!data.value) return;
+	console.log(data);
+	data.value = data;
 });
 </script>
 
 <template>
-	<nft-list v-if="nfts.length > 0" :nfts="nfts" />
+	<nft-list v-if="data.length > 0" :data="data" />
 </template>

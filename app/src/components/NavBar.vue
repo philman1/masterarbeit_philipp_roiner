@@ -64,6 +64,11 @@ let isOpen = ref(false);
 					class="block px-6 py-3 text-white font-semibold rounded hover:bg-gray-800"
 					>Licenses</router-link
 				>
+				<router-link
+					:to="{ name: 'Profile' }"
+					class="block px-6 py-3 text-white font-semibold rounded hover:bg-gray-800"
+					>Profile</router-link
+				>
 			</nav>
 
 			<wallet-multi-button></wallet-multi-button>

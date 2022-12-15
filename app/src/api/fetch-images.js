@@ -4,7 +4,6 @@ import { Image } from "@/models/Image";
 export const fetchImages = async (filters = []) => {
 	const { program } = useWorkspace();
 	const images = await program.value.account.image.all(filters);
-	console.log(images);
 	return images.map((image) => new Image(image.publicKey, image.account));
 };
 
@@ -26,5 +25,12 @@ export const availabilityFilter = (availability) => ({
 			8 + // Timestamp
 			32, // Mint Address
 		bytes: availability,
+	},
+});
+
+export const imageAuthorFilter = (authorBase58PublicKey) => ({
+	memcmp: {
+		offset: 8, // Discriminator
+		bytes: authorBase58PublicKey,
 	},
 });

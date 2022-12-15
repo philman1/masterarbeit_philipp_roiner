@@ -3,8 +3,7 @@ import { concat } from "uint8arrays";
 import { PublicKey } from "@metaplex-foundation/js";
 import { useMetaplex } from "@/composables";
 import store from "@/store";
-import { availabilityFilter, fetchImages } from "./fetch-images";
-import { bs58 } from "@project-serum/anchor/dist/cjs/utils/bytes";
+import { fetchImages } from "./fetch-images";
 
 // const connection = new Connection(clusterApiUrl("devnet"));
 const ipfs = create({
@@ -16,7 +15,6 @@ export const fetchNft = async (mint) => {
 		const { metaplex } = useMetaplex();
 		const mintAddress = new PublicKey(mint);
 		let nft = await metaplex.nfts().findByMint({ mintAddress });
-		console.log(nft);
 		if (!nft.jsonLoaded) nft = await fetchMetadataFromIpfs(nft);
 
 		const image = await fetchImageFromIpfs(nft);
@@ -26,19 +24,25 @@ export const fetchNft = async (mint) => {
 	}
 };
 
-export const fetchNfts = async () => {
+export const fetchNfts = async (filters) => {
 	try {
 		const { metaplex } = useMetaplex();
-		const imageAccounts = await fetchImages([
-			availabilityFilter(bs58.encode(Uint8Array.from([1]))),
-		]);
-		console.log(imageAccounts);
+		const imageAccounts = await fetchImages(filters);
 		const mints = imageAccounts.map((i) => i.mintAddress);
 		const metadatas = await metaplex.nfts().findAllByMintList({
 			mints,
 		});
+		const result = imageAccounts.map((i) => {
+			const m = metadatas.find(
+				(m) => m.mintAddress.toBase58() == i.mintAddress.toBase58()
+			);
+			return {
+				imageAccount: i,
+				nftMetadata: m,
+			};
+		});
 
-		return metadatas;
+		return result;
 	} catch (error) {
 		console.log(error);
 	}

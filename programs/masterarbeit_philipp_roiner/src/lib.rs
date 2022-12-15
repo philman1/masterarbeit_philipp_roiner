@@ -61,4 +61,12 @@ pub mod masterarbeit_philipp_roiner {
     pub fn accept_offer(ctx: Context<AcceptOffer>) -> Result<()> {
         accept_offer_handler(ctx)
     }
+
+    pub fn update_image_availability(ctx: Context<UpdateImage>, availability: bool) -> Result<()> {
+        update_image_availability_handler(ctx, availability)
+    }
+
+    pub fn update_image_allowed_license_types(ctx: Context<UpdateImage>, allowed_license_types: u8) -> Result<()> {
+        update_image_allowed_license_types_handler(ctx, allowed_license_types)
+    }
 }

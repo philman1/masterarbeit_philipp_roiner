@@ -25,4 +25,9 @@ export default [
 		path: "/licenses/",
 		component: require("@/components/pages/PageLicenses").default,
 	},
+	{
+		name: "Profile",
+		path: "/profile",
+		component: require("@/components/pages/PageProfile").default,
+	},
 ];
