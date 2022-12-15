@@ -1,4 +1,5 @@
 import { PublicKey } from "@metaplex-foundation/js";
+import { dateFromTimestamp, pastDateFromTimeStamp } from "@/composables";
 
 /* It's a class that represents an image. */
 export class Image {
@@ -32,7 +33,7 @@ export class Image {
 	 * @returns The date where the image was created at
 	 */
 	get createdAt() {
-		return new Date(Number(this.timestamp) * 1000).toLocaleDateString("de-DE");
+		return dateFromTimestamp(this.timestamp);
 	}
 
 	/**
@@ -40,10 +41,7 @@ export class Image {
 	 * @returns The number of days since the image was created.
 	 */
 	get createdAgo() {
-		return `${(
-			(new Date() - new Date(Number(this.timestamp) * 1000)) /
-			(1000 * 60 * 60 * 24)
-		).toFixed()} days ago`;
+		return pastDateFromTimeStamp(this.timestamp);
 	}
 
 	/**
@@ -60,7 +58,7 @@ export class Image {
 	 * @returns The availability of the image.
 	 */
 	get availability() {
-		return this.available ? "public" : "private";
+		return this.available ? "Public" : "Private";
 	}
 
 	/**

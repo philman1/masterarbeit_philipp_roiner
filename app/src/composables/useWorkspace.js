@@ -44,6 +44,7 @@ export const initWorkspace = () => {
 
 export const initMetaplex = () => {
 	const connection = new Connection(clusterApiUrl("devnet"));
+	// const connection = new Connection("http://127.0.0.1:8899");
 	const { wallet } = useWallet();
 
 	metaplex = Metaplex.make(connection)

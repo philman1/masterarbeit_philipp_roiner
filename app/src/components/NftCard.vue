@@ -61,6 +61,17 @@ onMounted(async () => {
 			>
 		</div> -->
 	</router-link>
+	<router-link
+		v-else-if="!img.length && nft.address.toBase58().length && nft.json"
+		:to="{
+			name: 'NftDetail',
+			params: { mint: nft.address.toBase58() },
+		}"
+		class="w-full rounded overflow-hidden shadow-lg flex justify-center items-center"
+		:style="randomHeight()"
+	>
+		<spinner />
+	</router-link>
 	<div
 		v-else
 		class="w-full rounded overflow-hidden shadow-lg flex justify-center items-center"
