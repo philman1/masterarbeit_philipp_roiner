@@ -85,6 +85,10 @@
 				{
 					"name": "allowedLicenseTypes",
 					"type": "u8"
+				},
+				{
+					"name": "oneTimePrice",
+					"type": "i64"
 				}
 			]
 		},
@@ -404,6 +408,10 @@
 					{
 						"name": "allowedLicenseTypes",
 						"type": "u8"
+					},
+					{
+						"name": "oneTimePrice",
+						"type": "i64"
 					}
 				]
 			}
