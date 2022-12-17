@@ -29,6 +29,7 @@ const mint_pk = ref(null);
 const isCreator = ref(false);
 
 const licenseType = ref(null);
+const oneTimePrice = ref(null);
 
 // OFFER
 const validPrice = ref(true);
@@ -60,6 +61,7 @@ const fetchImageAccount = async () => {
 	if (img.length > 0) {
 		image.value = img[0];
 		licenseType.value = image.value.allowedLicenseTypesAsNumber;
+		oneTimePrice.value = image.value.oneTimePriceNumber;
 	}
 };
 
@@ -92,10 +94,18 @@ const switchAvailability = async (image) => {
 };
 
 const changeAllowedLicenseTypes = async (image) => {
-	console.log(image.publicKeyB58);
 	await updateImageAllowedLicenseTypes(
 		image.mintAddress,
 		licenseType.value
+	).then(async () => {
+		await fetchImageAccount();
+	});
+};
+
+const updatePrice = async (image) => {
+	await updateImageAllowedLicenseTypes(
+		image.mintAddress,
+		oneTimePrice.value
 	).then(async () => {
 		await fetchImageAccount();
 	});
@@ -128,7 +138,7 @@ const downloadImage = async () => {
 								NFT Information
 							</h3>
 							<p class="mt-1 max-w-2xl text-sm text-gray-500">
-								Personal details and application.
+								Details about the NFT and licensing.
 							</p>
 						</div>
 						<div class="border-t border-gray-200">
@@ -234,6 +244,32 @@ const downloadImage = async () => {
 												<p class="mt-1 max-w-2xl text-sm text-gray-500">
 													3 - Rights Managed (RM)
 												</p>
+											</div>
+										</dd>
+									</div>
+									<div
+										class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
+									>
+										<dt class="text-sm font-medium text-gray-500">Price</dt>
+										<dd
+											class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0"
+										>
+											<div class="flex items-start">
+												<input
+													class="appearance-none border rounded w-24 py-2 px-3 text-gray-700 mr-3 mb-3 focus:border focus:border-gray-500 focus-visible:outline-none focus:shadow-outline"
+													type="number"
+													v-model="oneTimePrice"
+													min="0"
+													max="3"
+													step="1"
+													:readonly="isCreator ? false : true"
+												/>
+												<simple-button
+													v-if="isCreator"
+													:click-handler="() => updatePrice(image)"
+													label="Update price"
+													appearance="secondary"
+												/>
 											</div>
 										</dd>
 									</div>

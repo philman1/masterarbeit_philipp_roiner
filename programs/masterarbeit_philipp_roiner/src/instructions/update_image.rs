@@ -19,6 +19,16 @@ pub fn update_image_allowed_license_types_handler(
     Ok(())
 }
 
+pub fn update_image_one_time_price_handler(
+    ctx: Context<UpdateImage>,
+    one_time_price: i64,
+) -> Result<()> {
+    let image_account = &mut ctx.accounts.image_account;
+
+    image_account.one_time_price = one_time_price;
+    Ok(())
+}
+
 #[derive(Accounts)]
 pub struct UpdateImage<'info> {
     #[account(mut, constraint = image_account.author.key() == author.key())]

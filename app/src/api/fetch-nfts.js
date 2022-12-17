@@ -32,6 +32,7 @@ export const fetchNfts = async (filters) => {
 		const metadatas = await metaplex.nfts().findAllByMintList({
 			mints,
 		});
+
 		const result = imageAccounts.map((i) => {
 			const m = metadatas.find(
 				(m) => m.mintAddress.toBase58() == i.mintAddress.toBase58()
@@ -79,14 +80,12 @@ export const fetchMetadataFromIpfs = async (nft) => {
 		}
 
 		const data = concat(chunks);
-		console.log(data);
 		const decodedData = JSON.parse(new TextDecoder().decode(data).toString());
 		return { ...nft, json: decodedData };
 	}
 };
 
 export const fetchImageFromIpfs = async (nft) => {
-	console.log(nft);
 	const metadata = nft.json;
 	const img = await loadImgURL(metadata.image);
 	const mint = nft.mintAddress ? nft.mintAddress : nft.mint.address;

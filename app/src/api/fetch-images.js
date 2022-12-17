@@ -78,11 +78,34 @@ export const updateImageAllowedLicenseTypes = async (mint, value) => {
 			wallet.value.publicKey,
 			program.value.programId
 		);
-		console.log(mint.toBase58(), wallet.value.publicKey.toBase58());
-		console.log(imageAccount.toBase58());
 
 		const tx = await program.value.methods
 			.updateImageAllowedLicenseTypes(new BN(value))
+			.accounts({
+				imageAccount: imageAccount,
+				author: wallet.value.publicKey,
+				systemProgram: web3.SystemProgram.programId,
+			})
+			.rpc();
+
+		console.log("Your transaction signature", tx);
+	} catch (e) {
+		console.log(e);
+	}
+};
+
+export const updateImageOneTimePrice = async (mint, value) => {
+	const { wallet, program } = useWorkspace();
+
+	try {
+		const imageAccount = await getImageAccount(
+			mint,
+			wallet.value.publicKey,
+			program.value.programId
+		);
+
+		const tx = await program.value.methods
+			.updateImageOneTimePrice(new BN(Number(value) * web3.LAMPORTS_PER_SOL))
 			.accounts({
 				imageAccount: imageAccount,
 				author: wallet.value.publicKey,

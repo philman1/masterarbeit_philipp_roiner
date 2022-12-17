@@ -1,5 +1,6 @@
 import { PublicKey } from "@metaplex-foundation/js";
 import { dateFromTimestamp, pastDateFromTimeStamp } from "@/composables";
+import { web3 } from "@project-serum/anchor";
 
 /* It's a class that represents an image. */
 export class Image {
@@ -10,6 +11,7 @@ export class Image {
 		this.mintAddress = new PublicKey(data.mintAddress);
 		this.available = data.available;
 		this.allowedLicenseTypes = data.allowedLicenseTypes;
+		this.oneTimePrice = data.oneTimePrice;
 	}
 
 	/**
@@ -67,5 +69,13 @@ export class Image {
 	 */
 	get allowedLicenseTypesAsNumber() {
 		return Number(this.allowedLicenseTypes);
+	}
+
+	get oneTimePriceNumber() {
+		return this.oneTimePrice.toNumber() / web3.LAMPORTS_PER_SOL;
+	}
+
+	get oneTimePriceText() {
+		return `${this.oneTimePriceNumber} SOL`;
 	}
 }

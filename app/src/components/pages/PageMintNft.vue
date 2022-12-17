@@ -34,7 +34,11 @@ const mint = async () => {
 			image: `https://ipfs.io/ipfs/${cidsThumbnails[0]}`,
 			fullResImg: cidsEncrypted[0],
 		},
-		{ available, allowedLicenseTypes, oneTimePrice }
+		{
+			available: available.value,
+			allowedLicenseTypes: allowedLicenseTypes.value,
+			oneTimePrice: oneTimePrice.value,
+		}
 	);
 };
 </script>
