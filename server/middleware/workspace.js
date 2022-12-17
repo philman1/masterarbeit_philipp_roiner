@@ -33,7 +33,7 @@ export const fetchLicenses = async (owner, mint) => {
 	const { program } = workspace;
 	return await program.account.license.all([
 		licenseOwnerFilter(owner),
-		mintFilter(mint),
+		licenseMintFilter(mint),
 	]);
 };
 
@@ -46,12 +46,27 @@ const licenseOwnerFilter = (ownerBase58PublicKey) => ({
 	},
 });
 
-const mintFilter = (mintBase58PublicKey) => ({
+const licenseMintFilter = (mintBase58PublicKey) => ({
 	memcmp: {
 		offset:
 			8 + // Discriminator
 			1 + // License type
 			32, // Owner
+		bytes: mintBase58PublicKey,
+	},
+});
+
+export const fetchImageAccount = async (mint) => {
+	const { program } = workspace;
+	return await program.account.image.all([imageMintFilter(mint)]);
+};
+
+const imageMintFilter = (mintBase58PublicKey) => ({
+	memcmp: {
+		offset:
+			8 + // Discriminator
+			32 + // Author
+			8, // Timestamp
 		bytes: mintBase58PublicKey,
 	},
 });

@@ -7,6 +7,9 @@ import SimpleButton from "../basic/SimpleButton.vue";
 const name = ref("");
 const symbol = ref("");
 const description = ref("");
+const available = ref(false);
+const allowedLicenseTypes = ref(3);
+const oneTimePrice = ref(1);
 const image = ref(null);
 const bgImage = ref(null);
 const validName = computed(() => name.value && name.value.length > 0);
@@ -23,13 +26,16 @@ const mint = async () => {
 	const res = await saveToIpfs(image.value);
 	const { cidsEncrypted, cidsThumbnails } = res.data;
 	console.log(cidsEncrypted, cidsThumbnails);
-	await mintNft({
-		name: name.value,
-		symbol: symbol.value,
-		description: description.value,
-		image: `https://ipfs.io/ipfs/${cidsThumbnails[0]}`,
-		fullResImg: cidsEncrypted[0],
-	});
+	await mintNft(
+		{
+			name: name.value,
+			symbol: symbol.value,
+			description: description.value,
+			image: `https://ipfs.io/ipfs/${cidsThumbnails[0]}`,
+			fullResImg: cidsEncrypted[0],
+		},
+		{ available, allowedLicenseTypes, oneTimePrice }
+	);
 };
 </script>
 
@@ -40,43 +46,45 @@ const mint = async () => {
 			<div
 				class="relative w-fit h-fit rounded overflow-hidden shadow-lg flex justify-center items-center"
 			>
-				<div class="w-full max-w-xs">
+				<div class="w-full max-w-s">
 					<form class="px-8 pt-6 pb-2 mb-4">
+						<div class="mb-4 flex justify-between">
+							<div class="mr-2">
+								<label
+									class="block text-gray-700 text-sm font-bold mb-2"
+									for="name"
+								>
+									Name
+								</label>
+								<input
+									class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+									:class="{ 'border-red-500': !validName }"
+									id="name"
+									type="text"
+									placeholder="Name"
+									v-model="name"
+								/>
+								<p v-if="!validName" class="text-red-500 text-xs italic">
+									Please choose a name.
+								</p>
+							</div>
+							<div class="ml-2">
+								<label
+									class="block text-gray-700 text-sm font-bold mb-2"
+									for="symbol"
+								>
+									Symbol
+								</label>
+								<input
+									class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+									id="symbol"
+									type="text"
+									placeholder="Symbol"
+									v-model="symbol"
+								/>
+							</div>
+						</div>
 						<div class="mb-4">
-							<label
-								class="block text-gray-700 text-sm font-bold mb-2"
-								for="name"
-							>
-								Name
-							</label>
-							<input
-								class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
-								:class="{ 'border-red-500': !validName }"
-								id="name"
-								type="text"
-								placeholder="Name"
-								v-model="name"
-							/>
-							<p v-if="!validName" class="text-red-500 text-xs italic">
-								Please choose a name.
-							</p>
-						</div>
-						<div class="mb-6">
-							<label
-								class="block text-gray-700 text-sm font-bold mb-2"
-								for="symbol"
-							>
-								Symbol
-							</label>
-							<input
-								class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-								id="symbol"
-								type="text"
-								placeholder="Symbol"
-								v-model="symbol"
-							/>
-						</div>
-						<div class="mb-6">
 							<label
 								class="block text-gray-700 text-sm font-bold mb-2"
 								for="description"
@@ -90,6 +98,57 @@ const mint = async () => {
 								placeholder="Description"
 								v-model="description"
 							/>
+						</div>
+						<div class="mb-4 flex">
+							<div class="mr-2">
+								<label
+									class="block text-gray-700 text-sm font-bold mb-2"
+									for="description"
+								>
+									Should it be licensable?
+								</label>
+								<input
+									class="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+									id="available"
+									type="checkbox"
+									placeholder="Description"
+									v-model="available"
+								/>
+							</div>
+							<div v-if="available" class="mx-4">
+								<label
+									class="block text-gray-700 text-sm font-bold mb-2"
+									for="description"
+								>
+									License type
+								</label>
+								<input
+									class="shadow appearance-none border rounded w-24 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+									id="allowedLicenseTypes"
+									type="number"
+									min="0"
+									max="3"
+									step="1"
+									placeholder="Description"
+									v-model="allowedLicenseTypes"
+								/>
+							</div>
+
+							<div v-if="available && allowedLicenseTypes === 2" class="ml-2">
+								<label
+									class="block text-gray-700 text-sm font-bold mb-2"
+									for="description"
+								>
+									Price (SOL)
+								</label>
+								<input
+									class="shadow appearance-none border rounded w-24 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+									id="oneTimePrice"
+									type="text"
+									placeholder="Description"
+									v-model="oneTimePrice"
+								/>
+							</div>
 						</div>
 						<div class="mb-6">
 							<label

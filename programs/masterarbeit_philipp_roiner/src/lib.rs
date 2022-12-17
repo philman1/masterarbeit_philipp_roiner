@@ -70,7 +70,8 @@ pub mod masterarbeit_philipp_roiner {
     pub fn update_image_allowed_license_types(
         ctx: Context<UpdateImage>,
         allowed_license_types: u8,
+        one_time_price: i64
     ) -> Result<()> {
-        update_image_allowed_license_types_handler(ctx, allowed_license_types)
+        update_image_allowed_license_types_handler(ctx, allowed_license_types, one_time_price)
     }
 }

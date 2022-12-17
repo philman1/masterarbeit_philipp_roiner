@@ -45,8 +45,9 @@ export const saveToIpfs = async (files) => {
 	// 	.then((json) => json.data);
 };
 
-export const mintNft = async (metadata) => {
+export const mintNft = async (metadata, licenseInformation) => {
 	const { connection, wallet, provider, program } = useWorkspace();
+	const { available, allowedLicenseTyes, oneTimePrice } = licenseInformation;
 
 	// Configure the client to use the local cluster.
 	try {
@@ -117,8 +118,9 @@ export const mintNft = async (metadata) => {
 				metadata.name,
 				metadata.symbol,
 				metadataUri,
-				false,
-				new BN(1)
+				available,
+				new BN(allowedLicenseTyes),
+				new BN(Number(oneTimePrice) * web3.LAMPORTS_PER_SOL)
 			)
 			.accounts({
 				mintAuthority: wallet.value.publicKey,

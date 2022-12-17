@@ -65,7 +65,7 @@ export class Image {
 	 * Returns the value of the allowedLicenseTypes property.
 	 * @returns The allowedLicenseTypes property.
 	 */
-	get allowedLicenseTypesAsText() {
-		return this.allowedLicenseTypes;
+	get allowedLicenseTypesAsNumber() {
+		return Number(this.allowedLicenseTypes);
 	}
 }

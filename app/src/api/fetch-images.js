@@ -78,8 +78,8 @@ export const updateImageAllowedLicenseTypes = async (mint, value) => {
 			wallet.value.publicKey,
 			program.value.programId
 		);
-
-		console.log(imageAccount);
+		console.log(mint.toBase58(), wallet.value.publicKey.toBase58());
+		console.log(imageAccount.toBase58());
 
 		const tx = await program.value.methods
 			.updateImageAllowedLicenseTypes(new BN(value))
