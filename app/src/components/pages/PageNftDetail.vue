@@ -12,6 +12,7 @@ import {
 	updateImageAllowedLicenseTypes,
 	updateImageOneTimePrice,
 	downloadDecryptedImage,
+	buyRfLicense,
 } from "@/api";
 import { useWorkspace } from "@/composables";
 import HashLink from "../basic/HashLink.vue";
@@ -86,29 +87,35 @@ const initAndMakeOffer = async () => {
 	});
 };
 
-const switchAvailability = async (image) => {
-	await updateImageAvailability(image.mintAddress, !image.available).then(
-		async () => {
-			await fetchImageAccount();
-		}
-	);
+const switchAvailability = async () => {
+	await updateImageAvailability(
+		image.value.mintAddress,
+		!image.value.available
+	).then(async () => {
+		await fetchImageAccount();
+	});
 };
 
-const changeAllowedLicenseTypes = async (image) => {
+const changeAllowedLicenseTypes = async () => {
 	await updateImageAllowedLicenseTypes(
-		image.mintAddress,
+		image.value.mintAddress,
 		licenseType.value
 	).then(async () => {
 		await fetchImageAccount();
 	});
 };
 
-const updatePrice = async (image) => {
-	await updateImageOneTimePrice(image.mintAddress, oneTimePrice.value).then(
-		async () => {
-			await fetchImageAccount();
-		}
-	);
+const updatePrice = async () => {
+	await updateImageOneTimePrice(
+		image.value.mintAddress,
+		oneTimePrice.value
+	).then(async () => {
+		await fetchImageAccount();
+	});
+};
+
+const buyLicense = async () => {
+	await buyRfLicense(image.value.mint_address, image.value.author);
 };
 
 const downloadImage = async () => {
@@ -132,13 +139,9 @@ const downloadImage = async () => {
 					:src="nft.imageUri"
 				/>
 				<div class="lg:w-1/2 w-full lg:pl-10 mt-6 lg:mt-0">
-					<div
-						class="overflow-hidden bg-white shadow sm:rounded-lg mb-6"
-					>
+					<div class="overflow-hidden bg-white shadow sm:rounded-lg mb-6">
 						<div class="px-4 py-5 sm:px-6">
-							<h3
-								class="text-lg font-medium leading-6 text-gray-900"
-							>
+							<h3 class="text-lg font-medium leading-6 text-gray-900">
 								NFT Information
 							</h3>
 							<p class="mt-1 max-w-2xl text-sm text-gray-500">
@@ -150,23 +153,13 @@ const downloadImage = async () => {
 								<div
 									class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
 								>
-									<dt
-										class="text-sm font-medium text-gray-500"
-									>
-										Creators
-									</dt>
-									<dd
-										class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0"
-									>
+									<dt class="text-sm font-medium text-gray-500">Creators</dt>
+									<dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
 										<p
 											v-for="creator of nft.creators"
 											:key="creator.address.toBase58()"
 										>
-											<hash-link
-												:hash="
-													creator.address.toBase58()
-												"
-											/>
+											<hash-link :hash="creator.address.toBase58()" />
 											({{ creator.share }}%)
 										</p>
 									</dd>
@@ -174,26 +167,18 @@ const downloadImage = async () => {
 								<div
 									class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
 								>
-									<dt
-										class="text-sm font-medium text-gray-500"
-									>
+									<dt class="text-sm font-medium text-gray-500">
 										Mint address
 									</dt>
-									<dd
-										class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0"
-									>
-										<hash-link
-											:hash="nft.mint.address.toBase58()"
-										/>
+									<dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+										<hash-link :hash="nft.mint.address.toBase58()" />
 									</dd>
 								</div>
 								<div v-if="image">
 									<div
 										class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
 									>
-										<dt
-											class="text-sm font-medium text-gray-500"
-										>
+										<dt class="text-sm font-medium text-gray-500">
 											Upload date
 										</dt>
 										<dd
@@ -205,30 +190,19 @@ const downloadImage = async () => {
 									<div
 										class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
 									>
-										<dt
-											class="text-sm font-medium text-gray-500"
-										>
+										<dt class="text-sm font-medium text-gray-500">
 											Availability
 										</dt>
 										<dd
 											class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0"
 										>
 											<div class="flex items-start">
-												<span class="w-24 mr-3">{{
-													image.availability
-												}}</span>
+												<span class="w-24 mr-3">{{ image.availability }}</span>
 												<simple-button
 													v-if="isCreator"
-													:click-handler="
-														() =>
-															switchAvailability(
-																image
-															)
-													"
+													:click-handler="switchAvailability"
 													:label="`Set to ${
-														image.available
-															? 'Private'
-															: 'Public'
+														image.available ? 'Private' : 'Public'
 													}`"
 													appearance="secondary"
 												/>
@@ -239,9 +213,7 @@ const downloadImage = async () => {
 										class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
 										v-if="image.available"
 									>
-										<dt
-											class="text-sm font-medium text-gray-500"
-										>
+										<dt class="text-sm font-medium text-gray-500">
 											Allowed license types
 										</dt>
 										<dd
@@ -255,41 +227,26 @@ const downloadImage = async () => {
 													min="0"
 													max="3"
 													step="1"
-													:readonly="
-														isCreator ? false : true
-													"
+													:readonly="isCreator ? false : true"
 												/>
 												<simple-button
 													v-if="isCreator"
-													:click-handler="
-														() =>
-															changeAllowedLicenseTypes(
-																image
-															)
-													"
+													:click-handler="changeAllowedLicenseTypes"
 													label="Switch"
 													appearance="secondary"
 												/>
 											</div>
 											<div>
-												<p
-													class="mt-1 max-w-2xl text-sm text-gray-500"
-												>
+												<p class="mt-1 max-w-2xl text-sm text-gray-500">
 													0 - Public Domain
 												</p>
-												<p
-													class="mt-1 max-w-2xl text-sm text-gray-500"
-												>
+												<p class="mt-1 max-w-2xl text-sm text-gray-500">
 													1 - Creative Commons (CC)
 												</p>
-												<p
-													class="mt-1 max-w-2xl text-sm text-gray-500"
-												>
+												<p class="mt-1 max-w-2xl text-sm text-gray-500">
 													2 - Royalty Free (RF)
 												</p>
-												<p
-													class="mt-1 max-w-2xl text-sm text-gray-500"
-												>
+												<p class="mt-1 max-w-2xl text-sm text-gray-500">
 													3 - Rights Managed (RM)
 												</p>
 											</div>
@@ -298,10 +255,8 @@ const downloadImage = async () => {
 									<div
 										class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
 									>
-										<dt
-											class="text-sm font-medium text-gray-500"
-										>
-											Price
+										<dt class="text-sm font-medium text-gray-500">
+											Price (SOL)
 										</dt>
 										<dd
 											class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0"
@@ -314,15 +269,11 @@ const downloadImage = async () => {
 													min="0"
 													max="3"
 													step="1"
-													:readonly="
-														isCreator ? false : true
-													"
+													:readonly="isCreator ? false : true"
 												/>
 												<simple-button
 													v-if="isCreator"
-													:click-handler="
-														() => updatePrice(image)
-													"
+													:click-handler="updatePrice"
 													label="Update price"
 													appearance="secondary"
 												/>
@@ -341,18 +292,11 @@ const downloadImage = async () => {
 								image.allowedLicenseTypesAsNumber === 1)
 						"
 					>
-						<simple-button
-							:click-handler="downloadImage"
-							label="Download"
-						/>
+						<simple-button :click-handler="downloadImage" label="Download" />
 					</div>
 				</div>
 				<div
-					v-if="
-						!isCreator &&
-						image &&
-						image.allowedLicenseTypesAsNumber == 2
-					"
+					v-if="!isCreator && image && image.allowedLicenseTypesAsNumber == 2"
 				>
 					<duo-headline
 						importance="3"
@@ -363,18 +307,11 @@ const downloadImage = async () => {
 						<p class="text-l text-black-500 mr-4">
 							{{ image.oneTimePriceText }}
 						</p>
-						<simple-button
-							:click-handler="initAndMakeOffer"
-							label="Pay!"
-						/>
+						<simple-button :click-handler="buyLicense" label="Pay!" />
 					</div>
 				</div>
 				<div
-					v-if="
-						!isCreator &&
-						image &&
-						image.allowedLicenseTypesAsNumber == 3
-					"
+					v-if="!isCreator && image && image.allowedLicenseTypesAsNumber == 3"
 				>
 					<duo-headline
 						importance="3"
@@ -401,10 +338,7 @@ const downloadImage = async () => {
 										placeholder="Price in SOL"
 										v-model="price"
 									/>
-									<p
-										v-if="!validPrice"
-										class="text-red-500 text-xs italic"
-									>
+									<p v-if="!validPrice" class="text-red-500 text-xs italic">
 										Please enter a price.
 									</p>
 								</div>
@@ -413,8 +347,7 @@ const downloadImage = async () => {
 										class="block text-sm font-medium text-gray-500 mb-2"
 										for="uri"
 									>
-										Link to IPFS containing license
-										arguments
+										Link to IPFS containing license arguments
 									</label>
 									<input
 										class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
@@ -426,10 +359,7 @@ const downloadImage = async () => {
 										placeholder="IPFS uri"
 										v-model="offerUri"
 									/>
-									<p
-										v-if="!validUri"
-										class="text-red-500 text-xs italic"
-									>
+									<p v-if="!validUri" class="text-red-500 text-xs italic">
 										Please enter a valid link.
 									</p>
 								</div>

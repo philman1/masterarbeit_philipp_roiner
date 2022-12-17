@@ -7,7 +7,7 @@ pub struct Image {
     pub mint_address: Pubkey,
     pub available: bool,
     pub allowed_license_types: u8, // e.g. 3 -> allow type 0, 1, 2 and 
-    pub one_time_price: i64
+    pub one_time_price: u64
 }
 
 const DISCRIMINATOR_LENGTH: usize = 8;

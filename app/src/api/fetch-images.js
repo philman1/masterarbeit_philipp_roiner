@@ -36,7 +36,7 @@ export const imageAuthorFilter = (authorBase58PublicKey) => ({
 	},
 });
 
-const getImageAccount = async (mint, author, programId) =>
+export const getImageAccount = async (mint, author, programId) =>
 	(
 		await web3.PublicKey.findProgramAddress(
 			[mint.toBuffer(), Buffer.from("image"), author.toBuffer()],
@@ -108,9 +108,7 @@ export const updateImageOneTimePrice = async (mint, value) => {
 		console.log(imageAccount.toBase58());
 
 		const tx = await program.value.methods
-			.updateImageOneTimePrice(
-				new BN(Number(value) * web3.LAMPORTS_PER_SOL)
-			)
+			.updateImageOneTimePrice(new BN(Number(value) * web3.LAMPORTS_PER_SOL))
 			.accounts({
 				imageAccount: imageAccount,
 				author: wallet.value.publicKey,

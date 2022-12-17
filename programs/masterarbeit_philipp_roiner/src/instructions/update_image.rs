@@ -21,7 +21,7 @@ pub fn update_image_allowed_license_types_handler(
 
 pub fn update_image_one_time_price_handler(
     ctx: Context<UpdateImage>,
-    one_time_price: i64,
+    one_time_price: u64,
 ) -> Result<()> {
     let image_account = &mut ctx.accounts.image_account;
 

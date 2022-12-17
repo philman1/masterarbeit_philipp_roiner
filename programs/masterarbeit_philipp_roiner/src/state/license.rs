@@ -6,8 +6,8 @@ pub struct License {
     pub owner: Pubkey,
     pub licensed_image: Pubkey,
     pub timestamp: i64,
-    pub valid_until: i64,
-    pub license_information: String,
+    pub valid_until: Option<i64>,
+    pub license_information: Option<String>,
 }
 
 const DISCRIMINATOR_LENGTH: usize = 8;

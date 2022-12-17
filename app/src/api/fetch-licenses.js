@@ -1,5 +1,7 @@
+import { web3 } from "@project-serum/anchor";
 import { useWorkspace } from "@/composables";
 import { License } from "@/models/License";
+import { getImageAccount } from "./fetch-images";
 
 export const fetchLicenses = async (filters = []) => {
 	const { program } = useWorkspace();
@@ -27,3 +29,41 @@ export const licensesForImage = (imageBase58PubKey) => ({
 		bytes: imageBase58PubKey,
 	},
 });
+
+export const buyRfLicense = async (mint, author) => {
+	const { wallet, program } = useWorkspace();
+
+	try {
+		const licensePDA = (
+			await web3.PublicKey.findProgramAddress(
+				[
+					wallet.value.publicKey.toBuffer(),
+					Buffer.from("license"),
+					mint.toBuffer(),
+				],
+				program.value.programId
+			)
+		)[0];
+
+		const imageAccount = await getImageAccount(
+			mint,
+			author,
+			program.value.programId
+		);
+
+		const tx = await program.value.methods
+			.buyRfLicense()
+			.accounts({
+				license: licensePDA,
+				imageAccount: imageAccount,
+				payer: wallet.value.publicKey,
+				author: author,
+				systemProgram: web3.SystemProgram.programId,
+			})
+			.rpc();
+
+		console.log("Your transaction signature", tx);
+	} catch (e) {
+		console.log(e);
+	}
+};

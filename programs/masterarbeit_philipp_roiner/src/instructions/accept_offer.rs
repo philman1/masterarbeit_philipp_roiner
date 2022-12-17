@@ -21,7 +21,7 @@ pub fn accept_offer_handler(ctx: Context<AcceptOffer>) -> Result<()> {
     let license = &mut ctx.accounts.license;
     let clock: Clock = Clock::get().unwrap();
 
-    license.license_type = 0;
+    license.license_type = 3; // RM license
     license.owner = ctx.accounts.offer_maker.key();
     license.licensed_image = ctx.accounts.offer_account.mint.key();
     license.timestamp = clock.unix_timestamp;
