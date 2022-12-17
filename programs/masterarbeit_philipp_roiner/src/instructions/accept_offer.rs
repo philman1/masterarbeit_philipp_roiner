@@ -50,6 +50,5 @@ pub struct AcceptOffer<'info> {
     pub author: Signer<'info>,
     pub system_program: Program<'info, System>,
     #[account(mut, constraint = offer_account.escrow_pda == offer_escrow_account.to_account_info().key())]
-    //#[account( mut)]
     pub offer_escrow_account: Account<'info, EscrowAccount>,
 }

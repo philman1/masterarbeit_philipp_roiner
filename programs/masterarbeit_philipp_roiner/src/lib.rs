@@ -8,6 +8,7 @@ use crate::init_offer::*;
 use crate::make_offer::*;
 use crate::mint_nft::*;
 use crate::print_edition::*;
+use crate::update_image::*;
 use instructions::*;
 
 declare_id!("DEn3pakYmxKiaJAjVaJZVBW8AiZ2JeEGggdSBiF8vsFX");
@@ -66,7 +67,10 @@ pub mod masterarbeit_philipp_roiner {
         update_image_availability_handler(ctx, availability)
     }
 
-    pub fn update_image_allowed_license_types(ctx: Context<UpdateImage>, allowed_license_types: u8) -> Result<()> {
+    pub fn update_image_allowed_license_types(
+        ctx: Context<UpdateImage>,
+        allowed_license_types: u8,
+    ) -> Result<()> {
         update_image_allowed_license_types_handler(ctx, allowed_license_types)
     }
 }

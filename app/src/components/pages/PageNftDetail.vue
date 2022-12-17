@@ -8,6 +8,8 @@ import {
 	makeOffer,
 	fetchImages,
 	mintAddressFilter,
+	updateImageAvailability,
+	updateImageAllowedLicenseTypes,
 } from "@/api";
 import { useWorkspace } from "@/composables";
 import HashLink from "../basic/HashLink.vue";
@@ -70,6 +72,14 @@ const initAndMakeOffer = async () => {
 	});
 };
 
+const switchAvailability = async (image) => {
+	await updateImageAvailability(image.mintAddress, !image.available);
+};
+
+const changeAllowedLicenseTypes = async (image) => {
+	await updateImageAllowedLicenseTypes(image.mintAddress, 2);
+};
+
 // const fetchEditions = async () => {
 // 	const editions = await fetchNftsByCreator(
 // 		new web3.PublicKey(nft.value.address.toBase58())
@@ -88,15 +98,23 @@ const initAndMakeOffer = async () => {
 					:src="nft.imageUri"
 				/>
 				<div class="lg:w-1/2 w-full lg:pl-10 lg:py-6 mt-6 lg:mt-0">
-					<h2 class="text-sm title-font text-gray-500 tracking-widest">
+					<h2
+						class="text-sm title-font text-gray-500 tracking-widest"
+					>
 						{{ nft.json.name }}
 					</h2>
-					<h1 class="text-gray-900 text-3xl title-font font-medium mb-1">
+					<h1
+						class="text-gray-900 text-3xl title-font font-medium mb-1"
+					>
 						{{ nft.json.description }}
 					</h1>
-					<div class="overflow-hidden bg-white shadow sm:rounded-lg mt-3 mb-6">
+					<div
+						class="overflow-hidden bg-white shadow sm:rounded-lg mt-3 mb-6"
+					>
 						<div class="px-4 py-5 sm:px-6">
-							<h3 class="text-lg font-medium leading-6 text-gray-900">
+							<h3
+								class="text-lg font-medium leading-6 text-gray-900"
+							>
 								NFT Information
 							</h3>
 							<p class="mt-1 max-w-2xl text-sm text-gray-500">
@@ -108,13 +126,23 @@ const initAndMakeOffer = async () => {
 								<div
 									class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
 								>
-									<dt class="text-sm font-medium text-gray-500">Creators</dt>
-									<dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+									<dt
+										class="text-sm font-medium text-gray-500"
+									>
+										Creators
+									</dt>
+									<dd
+										class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0"
+									>
 										<p
 											v-for="creator of nft.creators"
 											:key="creator.address.toBase58()"
 										>
-											<hash-link :hash="creator.address.toBase58()" />
+											<hash-link
+												:hash="
+													creator.address.toBase58()
+												"
+											/>
 											({{ creator.share }}%)
 										</p>
 									</dd>
@@ -122,18 +150,26 @@ const initAndMakeOffer = async () => {
 								<div
 									class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
 								>
-									<dt class="text-sm font-medium text-gray-500">
+									<dt
+										class="text-sm font-medium text-gray-500"
+									>
 										Mint address
 									</dt>
-									<dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-										<hash-link :hash="nft.mint.address.toBase58()" />
+									<dd
+										class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0"
+									>
+										<hash-link
+											:hash="nft.mint.address.toBase58()"
+										/>
 									</dd>
 								</div>
 								<div v-if="image">
 									<div
 										class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
 									>
-										<dt class="text-sm font-medium text-gray-500">
+										<dt
+											class="text-sm font-medium text-gray-500"
+										>
 											Upload date
 										</dt>
 										<dd
@@ -145,13 +181,51 @@ const initAndMakeOffer = async () => {
 									<div
 										class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
 									>
-										<dt class="text-sm font-medium text-gray-500">
+										<dt
+											class="text-sm font-medium text-gray-500"
+										>
 											Availability
 										</dt>
 										<dd
 											class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0"
 										>
 											{{ image.availability }}
+											<button
+												@click="
+													() =>
+														switchAvailability(
+															image
+														)
+												"
+											>
+												Switch
+											</button>
+										</dd>
+									</div>
+									<div
+										class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
+									>
+										<dt
+											class="text-sm font-medium text-gray-500"
+										>
+											Allowed license types
+										</dt>
+										<dd
+											class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0"
+										>
+											{{
+												image.allowedLicenseTypesAsText
+											}}
+											<button
+												@click="
+													() =>
+														changeAllowedLicenseTypes(
+															image
+														)
+												"
+											>
+												Switch
+											</button>
 										</dd>
 									</div>
 								</div>
@@ -178,7 +252,10 @@ const initAndMakeOffer = async () => {
 										placeholder="Price in SOL"
 										v-model="price"
 									/>
-									<p v-if="!validPrice" class="text-red-500 text-xs italic">
+									<p
+										v-if="!validPrice"
+										class="text-red-500 text-xs italic"
+									>
 										Please enter a price.
 									</p>
 								</div>
@@ -187,7 +264,8 @@ const initAndMakeOffer = async () => {
 										class="block text-gray-700 text-sm font-bold mb-2"
 										for="uri"
 									>
-										Link to IPFS containing license arguments
+										Link to IPFS containing license
+										arguments
 									</label>
 									<input
 										class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
@@ -199,7 +277,10 @@ const initAndMakeOffer = async () => {
 										placeholder="IPFS uri"
 										v-model="offerUri"
 									/>
-									<p v-if="!validUri" class="text-red-500 text-xs italic">
+									<p
+										v-if="!validUri"
+										class="text-red-500 text-xs italic"
+									>
 										Please enter a valid link.
 									</p>
 								</div>

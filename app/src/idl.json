@@ -325,6 +325,58 @@
 				}
 			],
 			"args": []
+		},
+		{
+			"name": "updateImageAvailability",
+			"accounts": [
+				{
+					"name": "imageAccount",
+					"isMut": true,
+					"isSigner": false
+				},
+				{
+					"name": "author",
+					"isMut": true,
+					"isSigner": true
+				},
+				{
+					"name": "systemProgram",
+					"isMut": false,
+					"isSigner": false
+				}
+			],
+			"args": [
+				{
+					"name": "availability",
+					"type": "bool"
+				}
+			]
+		},
+		{
+			"name": "updateImageAllowedLicenseTypes",
+			"accounts": [
+				{
+					"name": "imageAccount",
+					"isMut": true,
+					"isSigner": false
+				},
+				{
+					"name": "author",
+					"isMut": true,
+					"isSigner": true
+				},
+				{
+					"name": "systemProgram",
+					"isMut": false,
+					"isSigner": false
+				}
+			],
+			"args": [
+				{
+					"name": "allowedLicenseTypes",
+					"type": "u8"
+				}
+			]
 		}
 	],
 	"accounts": [

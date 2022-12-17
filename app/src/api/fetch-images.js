@@ -1,3 +1,4 @@
+import { BN, web3 } from "@project-serum/anchor";
 import { useWorkspace } from "@/composables";
 import { Image } from "@/models/Image";
 
@@ -34,3 +35,63 @@ export const imageAuthorFilter = (authorBase58PublicKey) => ({
 		bytes: authorBase58PublicKey,
 	},
 });
+
+const getImageAccount = async (mint, author, programId) =>
+	(
+		await web3.PublicKey.findProgramAddress(
+			[mint.toBuffer(), Buffer.from("image"), author.toBuffer()],
+			programId
+		)
+	)[0];
+
+export const updateImageAvailability = async (mint, value) => {
+	const { wallet, program } = useWorkspace();
+
+	try {
+		const imageAccount = await getImageAccount(
+			mint,
+			wallet.value.publicKey,
+			program.value.programId
+		);
+
+		const tx = await program.value.methods
+			.updateImageAvailability(value)
+			.accounts({
+				imageAccount: imageAccount,
+				author: wallet.value.publicKey,
+				systemProgram: web3.SystemProgram.programId,
+			})
+			.rpc();
+
+		console.log("Your transaction signature", tx);
+	} catch (e) {
+		console.log(e);
+	}
+};
+
+export const updateImageAllowedLicenseTypes = async (mint, value) => {
+	const { wallet, program } = useWorkspace();
+
+	try {
+		const imageAccount = await getImageAccount(
+			mint,
+			wallet.value.publicKey,
+			program.value.programId
+		);
+
+		console.log(imageAccount);
+
+		const tx = await program.value.methods
+			.updateImageAllowedLicenseTypes(new BN(value))
+			.accounts({
+				imageAccount: imageAccount,
+				author: wallet.value.publicKey,
+				systemProgram: web3.SystemProgram.programId,
+			})
+			.rpc();
+
+		console.log("Your transaction signature", tx);
+	} catch (e) {
+		console.log(e);
+	}
+};
