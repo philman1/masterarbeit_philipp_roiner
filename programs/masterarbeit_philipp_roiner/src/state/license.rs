@@ -23,6 +23,6 @@ impl License {
         + PUBLIC_KEY_LENGTH // Owner.
         + PUBLIC_KEY_LENGTH // Licensed image.
         + TIMESTAMP_LENGTH // Timestamp.
-        + TIMESTAMP_LENGTH // Valid until.
-        + STRING_LENGTH_PREFIX + LICENSE_INFORMATION_LENGTH;
+        + TIMESTAMP_LENGTH + 1 // Valid until.
+        + STRING_LENGTH_PREFIX + LICENSE_INFORMATION_LENGTH + 1;
 }

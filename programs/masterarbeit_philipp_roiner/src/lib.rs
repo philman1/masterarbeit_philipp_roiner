@@ -5,6 +5,7 @@ mod state;
 use crate::accept_offer::*;
 use crate::buy_license::*;
 use crate::cancel_offer::*;
+use crate::create_license::*;
 use crate::init_offer::*;
 use crate::make_offer::*;
 use crate::mint_nft::*;
@@ -88,7 +89,11 @@ pub mod masterarbeit_philipp_roiner {
         buy_rf_license_handler(ctx)
     }
 
-    pub fn create_license(ctx: Context<BuyRfLicense>, valid_until: i64, license_information: String) -> Result<()> {
+    pub fn create_license(
+        ctx: Context<CreateLicense>,
+        valid_until: i64,
+        license_information: String,
+    ) -> Result<()> {
         create_license_handler(ctx, valid_until, license_information)
     }
 }

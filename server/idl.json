@@ -438,6 +438,46 @@
 				}
 			],
 			"args": []
+		},
+		{
+			"name": "createLicense",
+			"accounts": [
+				{
+					"name": "license",
+					"isMut": true,
+					"isSigner": false
+				},
+				{
+					"name": "imageAccount",
+					"isMut": true,
+					"isSigner": false
+				},
+				{
+					"name": "licenseRecipient",
+					"isMut": true,
+					"isSigner": false
+				},
+				{
+					"name": "author",
+					"isMut": true,
+					"isSigner": true
+				},
+				{
+					"name": "systemProgram",
+					"isMut": false,
+					"isSigner": false
+				}
+			],
+			"args": [
+				{
+					"name": "validUntil",
+					"type": "i64"
+				},
+				{
+					"name": "licenseInformation",
+					"type": "string"
+				}
+			]
 		}
 	],
 	"accounts": [

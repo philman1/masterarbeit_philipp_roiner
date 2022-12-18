@@ -1,4 +1,4 @@
-import { web3 } from "@project-serum/anchor";
+import { BN, web3 } from "@project-serum/anchor";
 import { useWorkspace } from "@/composables";
 import { License } from "@/models/License";
 import { getImageAccount } from "./fetch-images";
@@ -6,6 +6,7 @@ import { getImageAccount } from "./fetch-images";
 export const fetchLicenses = async (filters = []) => {
 	const { program } = useWorkspace();
 	const licenses = await program.value.account.license.all(filters);
+	console.log(licenses);
 	return licenses.map(
 		(license) => new License(license.publicKey, license.account)
 	);
@@ -75,7 +76,6 @@ export const createLicense = async (
 	licenseInformation
 ) => {
 	const { wallet, program } = useWorkspace();
-
 	try {
 		const licensePDA = (
 			await web3.PublicKey.findProgramAddress(
@@ -92,13 +92,13 @@ export const createLicense = async (
 
 		const tx = await program.value.methods
 			.createLicense(
-				Math.floor(validUntil.getTime() / 1000),
+				new BN(Math.floor(validUntil.getTime() / 1000)),
 				licenseInformation
 			)
 			.accounts({
 				license: licensePDA,
 				imageAccount: imageAccount,
-				payer: address,
+				licenseRecipient: address,
 				author: wallet.value.publicKey,
 				systemProgram: web3.SystemProgram.programId,
 			})
