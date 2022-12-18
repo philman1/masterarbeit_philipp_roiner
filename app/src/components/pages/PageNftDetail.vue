@@ -7,14 +7,17 @@ import {
 	initializeOffer,
 	makeOffer,
 	fetchImages,
+	fetchLicenses,
 	mintAddressFilter,
 	updateImageAvailability,
 	updateImageAllowedLicenseTypes,
 	updateImageOneTimePrice,
 	downloadDecryptedImage,
 	buyRfLicense,
+	licenseOwnerFilter,
+	createLicense,
 } from "@/api";
-import { useWorkspace } from "@/composables";
+import { useWorkspace, today } from "@/composables";
 import HashLink from "../basic/HashLink.vue";
 import SimpleButton from "../basic/SimpleButton.vue";
 import DuoHeadline from "../basic/DuoHeadline.vue";
@@ -27,8 +30,12 @@ const props = defineProps({
 
 const nft = ref(null);
 const image = ref(null);
+const license = ref(null);
 const mint_pk = ref(null);
 const isCreator = ref(false);
+const whitelistAccount = ref("");
+const whitelistAccountValidUntil = ref("");
+const whitelistAccountLicenseInformation = ref("");
 
 const licenseType = ref(null);
 const oneTimePrice = ref(null);
@@ -51,9 +58,9 @@ onMounted(async () => {
 		(creator) =>
 			wallet.value.publicKey.toBase58() === creator.address.toBase58()
 	);
-	// fetchEditions();
 
 	await fetchImageAccount();
+	await fetchLicense();
 });
 
 const fetchImageAccount = async () => {
@@ -64,6 +71,15 @@ const fetchImageAccount = async () => {
 		image.value = img[0];
 		licenseType.value = image.value.allowedLicenseTypesAsNumber;
 		oneTimePrice.value = image.value.oneTimePriceNumber;
+	}
+};
+
+const fetchLicense = async () => {
+	const l = await fetchLicenses([
+		licenseOwnerFilter(wallet.value.publicKey.toBase58()),
+	]);
+	if (l.length > 0) {
+		license.value = l[0];
 	}
 };
 
@@ -121,6 +137,24 @@ const buyLicense = async () => {
 const downloadImage = async () => {
 	await downloadDecryptedImage(nft.value.mint.address);
 };
+
+const provideAccess = async () => {
+	if (
+		!whitelistAccount.value ||
+		!whitelistAccountLicenseInformation.value ||
+		!whitelistAccountValidUntil.value
+	) {
+		alert("Missing fields");
+		return;
+	}
+
+	await createLicense(
+		whitelistAccount.value,
+		image.value.mintAddress,
+		whitelistAccountValidUntil.value,
+		whitelistAccountLicenseInformation.value
+	);
+};
 </script>
 
 <template>
@@ -139,13 +173,9 @@ const downloadImage = async () => {
 					:src="nft.imageUri"
 				/>
 				<div class="lg:w-1/2 w-full lg:pl-10 mt-6 lg:mt-0">
-					<div
-						class="overflow-hidden bg-white shadow sm:rounded-lg mb-6"
-					>
+					<div class="overflow-hidden bg-white shadow sm:rounded-lg mb-6">
 						<div class="px-4 py-5 sm:px-6">
-							<h3
-								class="text-lg font-medium leading-6 text-gray-900"
-							>
+							<h3 class="text-lg font-medium leading-6 text-gray-900">
 								NFT Information
 							</h3>
 							<p class="mt-1 max-w-2xl text-sm text-gray-500">
@@ -157,23 +187,13 @@ const downloadImage = async () => {
 								<div
 									class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
 								>
-									<dt
-										class="text-sm font-medium text-gray-500"
-									>
-										Creators
-									</dt>
-									<dd
-										class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0"
-									>
+									<dt class="text-sm font-medium text-gray-500">Creators</dt>
+									<dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
 										<p
 											v-for="creator of nft.creators"
 											:key="creator.address.toBase58()"
 										>
-											<hash-link
-												:hash="
-													creator.address.toBase58()
-												"
-											/>
+											<hash-link :hash="creator.address.toBase58()" />
 											({{ creator.share }}%)
 										</p>
 									</dd>
@@ -181,26 +201,18 @@ const downloadImage = async () => {
 								<div
 									class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
 								>
-									<dt
-										class="text-sm font-medium text-gray-500"
-									>
+									<dt class="text-sm font-medium text-gray-500">
 										Mint address
 									</dt>
-									<dd
-										class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0"
-									>
-										<hash-link
-											:hash="nft.mint.address.toBase58()"
-										/>
+									<dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+										<hash-link :hash="nft.mint.address.toBase58()" />
 									</dd>
 								</div>
 								<div v-if="image">
 									<div
 										class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
 									>
-										<dt
-											class="text-sm font-medium text-gray-500"
-										>
+										<dt class="text-sm font-medium text-gray-500">
 											Upload date
 										</dt>
 										<dd
@@ -212,27 +224,19 @@ const downloadImage = async () => {
 									<div
 										class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
 									>
-										<dt
-											class="text-sm font-medium text-gray-500"
-										>
+										<dt class="text-sm font-medium text-gray-500">
 											Availability
 										</dt>
 										<dd
 											class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0"
 										>
 											<div class="flex items-start">
-												<span class="w-24 mr-3">{{
-													image.availability
-												}}</span>
+												<span class="w-24 mr-3">{{ image.availability }}</span>
 												<simple-button
 													v-if="isCreator"
-													:click-handler="
-														switchAvailability
-													"
+													:click-handler="switchAvailability"
 													:label="`Set to ${
-														image.available
-															? 'Private'
-															: 'Public'
+														image.available ? 'Private' : 'Public'
 													}`"
 													appearance="secondary"
 												/>
@@ -243,9 +247,7 @@ const downloadImage = async () => {
 										class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
 										v-if="image.available"
 									>
-										<dt
-											class="text-sm font-medium text-gray-500"
-										>
+										<dt class="text-sm font-medium text-gray-500">
 											Allowed license types
 										</dt>
 										<dd
@@ -259,38 +261,26 @@ const downloadImage = async () => {
 													min="0"
 													max="3"
 													step="1"
-													:readonly="
-														isCreator ? false : true
-													"
+													:readonly="isCreator ? false : true"
 												/>
 												<simple-button
 													v-if="isCreator"
-													:click-handler="
-														changeAllowedLicenseTypes
-													"
+													:click-handler="changeAllowedLicenseTypes"
 													label="Switch"
 													appearance="secondary"
 												/>
 											</div>
 											<div>
-												<p
-													class="mt-1 max-w-2xl text-sm text-gray-500"
-												>
+												<p class="mt-1 max-w-2xl text-sm text-gray-500">
 													0 - Public Domain
 												</p>
-												<p
-													class="mt-1 max-w-2xl text-sm text-gray-500"
-												>
+												<p class="mt-1 max-w-2xl text-sm text-gray-500">
 													1 - Creative Commons (CC)
 												</p>
-												<p
-													class="mt-1 max-w-2xl text-sm text-gray-500"
-												>
+												<p class="mt-1 max-w-2xl text-sm text-gray-500">
 													2 - Royalty Free (RF)
 												</p>
-												<p
-													class="mt-1 max-w-2xl text-sm text-gray-500"
-												>
+												<p class="mt-1 max-w-2xl text-sm text-gray-500">
 													3 - Rights Managed (RM)
 												</p>
 											</div>
@@ -299,9 +289,7 @@ const downloadImage = async () => {
 									<div
 										class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
 									>
-										<dt
-											class="text-sm font-medium text-gray-500"
-										>
+										<dt class="text-sm font-medium text-gray-500">
 											Price (SOL)
 										</dt>
 										<dd
@@ -315,9 +303,7 @@ const downloadImage = async () => {
 													min="0"
 													max="3"
 													step="1"
-													:readonly="
-														isCreator ? false : true
-													"
+													:readonly="isCreator ? false : true"
 												/>
 												<simple-button
 													v-if="isCreator"
@@ -340,105 +326,141 @@ const downloadImage = async () => {
 								image.allowedLicenseTypesAsNumber === 1)
 						"
 					>
-						<simple-button
-							:click-handler="downloadImage"
-							label="Download"
-						/>
+						<simple-button :click-handler="downloadImage" label="Download" />
 					</div>
 				</div>
-				<div
-					v-if="
-						!isCreator &&
-						image &&
-						image.allowedLicenseTypesAsNumber == 2
-					"
-				>
-					<duo-headline
-						importance="3"
-						headline="Buy license"
-						class="!px-0 mt-4"
-					></duo-headline>
-					<div v-if="!isCreator" class="flex items-baseline">
-						<p class="text-l text-black-500 mr-4">
-							{{ image.oneTimePriceText }}
-						</p>
-						<simple-button
-							:click-handler="buyLicense"
-							label="Pay!"
-						/>
-					</div>
-				</div>
-				<div
-					v-if="
-						!isCreator &&
-						image &&
-						image.allowedLicenseTypesAsNumber == 3
-					"
-				>
-					<duo-headline
-						importance="3"
-						headline="Make an offer"
-						class="!px-0 mt-4"
-					></duo-headline>
-					<div class="flex">
-						<div class="w-full max-w-xs">
-							<form class="pt-2">
-								<div class="mb-4">
-									<label
-										class="block text-sm font-medium text-gray-500 mb-2"
-										for="price"
-									>
-										Price in SOL
-									</label>
-									<input
-										class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
-										:class="{
-											'border-red-500': !validPrice,
-										}"
-										id="price"
-										type="number"
-										placeholder="Price in SOL"
-										v-model="price"
-									/>
-									<p
-										v-if="!validPrice"
-										class="text-red-500 text-xs italic"
-									>
-										Please enter a price.
-									</p>
-								</div>
-								<div class="mb-4">
-									<label
-										class="block text-sm font-medium text-gray-500 mb-2"
-										for="uri"
-									>
-										Link to IPFS containing license
-										arguments
-									</label>
-									<input
-										class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
-										:class="{
-											'border-red-500': !validUri,
-										}"
-										id="uri"
-										type="text"
-										placeholder="IPFS uri"
-										v-model="offerUri"
-									/>
-									<p
-										v-if="!validUri"
-										class="text-red-500 text-xs italic"
-									>
-										Please enter a valid link.
-									</p>
-								</div>
-							</form>
+				<div v-if="!isCreator && !license">
+					<div v-if="image && image.allowedLicenseTypesAsNumber == 2">
+						<duo-headline
+							importance="3"
+							headline="Buy license"
+							class="!px-0 mt-4"
+						></duo-headline>
+						<div v-if="!isCreator" class="flex items-baseline">
+							<p class="text-l text-black-500 mr-4">
+								{{ image.oneTimePriceText }}
+							</p>
+							<simple-button :click-handler="buyLicense" label="Pay!" />
 						</div>
 					</div>
-					<div v-if="!isCreator" class="flex">
+					<div v-if="image && image.allowedLicenseTypesAsNumber == 3">
+						<duo-headline
+							importance="3"
+							headline="Make an offer"
+							class="!px-0 mt-4"
+						></duo-headline>
+						<div class="flex">
+							<div class="w-full max-w-xs">
+								<form class="pt-2">
+									<div class="mb-4">
+										<label
+											class="block text-sm font-medium text-gray-500 mb-2"
+											for="price"
+										>
+											Price in SOL
+										</label>
+										<input
+											class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+											:class="{
+												'border-red-500': !validPrice,
+											}"
+											id="price"
+											type="number"
+											placeholder="Price in SOL"
+											v-model="price"
+										/>
+										<p v-if="!validPrice" class="text-red-500 text-xs italic">
+											Please enter a price.
+										</p>
+									</div>
+									<div class="mb-4">
+										<label
+											class="block text-sm font-medium text-gray-500 mb-2"
+											for="uri"
+										>
+											Link to IPFS containing license arguments
+										</label>
+										<input
+											class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+											:class="{
+												'border-red-500': !validUri,
+											}"
+											id="uri"
+											type="text"
+											placeholder="IPFS uri"
+											v-model="offerUri"
+										/>
+										<p v-if="!validUri" class="text-red-500 text-xs italic">
+											Please enter a valid link.
+										</p>
+									</div>
+								</form>
+							</div>
+						</div>
+						<div class="flex">
+							<simple-button
+								:click-handler="initAndMakeOffer"
+								label="Make offer"
+							/>
+						</div>
+					</div>
+				</div>
+				<div
+					v-if="
+						!isCreator &&
+						license &&
+						license.ownerB58 == wallet.publicKey.toBase58()
+					"
+				>
+					<duo-headline
+						importance="3"
+						headline="Download area"
+						sub-headline="You own a valid license."
+						class="!px-0 mt-4"
+					></duo-headline>
+					<div v-if="!isCreator">
+						<p class="text-l text-black-500 mb-4">
+							License pubKey:
+							<hash-link :hash="license.publicKeyB58" />
+						</p>
 						<simple-button
-							:click-handler="initAndMakeOffer"
-							label="Make offer"
+							:click-handler="downloadImage"
+							label="Download image"
+						/>
+					</div>
+				</div>
+				<div v-if="isCreator">
+					<duo-headline
+						importance="3"
+						headline="Provide access"
+						sub-headline="For someone you have a deal with."
+						class="!px-0 mt-4"
+					></duo-headline>
+					<div class="flex flex-wrap">
+						<input
+							class="appearance-none border rounded w-full py-2 px-3 text-gray-700 mr-3 mb-3 focus:border focus:border-gray-500 focus-visible:outline-none focus:shadow-outline"
+							type="text"
+							v-model="whitelistAccount"
+							placeholder="Acc. that should receive license"
+						/>
+						<input
+							class="appearance-none border rounded w-full py-2 px-3 text-gray-700 mr-3 mb-3 focus:border focus:border-gray-500 focus-visible:outline-none focus:shadow-outline"
+							type="text"
+							v-model="whitelistAccountLicenseInformation"
+							placeholder="IPFS link to license agreement"
+						/>
+						<input
+							class="appearance-none border rounded w-full py-2 px-3 text-gray-700 mr-3 mb-3 focus:border focus:border-gray-500 focus-visible:outline-none focus:shadow-outline"
+							type="date"
+							:min="today()"
+							v-model="whitelistAccountValidUntil"
+							placeholder="Valid until"
+						/>
+						<simple-button
+							v-if="isCreator"
+							:click-handler="provideAccess"
+							label="Submit"
+							appearance="secondary"
 						/>
 					</div>
 				</div>

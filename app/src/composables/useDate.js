@@ -1,3 +1,7 @@
+export const today = () => {
+	return new Date().toISOString().split("T")[0];
+};
+
 export const dateFromTimestamp = (timestamp) => {
 	return new Date(Number(timestamp) * 1000).toLocaleDateString("de-DE");
 };

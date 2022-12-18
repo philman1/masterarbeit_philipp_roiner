@@ -67,3 +67,45 @@ export const buyRfLicense = async (mint, author) => {
 		console.log(e);
 	}
 };
+
+export const createLicense = async (
+	address,
+	mint,
+	validUntil,
+	licenseInformation
+) => {
+	const { wallet, program } = useWorkspace();
+
+	try {
+		const licensePDA = (
+			await web3.PublicKey.findProgramAddress(
+				[address.toBuffer(), Buffer.from("license"), mint.toBuffer()],
+				program.value.programId
+			)
+		)[0];
+
+		const imageAccount = await getImageAccount(
+			mint,
+			wallet.value.publicKey,
+			program.value.programId
+		);
+
+		const tx = await program.value.methods
+			.createLicense(
+				Math.floor(validUntil.getTime() / 1000),
+				licenseInformation
+			)
+			.accounts({
+				license: licensePDA,
+				imageAccount: imageAccount,
+				payer: address,
+				author: wallet.value.publicKey,
+				systemProgram: web3.SystemProgram.programId,
+			})
+			.rpc();
+
+		console.log("Your transaction signature", tx);
+	} catch (e) {
+		console.log(e);
+	}
+};

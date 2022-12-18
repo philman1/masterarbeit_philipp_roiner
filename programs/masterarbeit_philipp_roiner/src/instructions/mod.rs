@@ -6,3 +6,4 @@ pub mod make_offer;
 pub mod mint_nft;
 pub mod print_edition;
 pub mod update_image;
+pub mod create_license;

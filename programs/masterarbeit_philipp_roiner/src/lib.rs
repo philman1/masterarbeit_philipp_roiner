@@ -87,4 +87,8 @@ pub mod masterarbeit_philipp_roiner {
     pub fn buy_rf_license(ctx: Context<BuyRfLicense>) -> Result<()> {
         buy_rf_license_handler(ctx)
     }
+
+    pub fn create_license(ctx: Context<BuyRfLicense>, valid_until: i64, license_information: String) -> Result<()> {
+        create_license_handler(ctx, valid_until, license_information)
+    }
 }
