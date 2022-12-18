@@ -22,13 +22,22 @@ const colsNotNull = computed(() =>
 		<table class="w-full text-sm text-left text-gray-500">
 			<thead class="text-xs text-gray-900 uppercase bg-gray-100">
 				<tr>
-					<th v-for="(col, i) in cols" :key="i" scope="col" class="py-3 px-6">
+					<th
+						v-for="(col, i) in cols"
+						:key="i"
+						scope="col"
+						class="py-3 px-6"
+					>
 						{{ col.heading }}
 					</th>
 				</tr>
 			</thead>
 			<tbody>
-				<tr v-for="(entry, i) in data" :key="i" class="bg-white border-b">
+				<tr
+					v-for="(entry, i) in data"
+					:key="i"
+					class="bg-white border-b"
+				>
 					<td
 						v-for="col in colsNotNull"
 						:key="col.heading + i"

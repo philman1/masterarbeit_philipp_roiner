@@ -47,6 +47,7 @@ const downloadImage = async (license) => {
 				{ attr: 'licensedImage', heading: 'Licensed image' },
 				{ attr: 'createdAt', heading: 'Created at' },
 				{ attr: 'createdAgo', heading: 'Created ago' },
+				{ attr: 'validUntilDate', heading: 'Valid until' },
 				{ attr: 'licenseInformation', heading: 'Conditions' },
 				{ attr: null, heading: '' },
 			]"

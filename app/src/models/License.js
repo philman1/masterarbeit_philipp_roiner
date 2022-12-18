@@ -9,6 +9,7 @@ export class License {
 		this.owner = new PublicKey(data.owner);
 		this.licensedImage = new PublicKey(data.licensedImage);
 		this.timestamp = data.timestamp;
+		this.validUntil = data.validUntil;
 		this.licenseInformation = new CID(data.licenseInformation);
 	}
 
@@ -36,7 +37,15 @@ export class License {
 		return pastDateFromTimeStamp(this.timestamp);
 	}
 
+	get validUntilDate() {
+		return this.validUntil
+			? dateFromTimestamp(this.validUntil)
+			: "Infinite";
+	}
+
 	get licenseInformationCID() {
-		return this.licenseInformation.cidText;
+		return this.licenseInformation.cidText
+			? this.licenseInformation.cidText
+			: "";
 	}
 }

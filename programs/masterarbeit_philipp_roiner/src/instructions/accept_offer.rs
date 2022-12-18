@@ -25,7 +25,8 @@ pub fn accept_offer_handler(ctx: Context<AcceptOffer>) -> Result<()> {
     license.owner = ctx.accounts.offer_maker.key();
     license.licensed_image = ctx.accounts.offer_account.mint.key();
     license.timestamp = clock.unix_timestamp;
-    license.license_information = ctx.accounts.offer_account.offer_uri.clone();
+    license.valid_until = None;
+    license.license_information = Some(ctx.accounts.offer_account.offer_uri.clone());
 
     Ok(())
 }

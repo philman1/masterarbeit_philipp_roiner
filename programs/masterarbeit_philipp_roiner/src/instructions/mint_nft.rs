@@ -16,7 +16,7 @@ pub fn mint_nft_handler(
     uri: String,
     available: bool,
     allowed_license_types: u8,
-    one_time_price: i64
+    one_time_price: u64,
 ) -> Result<()> {
     msg!("Nft token minting:");
     let cpi_program = ctx.accounts.token_program.to_account_info();

@@ -3,6 +3,7 @@ use anchor_lang::prelude::*;
 mod instructions;
 mod state;
 use crate::accept_offer::*;
+use crate::buy_license::*;
 use crate::cancel_offer::*;
 use crate::init_offer::*;
 use crate::make_offer::*;
@@ -26,7 +27,7 @@ pub mod masterarbeit_philipp_roiner {
         uri: String,
         available: bool,
         allowed_license_types: u8,
-        one_time_price: i64,
+        one_time_price: u64,
     ) -> Result<()> {
         mint_nft_handler(
             ctx,
@@ -81,5 +82,9 @@ pub mod masterarbeit_philipp_roiner {
         one_time_price: u64,
     ) -> Result<()> {
         update_image_one_time_price_handler(ctx, one_time_price)
+    }
+
+    pub fn buy_rf_license(ctx: Context<BuyRfLicense>) -> Result<()> {
+        buy_rf_license_handler(ctx)
     }
 }

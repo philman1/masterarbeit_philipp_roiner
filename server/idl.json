@@ -88,7 +88,7 @@
 				},
 				{
 					"name": "oneTimePrice",
-					"type": "i64"
+					"type": "u64"
 				}
 			]
 		},
@@ -404,9 +404,40 @@
 			"args": [
 				{
 					"name": "oneTimePrice",
-					"type": "i64"
+					"type": "u64"
 				}
 			]
+		},
+		{
+			"name": "buyRfLicense",
+			"accounts": [
+				{
+					"name": "license",
+					"isMut": true,
+					"isSigner": false
+				},
+				{
+					"name": "imageAccount",
+					"isMut": true,
+					"isSigner": false
+				},
+				{
+					"name": "payer",
+					"isMut": true,
+					"isSigner": true
+				},
+				{
+					"name": "author",
+					"isMut": true,
+					"isSigner": false
+				},
+				{
+					"name": "systemProgram",
+					"isMut": false,
+					"isSigner": false
+				}
+			],
+			"args": []
 		}
 	],
 	"accounts": [
@@ -437,7 +468,7 @@
 					},
 					{
 						"name": "oneTimePrice",
-						"type": "i64"
+						"type": "u64"
 					}
 				]
 			}
@@ -465,11 +496,15 @@
 					},
 					{
 						"name": "validUntil",
-						"type": "i64"
+						"type": {
+							"option": "i64"
+						}
 					},
 					{
 						"name": "licenseInformation",
-						"type": "string"
+						"type": {
+							"option": "string"
+						}
 					}
 				]
 			}
@@ -528,6 +563,11 @@
 			"code": 6001,
 			"name": "MetadataCreateFailed",
 			"msg": "Metadata account create failed!"
+		},
+		{
+			"code": 6002,
+			"name": "WrongLicenseType",
+			"msg": "License Type doesnt allow to buy license!"
 		}
 	],
 	"metadata": {
