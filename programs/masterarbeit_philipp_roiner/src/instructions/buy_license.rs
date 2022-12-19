@@ -16,7 +16,6 @@ pub fn buy_rf_license_handler(ctx: Context<BuyRfLicense>) -> Result<()> {
     let transfer_instruction = &transfer(
         ctx.accounts.payer.to_account_info().key,
         ctx.accounts.author.to_account_info().key,
-        // this is amount that you want to send I guess
         amount,
     );
     msg!("Paying in {}", amount);

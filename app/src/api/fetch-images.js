@@ -97,7 +97,6 @@ export const updateImageAllowedLicenseTypes = async (mint, value) => {
 
 export const updateImageOneTimePrice = async (mint, value) => {
 	const { wallet, program } = useWorkspace();
-	console.log(mint.toBase58(), value);
 
 	try {
 		const imageAccount = await getImageAccount(
@@ -106,12 +105,8 @@ export const updateImageOneTimePrice = async (mint, value) => {
 			program.value.programId
 		);
 
-		console.log(imageAccount.toBase58());
-
 		const tx = await program.value.methods
-			.updateImageOneTimePrice(
-				new BN(Number(value) * web3.LAMPORTS_PER_SOL)
-			)
+			.updateImageOneTimePrice(new BN(Number(value) * web3.LAMPORTS_PER_SOL))
 			.accounts({
 				imageAccount: imageAccount,
 				author: wallet.value.publicKey,

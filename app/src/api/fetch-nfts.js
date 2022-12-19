@@ -31,6 +31,7 @@ export const fetchNfts = async (filters) => {
 		const metadatas = await metaplex.nfts().findAllByMintList({
 			mints,
 		});
+		console.log(imageAccounts, metadatas);
 
 		const result = imageAccounts.map((i) => {
 			const m = metadatas.find(

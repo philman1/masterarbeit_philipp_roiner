@@ -6,7 +6,6 @@ import { getImageAccount } from "./fetch-images";
 export const fetchLicenses = async (filters = []) => {
 	const { program } = useWorkspace();
 	const licenses = await program.value.account.license.all(filters);
-	console.log(licenses);
 	return licenses.map(
 		(license) => new License(license.publicKey, license.account)
 	);

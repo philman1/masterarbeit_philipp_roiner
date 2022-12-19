@@ -13,7 +13,7 @@ pub struct Image {
 const DISCRIMINATOR_LENGTH: usize = 8;
 const PUBLIC_KEY_LENGTH: usize = 32;
 const TIMESTAMP_LENGTH: usize = 8;
-const ALLOWED_LICENSE_TYPES_LENGTH: usize = 8;
+const ALLOWED_LICENSE_TYPES_LENGTH: usize = 1;
 const PRICE_LENGTH: usize = 8;
 
 impl Image {
