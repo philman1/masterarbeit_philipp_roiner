@@ -12,7 +12,6 @@ const filters = [imageAuthorFilter(wallet.value.publicKey.toBase58())];
 onMounted(() => {
 	fetchNfts(filters).then((data) => {
 		if (!nftData.value) return;
-		console.log(data);
 		nftData.value = data;
 	});
 });
@@ -24,5 +23,5 @@ onMounted(() => {
 		headline="Images"
 		sub-headline="of which you are the author."
 	></duo-headline>
-	<nft-list v-if="nftData.length > 0" :nftData="nftData" />
+	<nft-list v-if="nftData && nftData.length > 0" :nftData="nftData" />
 </template>

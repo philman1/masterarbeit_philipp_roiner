@@ -5,7 +5,6 @@ import { Image } from "@/models/Image";
 export const fetchImages = async (filters = []) => {
 	const { program } = useWorkspace();
 	const images = await program.value.account.image.all(filters);
-	console.log(images[0].publicKey.toBase58());
 	return images.map((image) => new Image(image.publicKey, image.account));
 };
 
@@ -106,7 +105,9 @@ export const updateImageOneTimePrice = async (mint, value) => {
 		);
 
 		const tx = await program.value.methods
-			.updateImageOneTimePrice(new BN(Number(value) * web3.LAMPORTS_PER_SOL))
+			.updateImageOneTimePrice(
+				new BN(Number(value) * web3.LAMPORTS_PER_SOL)
+			)
 			.accounts({
 				imageAccount: imageAccount,
 				author: wallet.value.publicKey,
