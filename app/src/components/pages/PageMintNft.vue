@@ -3,6 +3,7 @@ import { saveToIpfs, mintNft } from "@/api";
 import { computed, ref } from "vue";
 import DuoHeadline from "../basic/DuoHeadline.vue";
 import SimpleButton from "../basic/SimpleButton.vue";
+import SimpleInput from "../basic/SimpleInput.vue";
 
 const name = ref("");
 const symbol = ref("");
@@ -54,59 +55,41 @@ const mint = async () => {
 					<form class="px-8 pt-6 pb-2 mb-4">
 						<div class="mb-4 flex justify-between">
 							<div class="mr-2">
-								<label
-									class="block text-gray-700 text-sm font-bold mb-2"
-									for="name"
-								>
-									Name
-								</label>
-								<input
-									class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
-									:class="{ 'border-red-500': !validName }"
+								<simple-input
 									id="name"
 									type="text"
-									placeholder="Name"
+									placeholder="Name uri"
 									v-model="name"
+									label="Name"
+									:class="{ 'border-red-500': !validName }"
 								/>
 								<p v-if="!validName" class="text-red-500 text-xs italic">
 									Please choose a name.
 								</p>
 							</div>
 							<div class="ml-2">
-								<label
-									class="block text-gray-700 text-sm font-bold mb-2"
-									for="symbol"
-								>
-									Symbol
-								</label>
-								<input
-									class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+								<simple-input
 									id="symbol"
 									type="text"
 									placeholder="Symbol"
 									v-model="symbol"
+									label="Symbol"
 								/>
 							</div>
 						</div>
 						<div class="mb-4">
-							<label
-								class="block text-gray-700 text-sm font-bold mb-2"
-								for="description"
-							>
-								Description
-							</label>
-							<input
-								class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+							<simple-input
 								id="desciption"
 								type="text"
 								placeholder="Description"
 								v-model="description"
+								label="Description"
 							/>
 						</div>
 						<div class="mb-4 flex">
 							<div class="mr-2">
 								<label
-									class="block text-gray-700 text-sm font-bold mb-2"
+									class="block text-sm font-medium text-gray-600 mb-2"
 									for="description"
 								>
 									Should it be licensable?
@@ -120,53 +103,36 @@ const mint = async () => {
 								/>
 							</div>
 							<div v-if="available" class="mx-4">
-								<label
-									class="block text-gray-700 text-sm font-bold mb-2"
-									for="description"
-								>
-									License type
-								</label>
-								<input
-									class="shadow appearance-none border rounded w-24 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+								<simple-input
 									id="allowedLicenseTypes"
 									type="number"
-									min="0"
-									max="3"
-									step="1"
+									:min="0"
+									:max="3"
+									:step="1"
 									placeholder="Description"
 									v-model="allowedLicenseTypes"
+									label="License type"
 								/>
 							</div>
 
 							<div v-if="available && allowedLicenseTypes === 2" class="ml-2">
-								<label
-									class="block text-gray-700 text-sm font-bold mb-2"
-									for="description"
-								>
-									Price (SOL)
-								</label>
-								<input
-									class="shadow appearance-none border rounded w-24 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+								<simple-input
 									id="oneTimePrice"
 									type="text"
 									placeholder="Description"
 									v-model="oneTimePrice"
+									label="Price (SOL)"
+									w="24"
 								/>
 							</div>
 						</div>
 						<div class="mb-6">
-							<label
-								class="block text-gray-700 text-sm font-bold mb-2"
-								for="images"
-							>
-								Images
-							</label>
-							<input
-								class="form-control block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none"
+							<simple-input
 								type="file"
 								id="images"
 								@change="handleFiles"
 								multiple
+								label="Images"
 							/>
 						</div>
 						<div class="w-full flex justify-center">

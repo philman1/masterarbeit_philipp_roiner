@@ -22,6 +22,7 @@ import { useWorkspace, today } from "@/composables";
 import HashLink from "../basic/HashLink.vue";
 import SimpleButton from "../basic/SimpleButton.vue";
 import DuoHeadline from "../basic/DuoHeadline.vue";
+import SimpleInput from "../basic/SimpleInput.vue";
 
 const { wallet } = useWorkspace();
 
@@ -78,6 +79,7 @@ const fetchImageAccount = async () => {
 const fetchLicense = async () => {
 	const l = await fetchLicenses([
 		licenseOwnerFilter(wallet.value.publicKey.toBase58()),
+		mintAddressFilter(image.value.mintAddressB58),
 	]);
 	if (l.length > 0) {
 		license.value = l[0];
@@ -114,6 +116,8 @@ const switchAvailability = async () => {
 };
 
 const changeAllowedLicenseTypes = async () => {
+	console.log(licenseType.value);
+
 	await updateImageAllowedLicenseTypes(
 		image.value.mintAddress,
 		licenseType.value
@@ -257,13 +261,13 @@ const provideAccess = async () => {
 											class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0"
 										>
 											<div class="flex items-baseline">
-												<input
-													class="appearance-none border rounded w-24 py-2 px-3 text-gray-700 mr-3 mb-3 focus:border focus:border-gray-500 focus-visible:outline-none focus:shadow-outline"
+												<simple-input
 													type="number"
 													v-model="licenseType"
-													min="0"
-													max="3"
-													step="1"
+													:min="0"
+													:max="3"
+													:step="1"
+													w="w-24"
 													:readonly="isCreator ? false : true"
 												/>
 												<simple-button
@@ -302,13 +306,13 @@ const provideAccess = async () => {
 											class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0"
 										>
 											<div class="flex items-start">
-												<input
-													class="appearance-none border rounded w-24 py-2 px-3 text-gray-700 mr-3 mb-3 focus:border focus:border-gray-500 focus-visible:outline-none focus:shadow-outline"
+												<simple-input
 													type="number"
 													v-model="oneTimePrice"
-													min="0"
-													max="3"
-													step="1"
+													:min="0"
+													:max="3"
+													:step="1"
+													w="w-24"
 													:readonly="isCreator ? false : true"
 												/>
 												<simple-button
@@ -359,42 +363,29 @@ const provideAccess = async () => {
 							<div class="w-full max-w-xs">
 								<form class="pt-2">
 									<div class="mb-4">
-										<label
-											class="block text-sm font-medium text-gray-500 mb-2"
-											for="price"
-										>
-											Price in SOL
-										</label>
-										<input
-											class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+										<simple-input
+											type="number"
+											v-model="oneTimePrice"
+											label="Price in SOL"
+											placeholder="Price in SOL"
 											:class="{
 												'border-red-500': !validPrice,
 											}"
-											id="price"
-											type="number"
-											placeholder="Price in SOL"
-											v-model="price"
 										/>
 										<p v-if="!validPrice" class="text-red-500 text-xs italic">
 											Please enter a price.
 										</p>
 									</div>
 									<div class="mb-4">
-										<label
-											class="block text-sm font-medium text-gray-500 mb-2"
-											for="uri"
-										>
-											Link to IPFS containing license arguments
-										</label>
-										<input
-											class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
-											:class="{
-												'border-red-500': !validUri,
-											}"
+										<simple-input
 											id="uri"
 											type="text"
 											placeholder="IPFS uri"
 											v-model="offerUri"
+											label="Link to IPFS containing license arguments"
+											:class="{
+												'border-red-500': !valivalidUridPrice,
+											}"
 										/>
 										<p v-if="!validUri" class="text-red-500 text-xs italic">
 											Please enter a valid link.
@@ -443,20 +434,17 @@ const provideAccess = async () => {
 						class="!px-0 mt-4"
 					></duo-headline>
 					<div class="flex flex-wrap">
-						<input
-							class="appearance-none border rounded w-full py-2 px-3 text-gray-700 mr-3 mb-3 focus:border focus:border-gray-500 focus-visible:outline-none focus:shadow-outline"
+						<simple-input
 							type="text"
 							v-model="whitelistAccount"
 							placeholder="Acc. that should receive license"
 						/>
-						<input
-							class="appearance-none border rounded w-full py-2 px-3 text-gray-700 mr-3 mb-3 focus:border focus:border-gray-500 focus-visible:outline-none focus:shadow-outline"
+						<simple-input
 							type="text"
 							v-model="whitelistAccountLicenseInformation"
 							placeholder="IPFS link to license agreement"
 						/>
-						<input
-							class="appearance-none border rounded w-full py-2 px-3 text-gray-700 mr-3 mb-3 focus:border focus:border-gray-500 focus-visible:outline-none focus:shadow-outline"
+						<simple-input
 							type="date"
 							:min="today()"
 							v-model="whitelistAccountValidUntil"

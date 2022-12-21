@@ -1,6 +1,5 @@
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { useWorkspace } from "@/composables";
-import bs58 from "bs58";
 import { Offer } from "@/models";
 
 /**
