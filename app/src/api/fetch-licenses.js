@@ -3,6 +3,11 @@ import { useWorkspace } from "@/composables";
 import { License } from "@/models/License";
 import { getImageAccount } from "./fetch-images";
 
+/**
+ * Fetches all license acounts from the blockchain
+ * @param [filters] - An array of filters to apply to the request.
+ * @returns An array of License objects.
+ */
 export const fetchLicenses = async (filters = []) => {
 	const { program } = useWorkspace();
 	const licenses = await program.value.account.license.all(filters);
@@ -11,6 +16,10 @@ export const fetchLicenses = async (filters = []) => {
 	);
 };
 
+/**
+ * Returns a filter that will match a license account whose owner is the given public key
+ * @param ownerBase58PublicKey - The public key of the owner.
+ */
 export const licenseOwnerFilter = (ownerBase58PublicKey) => ({
 	memcmp: {
 		offset:
@@ -20,6 +29,10 @@ export const licenseOwnerFilter = (ownerBase58PublicKey) => ({
 	},
 });
 
+/**
+ * Returns a filter that will match a license account whose owner is the given public key
+ * @param imageBase58PubKey - The public key of the image account.
+ */
 export const licensesForImage = (imageBase58PubKey) => ({
 	memcmp: {
 		offset:
@@ -30,6 +43,11 @@ export const licensesForImage = (imageBase58PubKey) => ({
 	},
 });
 
+/**
+ * Requests the Solana program to transfer the amount of the prize to the author and create a corresponding RF license on the blockchain.
+ * @param mint - The public key of the mint.
+ * @param author - The public key of the author of the image.
+ */
 export const buyRfLicense = async (mint, author) => {
 	const { wallet, program } = useWorkspace();
 
@@ -68,6 +86,13 @@ export const buyRfLicense = async (mint, author) => {
 	}
 };
 
+/**
+ * Requests the Solana program to create a RM license on the blockchain.
+ * @param address - The address of the license recipient
+ * @param mint - The mint account that the license is being created for.
+ * @param validUntil - Date indicating the duration of validity.
+ * @param licenseInformation - String that contains a link to the offer informatino (IPFS).
+ */
 export const createLicense = async (
 	address,
 	mint,

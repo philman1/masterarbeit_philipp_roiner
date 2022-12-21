@@ -2,7 +2,7 @@ import { PublicKey } from "@metaplex-foundation/js";
 import { dateFromTimestamp, pastDateFromTimeStamp } from "@/composables";
 import { web3 } from "@project-serum/anchor";
 
-/* It's a class that represents an image. */
+/* Class that represents an image. */
 export class Image {
 	constructor(publicKey, data) {
 		this.publicKey = new PublicKey(publicKey);
@@ -71,10 +71,18 @@ export class Image {
 		return Number(this.allowedLicenseTypes);
 	}
 
+	/**
+	 * Returns the one time price of an image (for a RF license) in SOL.
+	 * @returns The one time price in SOL as a number.
+	 */
 	get oneTimePriceNumber() {
 		return this.oneTimePrice.toNumber() / web3.LAMPORTS_PER_SOL;
 	}
 
+	/**
+	 * Returns the one time price of an image (for a RF license) in SOL.
+	 * @returns The one time price in SOL as a string.
+	 */
 	get oneTimePriceText() {
 		return `${this.oneTimePriceNumber} SOL`;
 	}

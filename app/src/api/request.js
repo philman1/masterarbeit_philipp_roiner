@@ -44,6 +44,11 @@ export const createAuthToken = async (action, wallet, exp = 5) => {
 /**
  * Performs a request to the endpoint using
  * authentication via wallet signer.
+ * @param contents - The requests contents.
+ * @param action - The action you want to perform.
+ * @param wallet - The wallet object that contains the private key.
+ * @param [exp=5] - expiration time in seconds.
+ * @returns The response of the request.
  */
 export const req = async (contents, action, wallet, exp = 5) => {
 	const { method, url, headers, data } = contents;

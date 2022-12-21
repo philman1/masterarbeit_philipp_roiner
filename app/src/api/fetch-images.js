@@ -3,7 +3,7 @@ import { useWorkspace } from "@/composables";
 import { Image } from "@/models/Image";
 
 /**
- * Fetches all image acounts from Blockchain
+ * Fetches all image acounts from the blockchain
  * @param [filters] - An array of filters to apply to the request.
  * @returns An array of Image objects.
  */
@@ -69,8 +69,8 @@ export const getImageAccount = async (mint, author, programId) =>
 	)[0];
 
 /**
- * This function will update the availability of an image on the blockchain
- * @param mint - The mint account that holds the image token
+ * This function will update the availability of an image account on the blockchain.
+ * @param mint - The public key of the mint that corresponds to the image account.
  * @param value - The new value of the image availability.
  */
 export const updateImageAvailability = async (mint, value) => {
@@ -98,6 +98,11 @@ export const updateImageAvailability = async (mint, value) => {
 	}
 };
 
+/**
+ * This function will update the license type of an image account on the blockchain.
+ * @param mint - The public key of the mint that corresponds to the image account.
+ * @param value - The new value of the images license type.
+ */
 export const updateImageAllowedLicenseTypes = async (mint, value) => {
 	const { wallet, program } = useWorkspace();
 
@@ -123,6 +128,11 @@ export const updateImageAllowedLicenseTypes = async (mint, value) => {
 	}
 };
 
+/**
+ * This function will update the one time price of an image account on the blockchain.
+ * @param mint - The public key of the mint that corresponds to the image account.
+ * @param value - The new value of the one time price.
+ */
 export const updateImageOneTimePrice = async (mint, value) => {
 	const { wallet, program } = useWorkspace();
 

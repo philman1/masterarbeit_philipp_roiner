@@ -14,6 +14,12 @@ const TOKEN_METADATA_PROGRAM_ID = new web3.PublicKey(
 	"metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
 );
 
+/**
+ * Mints a new edition for a given master edition and copies its NFT and metadata.
+ * @param masterMintId - The master edition mint that you want to create a edition from.
+ * @param metadataAddressMaster - The metadata address of the master edition mint.
+ * @param edition - The edition number of the token.
+ */
 export const mintEdition = async (
 	masterMintId,
 	metadataAddressMaster,
@@ -89,10 +95,7 @@ export const mintEdition = async (
 		const editionMarkPda = await getEditionMarkPda(masterMintId, edition);
 
 		console.log("newMetadataAddress: ", newMetadataAddress.toBase58());
-		console.log(
-			"MetadataAddressmaster: ",
-			metadataAddressMaster.toBase58()
-		);
+		console.log("MetadataAddressmaster: ", metadataAddressMaster.toBase58());
 		console.log("newEditionAddress: ", newEditionAddress.toBase58());
 		console.log("masterEditionAddress: ", masterEditionAddress.toBase58());
 		console.log("editionMarkPda: ", editionMarkPda.toBase58());
@@ -125,6 +128,11 @@ export const mintEdition = async (
 	}
 };
 
+/**
+ * Returns the Program Derived Address for the given seeds that will be used to create or find a edition account.
+ * @param mint - The mint address of the token.
+ * @returns The public key for the PDA.
+ */
 const getNewEdition = async (mint) => {
 	return (
 		await web3.PublicKey.findProgramAddress(
@@ -139,11 +147,15 @@ const getNewEdition = async (mint) => {
 	)[0];
 };
 
+/**
+ * Returns the Program Derived Address for the given seeds that will be used to create or find a edition marker account.
+ * @param masterMintId - the public key of the master edition account.
+ * @param edition - The edition number of the token.
+ * @returns The public key for the PDA.
+ */
 const getEditionMarkPda = async (masterMintId, edition) => {
 	const EDITION_MARKER_BIT_SIZE = 248;
-
 	let editionNumber = new BN(Math.floor(edition / EDITION_MARKER_BIT_SIZE));
-	console.log("editionNumber: ", editionNumber.toString());
 
 	return (
 		await web3.PublicKey.findProgramAddress(

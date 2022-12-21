@@ -9,6 +9,10 @@ const ipfs = create({
 	url: "http://127.0.0.1:5001/",
 });
 
+/**
+ * Fetches a NFT including external data from the IPFS
+ * @param mint - The mint address of the NFT
+ */
 export const fetchNft = async (mint) => {
 	try {
 		const { metaplex } = useMetaplex();
@@ -23,6 +27,11 @@ export const fetchNft = async (mint) => {
 	}
 };
 
+/**
+ * Fetches all NFT metadatas from the blockchain that have a corresponding image account
+ * @param [filters] - An array of filters to apply to the request.
+ * @returns An array of NFT metadatas and image accounts.
+ */
 export const fetchNfts = async (filters) => {
 	try {
 		const { metaplex } = useMetaplex();
@@ -53,6 +62,11 @@ export const fetchNfts = async (filters) => {
 	}
 };
 
+/**
+ * Fetches all NFTs created by a given creator
+ * @param creator - The address of the creator of the NFTs.
+ * @returns An array of NFTs
+ */
 export const fetchNftsByCreator = async (creator) => {
 	try {
 		const { metaplex } = useMetaplex();
@@ -70,6 +84,11 @@ export const fetchNftsByCreator = async (creator) => {
 	}
 };
 
+/**
+ * Fetches the external metadata from an NFT that is stored on the IPFS
+ * @param nft - The NFT for which the metadata is to be requested.
+ * @returns NFT with metadata.
+ */
 export const fetchMetadataFromIpfs = async (nft) => {
 	if (nft.jsonLoaded) return nft;
 	if (nft.uri && !nft.uri.includes("ipfs://")) {
@@ -84,13 +103,17 @@ export const fetchMetadataFromIpfs = async (nft) => {
 		}
 
 		const data = concat(chunks);
-		const decodedData = JSON.parse(
-			new TextDecoder().decode(data).toString()
-		);
+		const decodedData = JSON.parse(new TextDecoder().decode(data).toString());
 		return { ...nft, json: decodedData };
 	}
 };
 
+/**
+ * Loads the image from an NFTs metdata URL, and then
+ * stores the image data in the Vuex store.
+ * @param nft - The NFT object
+ * @returns Image.
+ */
 export const fetchImageFromIpfs = async (nft) => {
 	const metadata = nft.json;
 	const img = await loadImgURL(metadata.image);
@@ -102,25 +125,22 @@ export const fetchImageFromIpfs = async (nft) => {
 	return img;
 };
 
+/**
+ * Returns the URL of a image for a given CID (Content Identifier).
+ * @param cid - The cid of the image
+ * @returns The URL of the image.
+ */
 async function loadImgURL(cid) {
-	if (
-		cid == "" ||
-		cid == null ||
-		cid == undefined ||
-		cid.includes("ipfs://")
-	) {
+	if (cid == "" || cid == null || cid == undefined || cid.includes("ipfs://")) {
 		return;
 	}
+
 	let uri = cid;
 	if (cid.includes("ipfs")) {
 		uri = uri.substring(21);
 	}
 
 	const res = await fetch("http://localhost:8080/ipfs/" + uri);
-	// const chunks = [];
-	// for await (const chunk of ipfs.cat(uri)) {
-	// 	chunks.push(chunk);
-	// }
-	// console.log(chunks);
+
 	return res.url;
 }

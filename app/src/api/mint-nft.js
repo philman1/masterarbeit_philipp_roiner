@@ -18,6 +18,11 @@ const TOKEN_METADATA_PROGRAM_ID = new web3.PublicKey(
 // uses localhost
 const ipfs = create();
 
+/**
+ * Uploads the given files to the IPFS
+ * @param files - Files to upload
+ * @returns Response.
+ */
 export const saveToIpfs = async (files) => {
 	const { publicKey, signMessage } = useWallet();
 	const formData = new FormData();
@@ -36,15 +41,13 @@ export const saveToIpfs = async (files) => {
 		{ publicKey: publicKey.value, signMessage: signMessage.value }
 	);
 	return await res.json();
-
-	// return await fetch("http://localhost:3000/multiple-upload", {
-	// 	method: "POST",
-	// 	body: formData,
-	// })
-	// 	.then((res) => res.json())
-	// 	.then((json) => json.data);
 };
 
+/**
+ * Creates a new NFT for a given image.
+ * @param metadata - Metadata that describes the NFT.
+ * @param licenseInformation - Informations about licensing.
+ */
 export const mintNft = async (metadata, licenseInformation) => {
 	const { connection, wallet, provider, program } = useWorkspace();
 	const { available, allowedLicenseTypes, oneTimePrice } = licenseInformation;
@@ -137,7 +140,6 @@ export const mintNft = async (metadata, licenseInformation) => {
 				rent: web3.SYSVAR_RENT_PUBKEY,
 				image: image,
 			})
-			// .signers([image])
 			.rpc();
 		console.log("Your transaction signature", tx);
 		return tx;
@@ -146,6 +148,11 @@ export const mintNft = async (metadata, licenseInformation) => {
 	}
 };
 
+/**
+ * Uploads a JSON Object (Off-Chain metadata) to the IPFS
+ * @param metadata - The metadata object that should be uploaded to the IPFS.
+ * @returns The a link to the IPFS.
+ */
 const uploadOffchainMetadataToIpfs = async (metadata) => {
 	const ipfs_metadata = await ipfs.add(JSON.stringify(metadata));
 	if (ipfs_metadata == null) {
@@ -155,6 +162,11 @@ const uploadOffchainMetadataToIpfs = async (metadata) => {
 	}
 };
 
+/**
+ * Returns the Program Derived Address for the given seeds that will be used to create or find a metadata account.
+ * @param mint - The mint address of the token.
+ * @returns The public key for the PDA.
+ */
 export const getMetadata = async (mint) => {
 	return (
 		await web3.PublicKey.findProgramAddress(
@@ -168,6 +180,11 @@ export const getMetadata = async (mint) => {
 	)[0];
 };
 
+/**
+ * Returns the Program Derived Address for the given seeds that will be used to create or find a master edition account.
+ * @param mint - The mint address of the token
+ * @returns The public key for the PDA.
+ */
 export const getMasterEdition = async (mint) => {
 	return (
 		await web3.PublicKey.findProgramAddress(
@@ -182,6 +199,13 @@ export const getMasterEdition = async (mint) => {
 	)[0];
 };
 
+/**
+ * Returns the Program Derived Address for the given seeds that will be used to create or find a image account.
+ * @param mint - The mint address of the token
+ * @param author - The public key of the account that owns the image.
+ * @param programId - The program ID of the program.
+ * @returns The public key for the PDA.
+ */
 export const getImageAddress = async (program, mint, author) => {
 	return (
 		await web3.PublicKey.findProgramAddress(

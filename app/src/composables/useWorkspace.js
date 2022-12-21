@@ -16,12 +16,22 @@ const programID = new PublicKey(idl.metadata.address);
 let workspace = null;
 let metaplex = null;
 
+/**
+ * Returns the workspace object in order to access the users wallet and to communicate with the blockchain.
+ */
 export const useWorkspace = () => workspace;
 
+/**
+ * Returns a metaplex instance.
+ * @returns The metaplex object.
+ */
 export const useMetaplex = () => {
 	return { metaplex };
 };
 
+/**
+ * Initializes a workspace in order to access the users wallet and to communicate with the blockchain.
+ */
 export const initWorkspace = () => {
 	const wallet = useAnchorWallet();
 	const connection = new Connection(clusterUrl, commitment);
@@ -42,6 +52,9 @@ export const initWorkspace = () => {
 	};
 };
 
+/**
+ * Initializes a metaplex instance.
+ */
 export const initMetaplex = () => {
 	const connection = new Connection(clusterApiUrl("devnet"));
 	// const connection = new Connection("http://127.0.0.1:8899");
