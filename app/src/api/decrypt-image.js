@@ -33,7 +33,6 @@ export const downloadDecryptedImage = async (mint) => {
 	)
 		.then((res) => res.json())
 		.then((json) => {
-			console.log(json);
 			const { buff } = json;
 			const a = document.createElement("a");
 			a.href = `data:image/png;base64,${buff}`;

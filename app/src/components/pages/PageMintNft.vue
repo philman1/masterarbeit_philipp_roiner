@@ -26,7 +26,7 @@ const mint = async () => {
 	if (!validName.value || !image.value) return;
 	const res = await saveToIpfs(image.value);
 	const { cidsEncrypted, cidsThumbnails } = res.data;
-	console.log(cidsEncrypted, cidsThumbnails);
+
 	await mintNft(
 		{
 			name: name.value,

@@ -116,8 +116,6 @@ const switchAvailability = async () => {
 };
 
 const changeAllowedLicenseTypes = async () => {
-	console.log(licenseType.value);
-
 	await updateImageAllowedLicenseTypes(
 		image.value.mintAddress,
 		licenseType.value
@@ -152,8 +150,6 @@ const provideAccess = async () => {
 		alert("Missing fields");
 		return;
 	}
-
-	console.log(whitelistAccountValidUntil.value);
 
 	await createLicense(
 		new PublicKey(whitelistAccount.value),

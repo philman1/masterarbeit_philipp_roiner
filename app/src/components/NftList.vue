@@ -8,7 +8,6 @@ const props = defineProps({
 });
 
 const { nftData, loading } = toRefs(props);
-console.log(nftData);
 const colsWithData = ref([]);
 const totalCols = 3;
 

@@ -41,7 +41,6 @@ export const fetchNfts = async (filters) => {
 		const metadatas = await metaplex.nfts().findAllByMintList({
 			mints,
 		});
-		console.log(imageAccounts, metadatas);
 
 		const result = imageAccounts.map((i) => {
 			const m = metadatas.find(
@@ -97,7 +96,7 @@ export const fetchMetadataFromIpfs = async (nft) => {
 		if (uri.includes("ipfs")) {
 			uri = uri.substring(21);
 		}
-		// console.log(nft.uri, uri);
+
 		for await (const chunk of ipfs.cat(uri)) {
 			chunks.push(chunk);
 		}

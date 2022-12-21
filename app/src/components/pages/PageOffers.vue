@@ -45,7 +45,6 @@ const acceptOfferAndCreateLicense = async (offer) => {
 		nft = await fetchNft(offer.mintB58);
 	}
 
-	console.log(nft.mint.address.toBase58(), nft.metadataAddress.toBase58());
 	await mintEdition(
 		new web3.PublicKey(nft.mint.address.toBase58()),
 		new web3.PublicKey(nft.metadataAddress.toBase58()),
