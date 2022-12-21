@@ -3,12 +3,13 @@ import {
 	createAssociatedTokenAccountInstruction,
 	getAssociatedTokenAddress,
 	createInitializeMintInstruction,
-	// createMintToCheckedInstruction,
 	MINT_SIZE,
 } from "@solana/spl-token";
-import { web3 } from "@project-serum/anchor";
+import { BN, web3 } from "@project-serum/anchor";
 import { create } from "ipfs-http-client";
 import { useWorkspace } from "@/composables";
+import { req } from "@/api";
+import { useWallet } from "solana-wallets-vue";
 
 const TOKEN_METADATA_PROGRAM_ID = new web3.PublicKey(
 	"metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
@@ -17,28 +18,39 @@ const TOKEN_METADATA_PROGRAM_ID = new web3.PublicKey(
 // uses localhost
 const ipfs = create();
 
-let metadataUri = null;
-// let masterMintId = null;
-let ata = null;
-
+/**
+ * Uploads the given files to the IPFS
+ * @param files - Files to upload
+ * @returns Response.
+ */
 export const saveToIpfs = async (files) => {
-	const source = ipfs.addAll([...files], {
-		progress: (prog) => console.log(`received: ${prog}`),
-	});
-	try {
-		let cids = [];
-		for await (const file of source) {
-			console.log(file);
-			cids.push(file.path);
-		}
-		return cids;
-	} catch (err) {
-		console.error(err);
+	const { publicKey, signMessage } = useWallet();
+	const formData = new FormData();
+
+	for (var i = 0; i < files.length; i++) {
+		formData.append("data", files[i]);
 	}
+
+	const res = await req(
+		{
+			method: "POST",
+			url: "http://localhost:3000/multiple-upload",
+			data: formData,
+		},
+		"upload:images",
+		{ publicKey: publicKey.value, signMessage: signMessage.value }
+	);
+	return await res.json();
 };
 
-export const mintNft = async (metadata) => {
+/**
+ * Creates a new NFT for a given image.
+ * @param metadata - Metadata that describes the NFT.
+ * @param licenseInformation - Informations about licensing.
+ */
+export const mintNft = async (metadata, licenseInformation) => {
 	const { connection, wallet, provider, program } = useWorkspace();
+	const { available, allowedLicenseTypes, oneTimePrice } = licenseInformation;
 
 	// Configure the client to use the local cluster.
 	try {
@@ -51,7 +63,7 @@ export const mintNft = async (metadata) => {
 		// masterMintId = mintKey;
 		console.log(wallet.value.publicKey);
 		// Get the ATA for a token and the account that we want to own the ATA (but it might not existing on the SOL network yet)
-		ata = await getAssociatedTokenAddress(
+		const ata = await getAssociatedTokenAddress(
 			mintKey.publicKey,
 			wallet.value.publicKey
 		);
@@ -86,7 +98,7 @@ export const mintNft = async (metadata) => {
 		// sends and create the transaction
 		await provider.value.sendAndConfirm(mint_tx, [mintKey]);
 
-		metadataUri = await uploadOffchainMetadataToIpfs(metadata);
+		const metadataUri = await uploadOffchainMetadataToIpfs(metadata);
 
 		console.log("Mint key: ", mintKey.publicKey.toString());
 		console.log("User: ", wallet.value.publicKey.toString());
@@ -97,12 +109,23 @@ export const mintNft = async (metadata) => {
 		const masterEditionAddress = await getMasterEdition(mintKey.publicKey);
 		console.log("MasterEdition address: ", masterEditionAddress.toBase58());
 
+		const image = await getImageAddress(
+			program,
+			mintKey.publicKey,
+			wallet.value.publicKey
+		);
+
+		console.log(allowedLicenseTypes, oneTimePrice);
+
 		const tx = await program.value.methods
 			.mintNft(
-				mintKey.publicKey,
+				wallet.value.publicKey,
 				metadata.name,
 				metadata.symbol,
-				metadataUri
+				metadataUri,
+				available,
+				new BN(allowedLicenseTypes),
+				new BN(Number(oneTimePrice) * web3.LAMPORTS_PER_SOL)
 			)
 			.accounts({
 				mintAuthority: wallet.value.publicKey,
@@ -115,6 +138,7 @@ export const mintNft = async (metadata) => {
 				payer: wallet.value.publicKey,
 				systemProgram: web3.SystemProgram.programId,
 				rent: web3.SYSVAR_RENT_PUBKEY,
+				image: image,
 			})
 			.rpc();
 		console.log("Your transaction signature", tx);
@@ -124,16 +148,26 @@ export const mintNft = async (metadata) => {
 	}
 };
 
+/**
+ * Uploads a JSON Object (Off-Chain metadata) to the IPFS
+ * @param metadata - The metadata object that should be uploaded to the IPFS.
+ * @returns The a link to the IPFS.
+ */
 const uploadOffchainMetadataToIpfs = async (metadata) => {
 	const ipfs_metadata = await ipfs.add(JSON.stringify(metadata));
 	if (ipfs_metadata == null) {
 		return "";
 	} else {
-		return ipfs_metadata.path; // `https://ipfs.io/ipfs/${ipfs_metadata.path}`;
+		return `https://ipfs.io/ipfs/${ipfs_metadata.path}`;
 	}
 };
 
-const getMetadata = async (mint) => {
+/**
+ * Returns the Program Derived Address for the given seeds that will be used to create or find a metadata account.
+ * @param mint - The mint address of the token.
+ * @returns The public key for the PDA.
+ */
+export const getMetadata = async (mint) => {
 	return (
 		await web3.PublicKey.findProgramAddress(
 			[
@@ -146,7 +180,12 @@ const getMetadata = async (mint) => {
 	)[0];
 };
 
-const getMasterEdition = async (mint) => {
+/**
+ * Returns the Program Derived Address for the given seeds that will be used to create or find a master edition account.
+ * @param mint - The mint address of the token
+ * @returns The public key for the PDA.
+ */
+export const getMasterEdition = async (mint) => {
 	return (
 		await web3.PublicKey.findProgramAddress(
 			[
@@ -156,6 +195,22 @@ const getMasterEdition = async (mint) => {
 				Buffer.from("edition"),
 			],
 			TOKEN_METADATA_PROGRAM_ID
+		)
+	)[0];
+};
+
+/**
+ * Returns the Program Derived Address for the given seeds that will be used to create or find a image account.
+ * @param mint - The mint address of the token
+ * @param author - The public key of the account that owns the image.
+ * @param programId - The program ID of the program.
+ * @returns The public key for the PDA.
+ */
+export const getImageAddress = async (program, mint, author) => {
+	return (
+		await web3.PublicKey.findProgramAddress(
+			[mint.toBuffer(), Buffer.from("image"), author.toBuffer()],
+			program.value.programId
 		)
 	)[0];
 };

@@ -11,11 +11,13 @@ import {
 	createAssociatedTokenAccount,
 	mintTo,
 	AccountLayout,
+	createMintToCheckedInstruction,
 } from "@solana/spl-token";
 import { create } from "ipfs-http-client";
 import { BN } from "bn.js";
 import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet";
 import { assert } from "chai";
+const { SystemProgram } = anchor.web3;
 
 const TOKEN_METADATA_PROGRAM_ID = new anchor.web3.PublicKey(
 	"metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
@@ -29,10 +31,13 @@ const nftSymbol = "Portugal";
 let metadataUri = `https://ipfs.infura.io/ipfs/`;
 
 let masterMintId = null;
-let nftTokenAccount = null;
+let ataMaster = null;
+let metadataAddressMaster = null;
 
 const provider = anchor.AnchorProvider.env();
 anchor.setProvider(provider);
+const program = anchor.workspace
+	.MasterarbeitPhilippRoiner as Program<MasterarbeitPhilippRoiner>;
 
 const createMetadata = async () => {
 	// Upload image to IPFS
@@ -44,7 +49,7 @@ const createMetadata = async () => {
 		name: "Lisboa",
 		symbol: "Portugal",
 		description: "This is a image I took in Lisboa",
-		image: image_url,
+		image: cid,
 	};
 
 	const ipfs_metadata = await ipfs.add(JSON.stringify(metadata));
@@ -103,6 +108,45 @@ const getTokenAmount = async (accountPublicKey, provider) => {
 	return accountInfo.amount.toString();
 };
 
+const getNewEdition = async (
+	mint: anchor.web3.PublicKey
+): Promise<anchor.web3.PublicKey> => {
+	return (
+		await anchor.web3.PublicKey.findProgramAddress(
+			[
+				Buffer.from("metadata"),
+				TOKEN_METADATA_PROGRAM_ID.toBuffer(),
+				mint.toBuffer(),
+				Buffer.from("edition"),
+			],
+			TOKEN_METADATA_PROGRAM_ID
+		)
+	)[0];
+};
+
+const getEditionMarkPda = async (): Promise<anchor.web3.PublicKey> => {
+	const EDITION_MARKER_BIT_SIZE = 248;
+	let edition = 1;
+
+	let editionNumber = new anchor.BN(
+		Math.floor(edition / EDITION_MARKER_BIT_SIZE)
+	);
+	console.log("editionNumber: ", editionNumber.toString());
+
+	return (
+		await anchor.web3.PublicKey.findProgramAddress(
+			[
+				Buffer.from("metadata"),
+				TOKEN_METADATA_PROGRAM_ID.toBuffer(),
+				masterMintId.publicKey.toBuffer(),
+				Buffer.from("edition"),
+				Buffer.from(editionNumber.toString()),
+			],
+			TOKEN_METADATA_PROGRAM_ID
+		)
+	)[0];
+};
+
 async function mintNft() {
 	// Configure the client to use the local cluster.
 	try {
@@ -122,11 +166,11 @@ async function mintNft() {
 		masterMintId = mintKey;
 
 		// Get the ATA for a token and the account that we want to own the ATA (but it might not existing on the SOL network yet)
-		nftTokenAccount = await getAssociatedTokenAddress(
+		ataMaster = await getAssociatedTokenAddress(
 			mintKey.publicKey,
 			provider.wallet.publicKey
 		);
-		console.log("NFT Account: ", nftTokenAccount.toBase58());
+		console.log("ATA MASTER: ", ataMaster.toBase58());
 
 		// Fires a list of instructions
 		const mint_tx = new anchor.web3.Transaction().add(
@@ -148,7 +192,7 @@ async function mintNft() {
 			// Create the ATA account that is associated with our mint on our anchor wallet
 			createAssociatedTokenAccountInstruction(
 				provider.wallet.publicKey,
-				nftTokenAccount,
+				ataMaster,
 				provider.wallet.publicKey,
 				mintKey.publicKey
 			)
@@ -163,25 +207,35 @@ async function mintNft() {
 		console.log("User: ", provider.wallet.publicKey.toString());
 
 		// Executes our code to mint our token into our specified ATA
-		const metadataAddress = await getMetadata(mintKey.publicKey);
-		console.log("Metadata address: ", metadataAddress.toBase58());
+		metadataAddressMaster = await getMetadata(mintKey.publicKey);
+		console.log("Metadata address: ", metadataAddressMaster.toBase58());
 		const masterEditionAddress = await getMasterEdition(mintKey.publicKey);
 		console.log("MasterEdition address: ", masterEditionAddress.toBase58());
 
+		const image = anchor.web3.Keypair.generate();
+
 		const tx = await program.methods
-			.mintNft(mintKey.publicKey, nftName, nftSymbol, metadataUri)
+			.mintNft(
+				mintKey.publicKey,
+				nftName,
+				nftSymbol,
+				metadataUri,
+				new BN(1)
+			)
 			.accounts({
+				image: image.publicKey,
 				mintAuthority: provider.wallet.publicKey,
 				mint: mintKey.publicKey,
-				tokenAccount: nftTokenAccount,
+				tokenAccount: ataMaster,
 				tokenProgram: TOKEN_PROGRAM_ID,
-				metadata: metadataAddress,
+				metadata: metadataAddressMaster,
 				masterEdition: masterEditionAddress,
 				tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
 				payer: provider.wallet.publicKey,
 				systemProgram: anchor.web3.SystemProgram.programId,
 				rent: anchor.web3.SYSVAR_RENT_PUBKEY,
 			})
+			.signers([image])
 			.rpc();
 		console.log("Your transaction signature", tx);
 		return tx;
@@ -190,181 +244,140 @@ async function mintNft() {
 	}
 }
 
-// async function mint_print_edition() {
-// 	const getNewEdition = async (
-// 		mint: anchor.web3.PublicKey
-// 	): Promise<anchor.web3.PublicKey> => {
-// 		return (
-// 			await anchor.web3.PublicKey.findProgramAddress(
-// 				[
-// 					Buffer.from("metadata"),
-// 					TOKEN_METADATA_PROGRAM_ID.toBuffer(),
-// 					mint.toBuffer(),
-// 					Buffer.from("metadata"),
-// 				],
-// 				TOKEN_METADATA_PROGRAM_ID
-// 			)
-// 		)[0];
-// 	};
+async function mint_print_edition() {
+	// Configure the client to use the local cluster.
+	try {
+		const provider = anchor.AnchorProvider.env();
+		anchor.setProvider(provider);
 
-// 	const getMasterEdition = async (
-// 		mint: anchor.web3.PublicKey
-// 	): Promise<anchor.web3.PublicKey> => {
-// 		return (
-// 			await anchor.web3.PublicKey.findProgramAddress(
-// 				[
-// 					Buffer.from("metadata"),
-// 					TOKEN_METADATA_PROGRAM_ID.toBuffer(),
-// 					masterMintId.publicKey.toBuffer(),
-// 					Buffer.from("edition"),
-// 				],
-// 				TOKEN_METADATA_PROGRAM_ID
-// 			)
-// 		)[0];
-// 	};
+		const program = anchor.workspace
+			.MasterarbeitPhilippRoiner as Program<MasterarbeitPhilippRoiner>;
 
-// 	const getEditionMarkPda = async (
-// 		mint: anchor.web3.PublicKey
-// 	): Promise<anchor.web3.PublicKey> => {
-// 		return (
-// 			await anchor.web3.PublicKey.findProgramAddress(
-// 				[
-// 					Buffer.from("metadata"),
-// 					TOKEN_METADATA_PROGRAM_ID.toBuffer(),
-// 					masterMintId.publicKey.toBuffer(),
-// 					Buffer.from("edition"),
-// 					Buffer.from("1"),
-// 				],
-// 				TOKEN_METADATA_PROGRAM_ID
-// 			)
-// 		)[0];
-// 	};
+		console.log("Program Id: ", program.programId.toBase58());
+		console.log("Mint Size: ", MINT_SIZE);
+		const lamports =
+			await program.provider.connection.getMinimumBalanceForRentExemption(
+				MINT_SIZE
+			);
+		console.log("Mint Account Lamports: ", lamports);
 
-// 	// Configure the client to use the local cluster.
-// 	try {
-// 		const provider = anchor.AnchorProvider.env();
-// 		anchor.setProvider(provider);
+		// Generate a random keypair that will represent our token
+		const newMint: anchor.web3.Keypair = anchor.web3.Keypair.generate();
 
-// 		const program = anchor.workspace
-// 			.MasterarbeitPhilippRoiner as Program<MasterarbeitPhilippRoiner>;
+		// Get the ATA for a token and the account that we want to own the ATA (but it might not existing on the SOL network yet)
+		const ata = await getAssociatedTokenAddress(
+			newMint.publicKey,
+			provider.wallet.publicKey
+		);
+		console.log("ATA: ", ata.toBase58());
 
-// 		console.log("Program Id: ", program.programId.toBase58());
-// 		console.log("Mint Size: ", MINT_SIZE);
-// 		const lamports =
-// 			await program.provider.connection.getMinimumBalanceForRentExemption(
-// 				MINT_SIZE
-// 			);
-// 		console.log("Mint Account Lamports: ", lamports);
+		const tx2 = new anchor.web3.Transaction().add(
+			anchor.web3.SystemProgram.createAccount({
+				fromPubkey: provider.wallet.publicKey,
+				newAccountPubkey: newMint.publicKey,
+				lamports,
+				space: MINT_SIZE,
+				programId: TOKEN_PROGRAM_ID,
+			}),
+			createInitializeMintInstruction(
+				newMint.publicKey,
+				0,
+				provider.wallet.publicKey,
+				null
+			),
+			createAssociatedTokenAccountInstruction(
+				provider.wallet.publicKey,
+				ata,
+				provider.wallet.publicKey,
+				newMint.publicKey
+			),
+			createMintToCheckedInstruction(
+				newMint.publicKey,
+				ata,
+				provider.wallet.publicKey,
+				1,
+				0
+			)
+		);
 
-// 		// Generate a random keypair that will represent our token
-// 		const newMint: anchor.web3.Keypair = anchor.web3.Keypair.generate();
+		// sends and create the transaction
+		const res = await program.provider.sendAndConfirm(tx2, [newMint]);
 
-// 		// Get the ATA for a token and the account that we want to own the ATA (but it might not existing on the SOL network yet)
-// 		const nftTokenAccount = await getAssociatedTokenAddress(
-// 			newMint.publicKey,
-// 			provider.wallet.publicKey
-// 		);
-// 		console.log("NFT Account: ", nftTokenAccount.toBase58());
+		// metadataUri = await createMetadata();
 
-// 		// Fires a list of instructions
-// 		// const mint_tx = new anchor.web3.Transaction().add(
-// 		// 	// Use anchor to create an account from the mint provider.wallet.publicKey that we created
-// 		// 	anchor.web3.SystemProgram.createAccount({
-// 		// 		fromPubkey: provider.wallet.publicKey,
-// 		// 		newAccountPubkey: mintKey.publicKey,
-// 		// 		space: MINT_SIZE,
-// 		// 		programId: TOKEN_PROGRAM_ID,
-// 		// 		lamports,
-// 		// 	}),
-// 		// 	// Fire a transaction to create our mint account that is controlled by our anchor wallet
-// 		// 	createInitializeMintInstruction(
-// 		// 		mintKey.publicKey,
-// 		// 		0,
-// 		// 		provider.wallet.publicKey,
-// 		// 		provider.wallet.publicKey
-// 		// 	),
-// 		// 	// Create the ATA account that is associated with our mint on our anchor wallet
-// 		// 	createAssociatedTokenAccountInstruction(
-// 		// 		provider.wallet.publicKey,
-// 		// 		nftTokenAccount,
-// 		// 		provider.wallet.publicKey,
-// 		// 		mintKey.publicKey
-// 		// 	)
-// 		// );
-// 		const tx2 = new anchor.web3.Transaction().add(
-// 			anchor.web3.SystemProgram.createAccount({
-// 				fromPubkey: provider.wallet.publicKey,
-// 				newAccountPubkey: newMint.publicKey,
-// 				lamports,
-// 				space: MINT_SIZE,
-// 				programId: TOKEN_PROGRAM_ID,
-// 			}),
-// 			createInitializeMintInstruction(
-// 				newMint.publicKey,
-// 				0,
-// 				provider.wallet.publicKey,
-// 				null
-// 			),
-// 			createAssociatedTokenAccountInstruction(
-// 				provider.wallet.publicKey,
-// 				nftTokenAccount,
-// 				provider.wallet.publicKey,
-// 				newMint.publicKey
-// 			),
-// 			createMintToCheckedInstruction(
-// 				newMint.publicKey,
-// 				nftTokenAccount,
-// 				provider.wallet.publicKey,
-// 				1,
-// 				0
-// 			)
-// 		);
+		console.log("Mint key: ", newMint.publicKey.toString());
+		console.log("User: ", provider.wallet.publicKey.toString());
 
-// 		// const mintResult = await connection.sendTransaction(tx, [wallet.payer, newMint]
-// 		// sends and create the transaction
-// 		const res = await program.provider.sendAndConfirm(tx2, [newMint]);
+		const newMetadataAddress = await getMetadata(newMint.publicKey);
 
-// 		metadataUri = await createMetadata();
+		const newEditionAddress = await getNewEdition(newMint.publicKey);
 
-// 		console.log("Mint key: ", newMint.publicKey.toString());
-// 		console.log("User: ", provider.wallet.publicKey.toString());
+		const masterEditionAddress = await getMasterEdition(
+			masterMintId.publicKey
+		);
 
-// 		// Executes our code to mint our token into our specified ATA
-// 		const metadataAddress = await getMetadata(newMint.publicKey);
+		const editionMarkPda = await getEditionMarkPda();
 
-// 		const newEditionAddress = await getNewEdition(newMint.publicKey);
+		console.log("newMetadataAddress: ", newMetadataAddress.toBase58());
+		console.log(
+			"MetadataAddressmaster: ",
+			metadataAddressMaster.toBase58()
+		);
+		console.log("newEditionAddress: ", newEditionAddress.toBase58());
+		console.log("masterEditionAddress: ", masterEditionAddress.toBase58());
+		console.log("editionMarkPda: ", editionMarkPda.toBase58());
 
-// 		const masterEditionAddress = await getMasterEdition(newMint.publicKey);
+		console.log(
+			JSON.stringify({
+				originalMint: masterMintId.publicKey,
+				newMetadata: newMetadataAddress,
+				newEdition: newEditionAddress,
+				masterEdition: masterEditionAddress,
+				newMint: newMint.publicKey,
+				newTokenAccount: ata,
+				editionMarkPda: editionMarkPda,
+				newMintAuthority: provider.wallet.publicKey,
+				payer: provider.wallet.publicKey,
+				tokenAccountOwner: provider.wallet.publicKey,
+				tokenAccount: ataMaster,
+				newMetadataUpdateAuthority: provider.wallet.publicKey,
+				metadata: metadataAddressMaster,
+				tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
+				tokenProgram: TOKEN_PROGRAM_ID,
+				systemProgram: anchor.web3.SystemProgram.programId,
+				rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+			})
+		);
 
-// 		const editionMarkPda = await getEditionMarkPda(newMint.publicKey);
+		const tx = await program.methods
+			.mintEdition(new anchor.BN(1))
+			.accounts({
+				originalMint: masterMintId.publicKey,
+				newMetadata: newMetadataAddress,
+				newEdition: newEditionAddress,
+				masterEdition: masterEditionAddress,
+				newMint: newMint.publicKey,
+				newTokenAccount: ata,
+				editionMarkPda: editionMarkPda,
+				newMintAuthority: provider.wallet.publicKey,
+				payer: provider.wallet.publicKey,
+				tokenAccountOwner: provider.wallet.publicKey,
+				tokenAccount: ataMaster,
+				newMetadataUpdateAuthority: provider.wallet.publicKey,
+				metadata: metadataAddressMaster,
+				tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
+				tokenProgram: TOKEN_PROGRAM_ID,
+				systemProgram: anchor.web3.SystemProgram.programId,
+				rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+			})
+			.rpc();
+		console.log("Your transaction signature", tx);
+	} catch (e) {
+		console.error(e);
+	}
+}
 
-// 		const tx = await program.methods
-// 			.mintPrintEdition()
-// 			.accounts({
-// 				newMetadata: metadataAddress,
-// 				newEdition: newEditionAddress,
-// 				masterEdition: masterEditionAddress,
-// 				newMint: newMint.publicKey,
-// 				editionMarkPda: editionMarkPda,
-// 				newMintAuthority: provider.wallet.publicKey,
-// 				payer: provider.wallet.publicKey,
-// 				tokenAccountOwner: provider.wallet.publicKey,
-// 				tokenAccount: nftTokenAccount,
-// 				newMetadataUpdateAuthority: provider.wallet.publicKey,
-// 				metadata: metadataAddress,
-// 				tokenProgram: TOKEN_PROGRAM_ID,
-// 				systemProgram: anchor.web3.SystemProgram.programId,
-// 				rent: anchor.web3.SYSVAR_RENT_PUBKEY,
-// 			})
-// 			.rpc();
-// 		console.log("Your transaction signature", tx);
-// 	} catch (e) {
-// 		console.error(e);
-// 	}
-// }
-
-// mintNft().then(() => console.log("..."));
-// mint_print_edition());
+// mintNft().then(() => mint_print_edition());
 
 async function makeAndAcceptOffer() {
 	// Configure the client to use the local cluster.
@@ -665,4 +678,218 @@ async function makeAndCancelOffer() {
 }
 
 // makeAndAcceptOffer();
-makeAndCancelOffer();
+// makeAndCancelOffer();
+
+async function closeAccounts() {
+	try {
+		const program = anchor.workspace
+			.MasterarbeitPhilippRoiner as Program<MasterarbeitPhilippRoiner>;
+
+		const images = await program.account.image.all();
+		console.log(images.length);
+		const del = images[0];
+
+		const tx = await program.methods
+			.closeAccount()
+			.accounts({
+				account: del.publicKey,
+				author: provider.wallet.publicKey,
+			})
+			.rpc();
+
+		const i = await program.account.image.fetchNullable(del.publicKey);
+		console.log(i);
+		const images2 = await program.account.image.all();
+		console.log(images2.length);
+	} catch (e) {
+		console.log(e);
+	}
+}
+
+const author = anchor.web3.Keypair.generate();
+console.log("Author: ", author.publicKey.toBase58());
+
+async function initialize() {
+	try {
+		const mint = new anchor.web3.PublicKey(
+			"9BNbUeRimzCA3ihmrEPYV1nSMFiT4Jc93eSmb5JNGeRe"
+		);
+		const [lock_account, bump] =
+			await anchor.web3.PublicKey.findProgramAddress(
+				[provider.wallet.publicKey.toBuffer(), mint.toBuffer()],
+				program.programId
+			);
+		const [lock_escrow_account, escrow_bump] =
+			await anchor.web3.PublicKey.findProgramAddress(
+				[
+					provider.wallet.publicKey.toBuffer(),
+					Buffer.from("escrow"),
+					mint.toBuffer(),
+				],
+				program.programId
+			);
+		//const utf8encoded = Buffer.from(bio);
+		// Execute the RPC call
+		console.log(lock_account.toBase58());
+		console.log(lock_escrow_account.toBase58(), escrow_bump);
+
+		const tx = await program.methods
+			.initializeOffer(bump, escrow_bump)
+			.accounts({
+				offerAccount: lock_account,
+				offerEscrowAccount: lock_escrow_account, // publickey for our new account
+				offerMaker: provider.wallet.publicKey, // publickey of our anchor wallet provider
+				mint: mint,
+				author: author.publicKey,
+				systemProgram: SystemProgram.programId, // just for Anchor reference
+			})
+			// .signers([lock])
+			.rpc(); // acc must sign this Tx, to prove we have the private key too
+
+		console.log(
+			`Successfully intialized lock ID: ${lock_account} with escrow ${lock_escrow_account} for user ${provider.wallet.publicKey} \n tx: ${tx}`
+		);
+	} catch (e) {
+		console.log(e);
+	}
+}
+
+async function payin() {
+	try {
+		const mint = new anchor.web3.PublicKey(
+			"9BNbUeRimzCA3ihmrEPYV1nSMFiT4Jc93eSmb5JNGeRe"
+		);
+		const [lock_account, bump] =
+			await anchor.web3.PublicKey.findProgramAddress(
+				[provider.wallet.publicKey.toBuffer(), mint.toBuffer()],
+				program.programId
+			);
+		const [lock_escrow_account, escrow_bump] =
+			await anchor.web3.PublicKey.findProgramAddress(
+				[
+					provider.wallet.publicKey.toBuffer(),
+					Buffer.from("escrow"),
+					mint.toBuffer(),
+				],
+				program.programId
+			);
+		console.log(lock_escrow_account.toBase58(), escrow_bump);
+
+		const tx = await program.methods
+			.makeOffer(new BN(anchor.web3.LAMPORTS_PER_SOL))
+			.accounts({
+				offerAccount: lock_account, // publickey for our new account
+				offerEscrowAccount: lock_escrow_account,
+				offerMaker: provider.wallet.publicKey,
+				systemProgram: SystemProgram.programId, // just for Anchor reference
+			})
+			.rpc();
+
+		console.log(
+			`Successfully payed in lock ID: ${lock_account.toBase58()}`
+		);
+	} catch (e) {
+		console.log(e);
+	}
+}
+
+async function withdraw() {
+	try {
+		const mint = new anchor.web3.PublicKey(
+			"9BNbUeRimzCA3ihmrEPYV1nSMFiT4Jc93eSmb5JNGeRe"
+		);
+		const [lock_account, bump] =
+			await anchor.web3.PublicKey.findProgramAddress(
+				[provider.wallet.publicKey.toBuffer(), mint.toBuffer()],
+				program.programId
+			);
+		const [lock_escrow_account, escrow_bump] =
+			await anchor.web3.PublicKey.findProgramAddress(
+				[
+					provider.wallet.publicKey.toBuffer(),
+					Buffer.from("escrow"),
+					mint.toBuffer(),
+				],
+				program.programId
+			);
+
+		const tx = await program.methods
+			.cancelOffer()
+			.accounts({
+				offerAccount: lock_account, // publickey for our new account
+				offerEscrowAccount: lock_escrow_account,
+				offerMaker: provider.wallet.publicKey,
+				// lockProgram: lock_account_pda, // just for Anchor reference,
+				systemProgram: SystemProgram.programId, // just for Anchor reference
+			})
+			.rpc();
+
+		console.log(
+			`Successfully withdraw from lock ID: ${lock_account.toBase58()}`
+		);
+	} catch (e) {
+		console.log(e);
+	}
+}
+
+async function acceptOffer() {
+	try {
+		const mint = new anchor.web3.PublicKey(
+			"9BNbUeRimzCA3ihmrEPYV1nSMFiT4Jc93eSmb5JNGeRe"
+		);
+		const [lock_account, bump] =
+			await anchor.web3.PublicKey.findProgramAddress(
+				[provider.wallet.publicKey.toBuffer(), mint.toBuffer()],
+				program.programId
+			);
+		const [lock_escrow_account, escrow_bump] =
+			await anchor.web3.PublicKey.findProgramAddress(
+				[
+					provider.wallet.publicKey.toBuffer(),
+					Buffer.from("escrow"),
+					mint.toBuffer(),
+				],
+				program.programId
+			);
+
+		const [license_account, license_bump] =
+			await anchor.web3.PublicKey.findProgramAddress(
+				[
+					provider.wallet.publicKey.toBuffer(),
+					Buffer.from("license"),
+					mint.toBuffer(),
+				],
+				program.programId
+			);
+
+		console.log("license account: ", license_account.toBase58());
+
+		const tx = await program.methods
+			.acceptOffer()
+			.accounts({
+				license: license_account,
+				offerAccount: lock_account, // publickey for our new account
+				offerEscrowAccount: lock_escrow_account,
+				offerMaker: provider.wallet.publicKey,
+				author: author.publicKey,
+				systemProgram: SystemProgram.programId, // just for Anchor reference
+			})
+			.signers([author])
+			.rpc();
+
+		console.log(
+			`Successfully accepted offer with lock ID: ${lock_account.toBase58()}`
+		);
+
+		const license = await program.account.license.fetch(license_account);
+		console.log("license owner: ", license.owner.toBase58());
+	} catch (e) {
+		console.log(e);
+	}
+}
+
+// withdraw();
+initialize().then(() => payin().then(() => acceptOffer()));
+
+// payin();
+// acceptOffer();

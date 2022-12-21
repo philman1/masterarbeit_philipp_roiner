@@ -1,66 +1,47 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::{Mint, Token, TokenAccount};
+use anchor_lang::solana_program::{program::invoke, system_instruction::transfer};
 
 use crate::state::offer::*;
 
-pub fn make_offer_handler(
-    ctx: Context<MakeOffer>,
-    escrowed_tokens_of_offer_maker_bump: u8,
-    im_offering_this_much: u64,
-    how_much_i_want_of_what_you_have: u64,
-) -> Result<()> {
-    let offer = &mut ctx.accounts.offer;
-    offer.who_made_the_offer = ctx.accounts.who_made_the_offer.key();
-    offer.kind_of_token_wanted_in_return = ctx.accounts.kind_of_token_wanted_in_return.key();
-    offer.amount_received_if_offer_accepted = how_much_i_want_of_what_you_have;
-    offer.escrowed_tokens_of_offer_maker_bump = escrowed_tokens_of_offer_maker_bump;
-
-    anchor_spl::token::transfer(
-        CpiContext::new(
-            ctx.accounts.token_program.to_account_info(),
-            anchor_spl::token::Transfer {
-                from: ctx
-                    .accounts
-                    .token_account_from_who_made_the_offer
-                    .to_account_info(),
-                to: ctx
-                    .accounts
-                    .escrowed_tokens_of_offer_maker
-                    .to_account_info(),
-                authority: ctx.accounts.who_made_the_offer.to_account_info(),
-            },
-        ),
-        im_offering_this_much,
-    )
+/// Transfers funds to the offer escrow account.
+///
+/// Arguments:
+///
+/// * `ctx`: Context<MakeOffer>
+/// * `lamports`: The amount of lamports to transfer to the offer escrow account.
+pub fn make_offer_handler(ctx: Context<MakeOffer>, lamports: u64) -> Result<()> {
+    let offer_account = &mut ctx.accounts.offer_account;
+    let offer_escrow_account = &mut ctx.accounts.offer_escrow_account;
+    let transfer_instruction = &transfer(
+        &offer_account.offer_maker,
+        &offer_escrow_account.to_account_info().key,
+        lamports,
+    );
+    msg!("Paying in {}", lamports);
+    invoke(
+        transfer_instruction,
+        &[
+            ctx.accounts.offer_maker.to_account_info(),
+            offer_escrow_account.to_account_info(),
+        ],
+    )?;
+    Ok(())
 }
 
+/// Properties:
+///
+/// * `offer_account`: This is the account that holds the offer.
+/// * `offer_maker`: The account that is making the offer.
+/// * `system_program`: This is the program that is running the transaction.
+/// * `offer_escrow_account`: This is the account that holds the funds for the offer.
 #[derive(Accounts)]
-#[instruction(escrow_bump: u8)]
 pub struct MakeOffer<'info> {
-    #[account(init, payer = who_made_the_offer, space = 8 + 32 + 32 + 8 + 1)]
-    pub offer: Account<'info, Offer>,
-
-    #[account(mut)]
-    pub who_made_the_offer: Signer<'info>,
-
-    #[account(mut, constraint = token_account_from_who_made_the_offer.mint ==  kind_of_token_offered.key())]
-    pub token_account_from_who_made_the_offer: Account<'info, TokenAccount>,
-
-    #[account(
-        init,
-        payer = who_made_the_offer,
-        seeds = [offer.key().as_ref()],
-        bump,
-        token::mint = kind_of_token_offered,
-        token::authority = escrowed_tokens_of_offer_maker,
-    )]
-    pub escrowed_tokens_of_offer_maker: Account<'info, TokenAccount>,
-
-    pub kind_of_token_offered: Account<'info, Mint>,
-
-    pub kind_of_token_wanted_in_return: Account<'info, Mint>,
-
-    pub token_program: Program<'info, Token>,
+    #[account(has_one = offer_maker)]
+    pub offer_account: Account<'info, Offer>,
+    #[account(signer)]
+    /// CHECK: This is not dangerous because we don't read or write from this account
+    pub offer_maker: AccountInfo<'info>,
     pub system_program: Program<'info, System>,
-    pub rent: Sysvar<'info, Rent>,
+    #[account( mut, constraint = offer_account.escrow_pda == *offer_escrow_account.to_account_info().key)]
+    pub offer_escrow_account: Account<'info, EscrowAccount>,
 }

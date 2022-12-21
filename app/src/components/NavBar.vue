@@ -2,19 +2,21 @@
 import { ref } from "vue";
 import { WalletMultiButton } from "solana-wallets-vue";
 import { useWallet } from "solana-wallets-vue";
+import logo from "@/assets/picense_logo_075x.png";
 
-const { connected } = useWallet();
+const { connected, publicKey } = useWallet();
 let isOpen = ref(false);
 </script>
 
 <template>
 	<header
-		class="bg-gray-900 sm:flex sm:justify-between sm:items-center sm:px-4 sm:py-3"
+		class="bg-black-800 lg:mb-8 sm:flex sm:justify-between sm:items-center sm:px-4 sm:py-3"
 	>
 		<div class="flex items-center justify-between px-4 py-3 sm:p-0">
-			<div>
+			<!-- <div>
 				<wallet-multi-button></wallet-multi-button>
-			</div>
+			</div> -->
+			<img :src="logo" style="width: 50%" />
 			<div class="sm:hidden">
 				<button
 					@click="isOpen = !isOpen"
@@ -36,26 +38,40 @@ let isOpen = ref(false);
 				</button>
 			</div>
 		</div>
-		<nav
-			:class="isOpen ? 'block' : 'hidden'"
-			class="px-2 pt-2 pb-4 sm:flex sm:p-0"
-			v-if="!(connected && publicKey != null)"
-		>
-			<router-link
-				:to="{ name: 'Home' }"
-				class="block px-2 py-1 text-white font-semibold rounded hover:bg-gray-800"
-				>Home</router-link
+		<div class="flex items-center justify-between">
+			<nav
+				:class="isOpen ? 'block' : 'hidden'"
+				class="px-2 pt-2 pb-4 sm:flex sm:p-0 mr-4"
+				v-if="connected && publicKey != null"
 			>
-			<router-link
-				:to="{ name: 'MintNft' }"
-				class="block px-2 py-1 text-white font-semibold rounded hover:bg-gray-800"
-				>Mint Nft</router-link
-			>
-			<a
-				href="#"
-				class="mt-1 block px-2 py-1 text-white font-semibold rounded hover:bg-gray-800 sm:mt-0 sm:ml-2"
-				>Messages</a
-			>
-		</nav>
+				<router-link
+					:to="{ name: 'Home' }"
+					class="block px-6 py-3 text-white font-semibold rounded hover:bg-gray-800"
+					>Home</router-link
+				>
+				<router-link
+					:to="{ name: 'MintNft' }"
+					class="block px-6 py-3 text-white font-semibold rounded hover:bg-gray-800"
+					>Mint Nft</router-link
+				>
+				<router-link
+					:to="{ name: 'Offers' }"
+					class="block px-6 py-3 text-white font-semibold rounded hover:bg-gray-800"
+					>Offers</router-link
+				>
+				<router-link
+					:to="{ name: 'Licenses' }"
+					class="block px-6 py-3 text-white font-semibold rounded hover:bg-gray-800"
+					>Licenses</router-link
+				>
+				<router-link
+					:to="{ name: 'Profile' }"
+					class="block px-6 py-3 text-white font-semibold rounded hover:bg-gray-800"
+					>Profile</router-link
+				>
+			</nav>
+
+			<wallet-multi-button></wallet-multi-button>
+		</div>
 	</header>
 </template>

@@ -7,4 +7,7 @@ pub enum ErrorCodes {
 
     #[msg("Metadata account create failed!")]
     MetadataCreateFailed,
+
+    #[msg("License Type doesnt allow to buy license!")]
+    WrongLicenseType,
 }

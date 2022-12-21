@@ -3,141 +3,179 @@ use anchor_lang::prelude::*;
 mod instructions;
 mod state;
 use crate::accept_offer::*;
+use crate::buy_license::*;
 use crate::cancel_offer::*;
+use crate::create_license::*;
+use crate::init_offer::*;
 use crate::make_offer::*;
 use crate::mint_nft::*;
+use crate::print_edition::*;
+use crate::update_image::*;
 use instructions::*;
 
-declare_id!("4euwMgqxB9GkxVBY7uXKRRuC68yhkNbsVUhDPYS1mbhD");
+declare_id!("FhKv5xKBKppK18jRDwAcXtpmALWzqppGkW2sPZ578YqQ");
 
 #[program]
 pub mod masterarbeit_philipp_roiner {
 
     use super::*;
 
+    /// Mints a token, creates a metadata account, creates a master edition account
+    /// and a image account for a given image that is stored on the IPFS.
+    ///
+    /// Arguments:
+    ///
+    /// * `ctx`: Context<MintNFT>
+    /// * `creator_key`: The public key of the creator of the NFT.
+    /// * `name`: The name of the NFT.
+    /// * `symbol`: The symbol of the token.
+    /// * `uri`: The URI of the NFT.
+    /// * `available`: Whether the NFT is available for purchase or not.
+    /// * `allowed_license_types`: Specifies the license type.
+    /// * `one_time_price`: Specifies the price for an RF license.
     pub fn mint_nft(
         ctx: Context<MintNFT>,
         creator_key: Pubkey,
         name: String,
         symbol: String,
         uri: String,
+        available: bool,
         allowed_license_types: u8,
+        one_time_price: u64,
     ) -> Result<()> {
-        mint_nft_handler(ctx, creator_key, name, symbol, uri, allowed_license_types)
-    }
-
-    pub fn make_offer(
-        ctx: Context<MakeOffer>,
-        escrowed_tokens_of_offer_maker_bump: u8,
-        im_offering_this_much: u64,
-        how_much_i_want_of_what_you_have: u64,
-    ) -> Result<()> {
-        make_offer_handler(
+        mint_nft_handler(
             ctx,
-            escrowed_tokens_of_offer_maker_bump,
-            im_offering_this_much,
-            how_much_i_want_of_what_you_have,
+            creator_key,
+            name,
+            symbol,
+            uri,
+            available,
+            allowed_license_types,
+            one_time_price,
         )
     }
 
-    pub fn accept_offer(ctx: Context<AcceptOffer>) -> Result<()> {
-        accept_offer_handler(ctx)
+    /// Mints a new edition for a given master edition and copies its NFT and metadata.
+    ///
+    /// Arguments:
+    ///
+    /// * `ctx`: Context<MintPrintEdition>
+    /// * `edition`: Edition number
+    pub fn mint_edition(ctx: Context<MintPrintEdition>, edition: u64) -> Result<()> {
+        mint_print_edition_handler(ctx, edition)
     }
 
+    /// It initializes a new offer account and a corresponding offer escrow account.
+    ///
+    /// Arguments:
+    ///
+    /// * `ctx`: Context<InitializeOffer>
+    /// * `bump`: The offer account bump.
+    /// * `escrow_bump`: The offer escrow account bump.
+    /// * `offer_uri`: The URI of the offer.
+    pub fn initialize_offer(
+        ctx: Context<InitializeOffer>,
+        bump: u8,
+        escrow_bump: u8,
+        offer_uri: String,
+    ) -> Result<()> {
+        initialize_offer_handler(ctx, bump, escrow_bump, offer_uri)
+    }
+
+    /// Transfers funds to the offer escrow account.
+    ///
+    /// Arguments:
+    ///
+    /// * `ctx`: Context<MakeOffer>
+    /// * `lamports`: The amount of lamports to transfer to the offer escrow account.
+    pub fn make_offer(ctx: Context<MakeOffer>, lamports: u64) -> Result<()> {
+        make_offer_handler(ctx, lamports)
+    }
+
+    /// The funds of the offer escrow account will be transferred back to the offer maker.
+    ///
+    /// Arguments:
+    ///
+    /// * `ctx`: Context<CancelOffer> - This is the context of the transaction. It contains the accounts
+    /// that are involved in the transaction.
     pub fn cancel_offer(ctx: Context<CancelOffer>) -> Result<()> {
         cancel_offer_handler(ctx)
     }
 
-    //     pub fn mint_print_edition(ctx: Context<MintPrintEdition>) -> Result<()> {
-    //         let cpi_program = ctx.accounts.token_program.to_account_info();
-    //         let cpi_accounts = MintTo {
-    //             mint: ctx.accounts.new_mint.to_account_info(),
-    //             to: ctx.accounts.token_account.to_account_info(),
-    //             authority: ctx.accounts.payer.to_account_info(),
-    //         };
-    //         let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
-    //         let result = mint_to(cpi_ctx, 1);
-    //         if let Err(_) = result {
-    //             return Err(error!(ErrorCode::MintFailed));
-    //         }
+    /// The offer escrow account is debited and the offer maker is credited. The license is updated to
+    /// reflect the new owner and the license type
+    ///
+    /// Arguments:
+    /// that are involved in the transaction.
+    /// * `ctx`: Context<AcceptOffer> - This is the context of the transaction. It contains the accounts
+    /// that are involved in the transaction.
+    pub fn accept_offer(ctx: Context<AcceptOffer>) -> Result<()> {
+        accept_offer_handler(ctx)
+    }
 
-    //         let accounts = vec![
-    //             ctx.accounts.new_metadata.to_account_info(),
-    //             ctx.accounts.new_edition.to_account_info(),
-    //             ctx.accounts.master_edition.to_account_info(),
-    //             ctx.accounts.new_mint.to_account_info(),
-    //             ctx.accounts.edition_mark_pda.to_account_info(),
-    //             ctx.accounts.new_mint_authority.to_account_info(),
-    //             ctx.accounts.payer.to_account_info(),
-    //             ctx.accounts.token_account_owner.to_account_info(),
-    //             ctx.accounts.token_account.to_account_info(),
-    //             ctx.accounts.new_metadata_update_authority.to_account_info(),
-    //             ctx.accounts.metadata.to_account_info(),
-    //             ctx.accounts.token_program.to_account_info(),
-    //             ctx.accounts.system_program.to_account_info(),
-    //             ctx.accounts.rent.to_account_info(),
-    //         ];
+    /// Updates the availability of an image.
+    ///
+    /// Arguments:
+    ///
+    /// * `ctx`: Context<UpdateImage> - This is the context of the transaction. It contains the accounts
+    /// that are involved in the transaction.
+    /// * `available`: New availability
+    pub fn update_image_availability(ctx: Context<UpdateImage>, availability: bool) -> Result<()> {
+        update_image_availability_handler(ctx, availability)
+    }
 
-    //         invoke(
-    //             &mint_new_edition_from_master_edition_via_token(
-    //                 ctx.accounts.token_program.key(),
-    //                 ctx.accounts.new_metadata.key(),
-    //                 ctx.accounts.new_edition.key(),
-    //                 ctx.accounts.master_edition.key(),
-    //                 ctx.accounts.new_mint.key(),
-    //                 ctx.accounts.new_mint_authority.key(),
-    //                 ctx.accounts.payer.key(),
-    //                 ctx.accounts.token_account_owner.key(),
-    //                 ctx.accounts.token_account.key(),
-    //                 ctx.accounts.new_metadata_update_authority.key(),
-    //                 ctx.accounts.metadata.key(),
-    //                 ctx.accounts.metadata.key(),
-    //                 1,
-    //             ),
-    //             &accounts.as_slice(),
-    //         )?;
+    /// The function updates the license type of an image.
+    ///
+    /// Arguments:
+    ///
+    /// * `ctx`: Context<UpdateImage> - This is the context of the transaction. It contains the accounts
+    /// that are involved in the transaction.
+    /// * `allowed_license_types`: New license type.
+    pub fn update_image_allowed_license_types(
+        ctx: Context<UpdateImage>,
+        allowed_license_types: u8,
+    ) -> Result<()> {
+        update_image_allowed_license_types_handler(ctx, allowed_license_types)
+    }
 
-    //         Ok(())
-    //     }
+    /// The function updates the one time price of an image
+    ///
+    /// Arguments:
+    ///
+    /// * `ctx`: Context<UpdateImage> - This is the context of the transaction. It contains the accounts
+    /// that are involved in the transaction.
+    /// * `one_time_price`: New price.
+    pub fn update_image_one_time_price(
+        ctx: Context<UpdateImage>,
+        one_time_price: u64,
+    ) -> Result<()> {
+        update_image_one_time_price_handler(ctx, one_time_price)
+    }
+
+    /// If the image account allows RF licenses, then transfer the one-time price from the payer to the
+    /// author, and create a new RF license for the payer.
+    ///
+    /// Arguments:
+    ///
+    /// * `ctx`: Context<BuyRfLicense> - This is the context of the transaction. It contains the accounts
+    /// that are involved in the transaction.
+    pub fn buy_rf_license(ctx: Context<BuyRfLicense>) -> Result<()> {
+        buy_rf_license_handler(ctx)
+    }
+
+    /// This function creates a RM license for the given image account.
+    ///
+    /// Arguments:
+    ///
+    /// * `ctx`: Context<CreateLicense> - This is the context of the transaction. It contains the accounts
+    /// that are involved in the transaction.
+    /// * `valid_until`: The time in seconds since the Unix epoch when the license expires.
+    /// * `license_information`: CID from the IPFS that holds all the license information.
+    pub fn create_license(
+        ctx: Context<CreateLicense>,
+        valid_until: i64,
+        license_information: String,
+    ) -> Result<()> {
+        create_license_handler(ctx, valid_until, license_information)
+    }
 }
-
-// #[derive(Accounts)]
-// pub struct MintPrintEdition<'info> {
-//     /// CHECK: This is not dangerous because we don't read or write from this account
-//     #[account(mut)]
-//     pub new_metadata: UncheckedAccount<'info>,
-//     /// CHECK: This is not dangerous because we don't read or write from this account
-//     #[account(mut)]
-//     pub new_edition: UncheckedAccount<'info>,
-//     /// CHECK: This is not dangerous because we don't read or write from this account
-//     #[account(mut)]
-//     pub master_edition: UncheckedAccount<'info>,
-//     /// CHECK: This is not dangerous because we don't read or write from this account
-//     #[account(mut)]
-//     pub new_mint: UncheckedAccount<'info>,
-//     /// CHECK: This is not dangerous because we don't read or write from this account
-//     #[account(mut)]
-//     pub edition_mark_pda: UncheckedAccount<'info>,
-//     #[account(mut)]
-//     pub new_mint_authority: Signer<'info>,
-//     /// CHECK: This is not dangerous because we don't read or write from this account
-//     #[account(mut)]
-//     pub payer: AccountInfo<'info>,
-//     /// CHECK: This is not dangerous because we don't read or write from this account
-//     #[account(mut)]
-//     pub token_account_owner: UncheckedAccount<'info>,
-//     /// CHECK: This is not dangerous because we don't read or write from this account
-//     #[account(mut)]
-//     pub token_account: UncheckedAccount<'info>,
-//     /// CHECK: This is not dangerous because we don't read or write from this account
-//     #[account(mut)]
-//     pub new_metadata_update_authority: UncheckedAccount<'info>,
-//     /// CHECK: This is not dangerous because we don't read or write from this account
-//     #[account(mut)]
-//     pub metadata: UncheckedAccount<'info>,
-//     // #[account(mut)]
-//     pub token_program: Program<'info, Token>,
-//     pub system_program: Program<'info, System>,
-//     /// CHECK: This is not dangerous because we don't read or write from this account
-//     pub rent: AccountInfo<'info>,
-// }
