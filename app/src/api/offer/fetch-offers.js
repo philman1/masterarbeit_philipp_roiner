@@ -3,6 +3,11 @@ import { useWorkspace } from "@/composables";
 import bs58 from "bs58";
 import { Offer } from "@/models";
 
+/**
+ * Fetches all active offer accounts and the corresponding balance from the offer escrow account.
+ * @param [filters] - An array of filters to apply to the request.
+ * @returns An array of Offer objects.
+ */
 export const fetchOffers = async (filters = []) => {
 	const { connection, program } = useWorkspace();
 	let offers = await program.value.account.offer.all(filters);
@@ -24,6 +29,10 @@ export const fetchOffers = async (filters = []) => {
 
 export const getEscrowedSolForOffer = async () => {};
 
+/**
+ * Returns a filter that will match a offer account whose offer maker is the given public key
+ * @param offerMakerBase58PublicKey - The public key of the offer maker.
+ */
 export const offerMakerFilter = (offerMakerBase58PublicKey) => ({
 	memcmp: {
 		offset: 8, // Discriminator
@@ -31,6 +40,10 @@ export const offerMakerFilter = (offerMakerBase58PublicKey) => ({
 	},
 });
 
+/**
+ * Returns a filter that will match a offer account whose author is the given public key
+ * @param authorBase58PublicKey - The public key of the author.
+ */
 export const authorFilter = (authorBase58PublicKey) => ({
 	memcmp: {
 		offset:
@@ -41,22 +54,15 @@ export const authorFilter = (authorBase58PublicKey) => ({
 	},
 });
 
+/**
+ * Returns a filter that will match a offer account whose mint is the given public key
+ * @param mintBase58PublicKey - The public key of the mint.
+ */
 export const mintFilter = (mintBase58PublicKey) => ({
 	memcmp: {
 		offset:
 			8 + // Discriminator
 			32, // OfferMaker public key
 		bytes: mintBase58PublicKey,
-	},
-});
-
-export const topicFilter = (topic) => ({
-	memcmp: {
-		offset:
-			8 + // Descriminator
-			32 + // Author public key
-			8 + // Timestamp
-			4, // Topic string prefix
-		bytes: bs58.encode(Buffer.from(topic)),
 	},
 });

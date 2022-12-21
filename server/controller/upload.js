@@ -4,7 +4,6 @@ import sizeOf from "image-size";
 import { toFs, toIpfs } from "../middleware/upload.js";
 import { encryptFiles } from "../middleware/crypto.js";
 import { createThumbnails } from "../middleware/image.js";
-import { authorizedPk } from "../middleware/web3Auth.js";
 
 import { fileURLToPath } from "url";
 import { dirname } from "path";
@@ -13,6 +12,12 @@ import { addEntry } from "../db/index.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+/**
+ * Encrypts the given files and uploads the encrypted files together with thumbnails of the files to the IPFS.
+ * @param req - the request object
+ * @param res - the response object
+ * @returns An Object with the uploaded CIDs.
+ */
 export const multipleUpload = async (req, res) => {
 	try {
 		await toFs(req, res, async (err) => {

@@ -8,6 +8,19 @@ use mpl_token_metadata::instruction::create_metadata_accounts_v3;
 use crate::state::error_codes::*;
 use crate::state::image::*;
 
+/// Mints a token, creates a metadata account, creates a master edition account
+/// and a image account for a given image that is stored on the IPFS.
+///
+/// Arguments:
+///
+/// * `ctx`: Context<MintNFT>
+/// * `creator_key`: The public key of the creator of the NFT.
+/// * `name`: The name of the NFT.
+/// * `symbol`: The symbol of the token.
+/// * `uri`: The URI of the NFT.
+/// * `available`: Whether the NFT is available for purchase or not.
+/// * `allowed_license_types`: Specifies the license type.
+/// * `one_time_price`: Specifies the price for an RF license.
 pub fn mint_nft_handler(
     ctx: Context<MintNFT>,
     creator_key: Pubkey,
@@ -115,6 +128,20 @@ pub fn mint_nft_handler(
     Ok(())
 }
 
+/// Properties:
+///
+/// * `mint_authority`: The account that is allowed to mint new NFTs
+/// * `mint`: The account that will be the mint for the NFT
+/// * `token_program`: The program that will be used to create the token
+/// * `metadata`: This is the account that holds the metadata for the NFT.
+/// * `master_edition`: This is the account that will hold the master edition of the NFT.
+/// * `token_account`: This is the account that will hold the NFT.
+/// * `token_metadata_program`: This is the program that will be used to store the metadata for the
+/// token.
+/// * `payer`: The account that pays for the storage of the new account
+/// * `system_program`: The program that is used to create new accounts.
+/// * `rent`: This is the account that pays for the rent of the program.
+/// * `image`: The account that holds image specific information.
 #[derive(Accounts)]
 pub struct MintNFT<'info> {
     #[account(mut)]

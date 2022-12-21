@@ -1,6 +1,11 @@
 import { web3 } from "@project-serum/anchor";
 import { useWorkspace } from "@/composables";
 
+/**
+ * Requests the Solana program to cancel the given offer.
+ * @param offer_maker - The public key of the offer maker
+ * @param mint - The public key of mint that the offer is for
+ */
 export const cancelOffer = async (offer_maker, mint) => {
 	const { wallet, program } = useWorkspace();
 

@@ -3,6 +3,7 @@ import ipfsClient from "ipfs-http-client";
 const ipfsEndPoint = "http://127.0.0.1:5001";
 const ipfs = ipfsClient(ipfsEndPoint);
 
+/* Creating a storage object for multer to use. */
 var storage = multer.diskStorage({
 	destination: (req, file, callback) => {
 		callback(null, "./upload");
@@ -20,9 +21,15 @@ var storage = multer.diskStorage({
 	},
 });
 
+/* Creating a multer middleware that will store the files in the upload folder. */
 export const toFs = multer({ storage: storage }).array("data", 10);
-// var uploadFilesMiddleware = util.promisify(uploadFiles);
 
+/**
+ * Writes the given files to the IPFS at the given path
+ * @param files - Files to upload
+ * @param path - The path to the folder on IPFS
+ * @returns CIDs of the files recently added on the IPFS.
+ */
 export const toIpfs = async (files, path) => {
 	const getCids = async () => {
 		const cids = [];

@@ -4,6 +4,19 @@ import b58 from "bs58";
 import { TextDecoder } from "util";
 import { DateTime } from "luxon";
 
+/**
+ * This authentication middleware is used to verify
+ * that the request is signed by the owner of the public key.
+ * It uses an authorization header with the following format:
+ * `Authorization: Bearer pk.msg.sig`
+ * Where pk is the base58-encoded public key, msg is the base58-encoded message,
+ * and sig is the base58-encoded signature.
+ * This middleware does not validate the lifetime of the signature or the
+ * contents of the message.
+ *
+ * @param ctx - { action: String, allowSkipCheck: Boolean }
+ * @returns the next() function.
+ */
 export const web3Auth = (ctx) => (req, res, next) => {
 	const { action, allowSkipCheck } = ctx;
 	const authHeader = req.header("Authorization");
@@ -46,4 +59,8 @@ export const web3Auth = (ctx) => (req, res, next) => {
 	return next();
 };
 
+/**
+ * Returns the public key of the authorized user.
+ * @param res - The response object from the Express server.
+ */
 export const authorizedPk = (res) => res.locals.pubKey;

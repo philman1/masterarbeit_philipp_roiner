@@ -3,6 +3,14 @@ use anchor_lang::prelude::*;
 use crate::state::image::*;
 use crate::state::license::*;
 
+/// This function creates a RM license for the given image account.
+///
+/// Arguments:
+///
+/// * `ctx`: Context<CreateLicense> - This is the context of the transaction. It contains the accounts
+/// that are involved in the transaction.
+/// * `valid_until`: The time in seconds since the Unix epoch when the license expires.
+/// * `license_information`: CID from the IPFS that holds all the license information.
 pub fn create_license_handler(
     ctx: Context<CreateLicense>,
     valid_until: i64,
@@ -21,6 +29,13 @@ pub fn create_license_handler(
     Ok(())
 }
 
+/// Properties:
+///
+/// * `license`: This is the account that will hold the license.
+/// * `image_account`: This is the account that holds information about the image.
+/// * `license_recipient`: The account that will receive the license.
+/// * `author`: The account that signs the transaction.
+/// * `system_program`: The program that is used to create new accounts.
 #[derive(Accounts)]
 pub struct CreateLicense<'info> {
     #[account(

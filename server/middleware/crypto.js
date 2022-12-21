@@ -4,6 +4,11 @@ import { getEntry } from "../db/index.js";
 const ipfsEndPoint = "http://127.0.0.1:5001";
 const ipfs = ipfsClient(ipfsEndPoint);
 
+/**
+ * Encrypts the given files.
+ * @param files - Array of files to be encrypted with the following format [name: String, buff: Buffer]
+ * @returns Array with the encrypted files.
+ */
 export async function encryptFiles(files) {
 	try {
 		let encryptedFiles = [];
@@ -31,6 +36,12 @@ export async function encryptFiles(files) {
 	}
 }
 
+/**
+ * Downloads the encrypted file from IPFS, gets the AES key from the database, decrypts the file,
+ * and returns the decrypted file
+ * @param cid - The CID of the file you want to download.
+ * @returns The file content.
+ */
 export async function downloadFileDecrypted(cid) {
 	try {
 		const chunks = [];
@@ -54,6 +65,13 @@ export async function downloadFileDecrypted(cid) {
 	}
 }
 
+/**
+ * Encrypts a buffer using AES-256-CTR with the AES.
+ * @param buffer - The data to be encrypted.
+ * @param secretKey - The secret key used to encrypt the data.
+ * @param iv - Initialisation vector.
+ * @returns The encrypted data.
+ */
 function encryptAES(buffer, secretKey, iv) {
 	const cipher = crypto.createCipheriv("aes-256-ctr", secretKey, iv);
 	const data = cipher.update(buffer);
@@ -61,6 +79,13 @@ function encryptAES(buffer, secretKey, iv) {
 	return encrypted.toString("hex");
 }
 
+/**
+ * Decrypts a given buffer with the AES.
+ * @param buffer - The encrypted data
+ * @param secretKey - The secret key used to decrypt the data.
+ * @param iv - Initialisation vector.
+ * @returns The decrypted data.
+ */
 function decryptAES(buffer, secretKey, iv) {
 	const decipher = crypto.createDecipheriv("aes-256-ctr", secretKey, iv);
 	const data = decipher.update(buffer);

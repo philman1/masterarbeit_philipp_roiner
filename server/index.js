@@ -28,10 +28,4 @@ app.listen(rest_port, async () => {
 
 	initDb();
 	initWorkspace();
-
-	// console.log(
-	// 	await query(
-	// 		"SELECT * FROM keys WHERE ipfs_hash = 'QmfAkzHjCj8qEtDpYD1ou3LmXFg1hgCKpfCJmLarZsVaXA'"
-	// 	)
-	// );
 });

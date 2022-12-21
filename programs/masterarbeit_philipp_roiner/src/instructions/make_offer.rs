@@ -3,6 +3,12 @@ use anchor_lang::solana_program::{program::invoke, system_instruction::transfer}
 
 use crate::state::offer::*;
 
+/// Transfers funds to the offer escrow account.
+///
+/// Arguments:
+///
+/// * `ctx`: Context<MakeOffer>
+/// * `lamports`: The amount of lamports to transfer to the offer escrow account.
 pub fn make_offer_handler(ctx: Context<MakeOffer>, lamports: u64) -> Result<()> {
     let offer_account = &mut ctx.accounts.offer_account;
     let offer_escrow_account = &mut ctx.accounts.offer_escrow_account;
@@ -22,6 +28,12 @@ pub fn make_offer_handler(ctx: Context<MakeOffer>, lamports: u64) -> Result<()> 
     Ok(())
 }
 
+/// Properties:
+///
+/// * `offer_account`: This is the account that holds the offer.
+/// * `offer_maker`: The account that is making the offer.
+/// * `system_program`: This is the program that is running the transaction.
+/// * `offer_escrow_account`: This is the account that holds the funds for the offer.
 #[derive(Accounts)]
 pub struct MakeOffer<'info> {
     #[account(has_one = offer_maker)]

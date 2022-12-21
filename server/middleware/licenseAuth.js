@@ -1,7 +1,13 @@
 import { fetchLicenses, fetchImageAccount } from "./workspace.js";
 import { authorizedPk } from "./web3Auth.js";
-import { SplAssociatedTokenAccountsCoder } from "@project-serum/anchor/dist/cjs/coder/spl-associated-token/accounts.js";
 
+/**
+ * Checks if the user has a valid license for a given image.
+ * @param req - the request object
+ * @param res - the response object
+ * @param next - the next middleware function in the stack
+ * @returns the next() function.
+ */
 export const licenseAuth = async (req, res, next) => {
 	if (!req.body.data) return res.send({ msg: "missing data" });
 	const { mint } = req.body.data;

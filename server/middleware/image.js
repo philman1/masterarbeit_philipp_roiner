@@ -1,5 +1,10 @@
 import sharp from "sharp";
 
+/**
+ * Takes an array of files, and returns an array of thumbnails
+ * @param files - Files
+ * @returns Array of Objects that contain a name and the buffer of the thumbnail.
+ */
 export const createThumbnails = async (files) => {
 	return await Promise.all(
 		files.map(async (file) => {

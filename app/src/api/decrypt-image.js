@@ -3,6 +3,11 @@ import store from "@/store";
 import { req } from "@/api";
 import { useWallet } from "solana-wallets-vue";
 
+/**
+ * Requests the backend server to decrypt a given image from the IPFS.
+ * The server performs several checks in order to verify the authority.
+ * @param mint - The public key of the mint that corresponds to the image
+ */
 export const downloadDecryptedImage = async (mint) => {
 	const { publicKey, signMessage } = useWallet();
 	let nft = store.getters.findNftByMint(mint);

@@ -2,12 +2,21 @@ import { BN, web3 } from "@project-serum/anchor";
 import { useWorkspace } from "@/composables";
 import { Image } from "@/models/Image";
 
+/**
+ * Fetches all image acounts from Blockchain
+ * @param [filters] - An array of filters to apply to the request.
+ * @returns An array of Image objects.
+ */
 export const fetchImages = async (filters = []) => {
 	const { program } = useWorkspace();
 	const images = await program.value.account.image.all(filters);
 	return images.map((image) => new Image(image.publicKey, image.account));
 };
 
+/**
+ * Returns a filter that will match a image account whose mint is the given public key
+ * @param mintBase58PublicKey - The public key of the mint.
+ */
 export const mintAddressFilter = (mintBase58PublicKey) => ({
 	memcmp: {
 		offset:
@@ -18,6 +27,10 @@ export const mintAddressFilter = (mintBase58PublicKey) => ({
 	},
 });
 
+/**
+ * Returns a filter that will match a image account whose availability is the given one.
+ * @param availability - The availability.
+ */
 export const availabilityFilter = (availability) => ({
 	memcmp: {
 		offset:
@@ -29,6 +42,10 @@ export const availabilityFilter = (availability) => ({
 	},
 });
 
+/**
+ * Returns a filter that will match a image account whose author is the given public key
+ * @param authorBase58PublicKey - The public key of the author.
+ */
 export const imageAuthorFilter = (authorBase58PublicKey) => ({
 	memcmp: {
 		offset: 8, // Discriminator
@@ -36,6 +53,13 @@ export const imageAuthorFilter = (authorBase58PublicKey) => ({
 	},
 });
 
+/**
+ * Returns the Program Derived Address for the given seeds that will be used to create or find a image account.
+ * @param mint - The mint address of the token
+ * @param author - The public key of the account that owns the image.
+ * @param programId - The program ID of the program.
+ * @returns The public key for the PDA.
+ */
 export const getImageAccount = async (mint, author, programId) =>
 	(
 		await web3.PublicKey.findProgramAddress(
@@ -44,6 +68,11 @@ export const getImageAccount = async (mint, author, programId) =>
 		)
 	)[0];
 
+/**
+ * This function will update the availability of an image on the blockchain
+ * @param mint - The mint account that holds the image token
+ * @param value - The new value of the image availability.
+ */
 export const updateImageAvailability = async (mint, value) => {
 	const { wallet, program } = useWorkspace();
 
@@ -105,9 +134,7 @@ export const updateImageOneTimePrice = async (mint, value) => {
 		);
 
 		const tx = await program.value.methods
-			.updateImageOneTimePrice(
-				new BN(Number(value) * web3.LAMPORTS_PER_SOL)
-			)
+			.updateImageOneTimePrice(new BN(Number(value) * web3.LAMPORTS_PER_SOL))
 			.accounts({
 				imageAccount: imageAccount,
 				author: wallet.value.publicKey,

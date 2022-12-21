@@ -1,6 +1,12 @@
 import { web3 } from "@project-serum/anchor";
 import { useWorkspace } from "@/composables";
 
+/**
+ * Initializes a new offer for a given mint address.
+ * @param mint - The public key of the mint.
+ * @param author - The public key of the mints author
+ * @param offer_uri - String that contains a link to the offer informatino (IPFS)
+ */
 export const initializeOffer = async (mint, author, offer_uri) => {
 	const { wallet, program } = useWorkspace();
 	console.log(mint, author, offer_uri);

@@ -3,6 +3,12 @@ use anchor_lang::solana_program::program::invoke;
 use anchor_spl::token::Token;
 use mpl_token_metadata::instruction::mint_new_edition_from_master_edition_via_token;
 
+/// Mints a new edition for a given master edition and copies its NFT and metadata.
+///
+/// Arguments:
+///
+/// * `ctx`: Context<MintPrintEdition>
+/// * `edition`: Edition number
 pub fn mint_print_edition_handler(ctx: Context<MintPrintEdition>, edition: u64) -> Result<()> {
     let accounts = vec![
         ctx.accounts.original_mint.to_account_info(),
@@ -48,6 +54,27 @@ pub fn mint_print_edition_handler(ctx: Context<MintPrintEdition>, edition: u64) 
 
     Ok(())
 }
+
+/// Properties:
+///
+/// * `original_mint`: The mint that is being copied.
+/// * `new_metadata`: The new metadata account
+/// * `new_edition`: The new edition account
+/// * `master_edition`: The account that holds the master edition of the token.
+/// * `new_mint`: The new mint account that will be created
+/// * `new_token_account`: The account that will hold the new token
+/// * `edition_mark_pda`: The account that holds the edition mark PDA
+/// * `new_mint_authority`: The new mint authority
+/// * `payer`: The account that pays for the transaction
+/// * `token_account_owner`: The account that owns the token account
+/// * `token_account`: The account that holds the token
+/// * `new_metadata_update_authority`: The account that will be the authority for the new metadata
+/// account
+/// * `metadata`: The metadata account for the token
+/// * `token_metadata_program`: The program that manages the metadata for the token.
+/// * `token_program`: Program<'info, Token>
+/// * `system_program`: The program that is used to create new accounts.
+/// * `rent`: This is the account that pays for the rent of the program.
 
 #[derive(Accounts)]
 pub struct MintPrintEdition<'info> {

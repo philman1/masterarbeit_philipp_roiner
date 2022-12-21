@@ -2,6 +2,13 @@ use anchor_lang::prelude::*;
 
 use crate::state::{license::*, offer::*};
 
+/// The offer escrow account is debited and the author is receiving the funds. The license is updated to
+/// reflect the new owner and the license type
+///
+/// Arguments:
+/// that are involved in the transaction.
+/// * `ctx`: Context<AcceptOffer> - This is the context of the transaction. It contains the accounts
+/// that are involved in the transaction.
 pub fn accept_offer_handler(ctx: Context<AcceptOffer>) -> Result<()> {
     let offer_escrow_account = &mut ctx.accounts.offer_escrow_account;
 
@@ -31,6 +38,15 @@ pub fn accept_offer_handler(ctx: Context<AcceptOffer>) -> Result<()> {
     Ok(())
 }
 
+/// Properties:
+///
+/// * `license`: This is the account that will be created by the program.
+/// * `offer_account`: This is the account that holds the offer.
+/// * `offer_maker`: The account that created the offer.
+/// * `author`: The account that is accepting the offer.
+/// * `system_program`: This is the program that is running the transaction.
+/// * `offer_escrow_account`: This is the account that holds the funds that the offer maker has put up
+/// as escrow.
 #[derive(Accounts)]
 pub struct AcceptOffer<'info> {
     #[account(

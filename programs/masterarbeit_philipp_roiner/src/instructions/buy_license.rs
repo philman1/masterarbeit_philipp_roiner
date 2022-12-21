@@ -5,6 +5,13 @@ use crate::state::error_codes::*;
 use crate::state::image::*;
 use crate::state::license::*;
 
+/// If the image account allows RF licenses, then transfer the one-time price from the payer to the
+/// author, and create a new RF license for the payer.
+///
+/// Arguments:
+///
+/// * `ctx`: Context<BuyRfLicense> - This is the context of the transaction. It contains the accounts
+/// that are involved in the transaction.
 pub fn buy_rf_license_handler(ctx: Context<BuyRfLicense>) -> Result<()> {
     let image_account = &mut ctx.accounts.image_account;
     let amount: u64 = image_account.one_time_price;
@@ -40,6 +47,14 @@ pub fn buy_rf_license_handler(ctx: Context<BuyRfLicense>) -> Result<()> {
     Ok(())
 }
 
+/// Properties:
+///
+/// * `license`: License account that will be created. Seeds are the payer's key (author), the
+/// string "license", and the image account's mint address.
+/// * `image_account`: This is the account that holds information about the image.
+/// * `payer`: The account that pays and signs for the transaction.
+/// * `author`: The author of the image
+/// * `system_program`: The program that is used to create new accounts.
 #[derive(Accounts)]
 pub struct BuyRfLicense<'info> {
     #[account(

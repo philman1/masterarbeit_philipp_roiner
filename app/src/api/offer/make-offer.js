@@ -1,6 +1,11 @@
 import { web3, BN } from "@project-serum/anchor";
 import { useWorkspace } from "@/composables";
 
+/**
+ * Transfers the offered amount to the offer escrow account of the offer.
+ * @param price_offer - The price of the offer in SOL
+ * @param mint - The public key of the mint the offer refers to.
+ */
 export const makeOffer = async (price_offer, mint) => {
 	const { wallet, program } = useWorkspace();
 

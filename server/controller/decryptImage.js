@@ -1,6 +1,12 @@
 import { downloadFileDecrypted } from "../middleware/crypto.js";
 ("../middleware/crypto.js");
 
+/**
+ * Decrypts a given image
+ * @param req - the request object
+ * @param res - the response object
+ * @returns The decrypted image.
+ */
 export const decryptImage = async (req, res) => {
 	if (!req.body.data) return res.send({ msg: "no cid provided" });
 	const { cid } = req.body.data;
