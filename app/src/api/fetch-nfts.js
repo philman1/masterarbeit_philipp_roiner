@@ -18,10 +18,13 @@ export const fetchNft = async (mint) => {
 		const { metaplex } = useMetaplex();
 		const mintAddress = new PublicKey(mint);
 		let nft = await metaplex.nfts().findByMint({ mintAddress });
-		if (!nft.jsonLoaded) nft = await fetchMetadataFromIpfs(nft);
+		if (!nft.jsonLoaded && !nft.json)
+			nft = await fetchMetadataFromIpfs(nft);
 
-		const image = await fetchImageFromIpfs(nft);
-		return { imageUri: image, ...nft };
+		if (nft.json) {
+			const image = await fetchImageFromIpfs(nft);
+			return { imageUri: image, ...nft };
+		}
 	} catch (error) {
 		console.log(error);
 	}
@@ -42,17 +45,19 @@ export const fetchNfts = async (filters) => {
 			mints,
 		});
 
-		const result = imageAccounts.map((i) => {
+		const result = [];
+		imageAccounts.forEach((i) => {
 			const m = metadatas.find(
 				(m) =>
 					m &&
 					m.mintAddress &&
 					m.mintAddress.toBase58() == i.mintAddress.toBase58()
 			);
-			return {
-				imageAccount: i,
-				nftMetadata: m,
-			};
+			if (i && m)
+				result.push({
+					imageAccount: i,
+					nftMetadata: m,
+				});
 		});
 
 		return result;
@@ -96,13 +101,15 @@ export const fetchMetadataFromIpfs = async (nft) => {
 		if (uri.includes("ipfs")) {
 			uri = uri.substring(21);
 		}
-
+		console.log(ipfs.getEndpointConfig());
 		for await (const chunk of ipfs.cat(uri)) {
 			chunks.push(chunk);
 		}
 
 		const data = concat(chunks);
-		const decodedData = JSON.parse(new TextDecoder().decode(data).toString());
+		const decodedData = JSON.parse(
+			new TextDecoder().decode(data).toString()
+		);
 		return { ...nft, json: decodedData };
 	}
 };
@@ -130,16 +137,21 @@ export const fetchImageFromIpfs = async (nft) => {
  * @returns The URL of the image.
  */
 async function loadImgURL(cid) {
-	if (cid == "" || cid == null || cid == undefined || cid.includes("ipfs://")) {
+	if (
+		cid == "" ||
+		cid == null ||
+		cid == undefined ||
+		cid.includes("ipfs://")
+	) {
 		return;
 	}
 
-	let uri = cid;
-	if (cid.includes("ipfs")) {
-		uri = uri.substring(21);
-	}
+	// let uri = cid;
+	// if (cid.includes("ipfs")) {
+	// 	uri = uri.substring(21);
+	// }
 
-	const res = await fetch("http://localhost:8080/ipfs/" + uri);
+	const res = await fetch(cid); //"http://localhost:8080/ipfs/" + uri);
 
 	return res.url;
 }

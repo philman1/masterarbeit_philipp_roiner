@@ -22,8 +22,13 @@ const randomHeight = () => {
 
 onMounted(async () => {
 	const { metaplex } = useMetaplex();
-	const n = await metaplex.nfts().load({ metadata: nft.value });
-	const nftsWithMetadata = await fetchMetadataFromIpfs(n);
+	let nftsWithMetadata = null;
+	try {
+		const n = await metaplex.nfts().load({ metadata: nft.value });
+		nftsWithMetadata = await fetchMetadataFromIpfs(n);
+	} catch (e) {
+		console.log(e);
+	}
 
 	nft.value = nftsWithMetadata;
 	store.commit("add", { nft: nftsWithMetadata });

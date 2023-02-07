@@ -158,7 +158,7 @@ const uploadOffchainMetadataToIpfs = async (metadata) => {
 	if (ipfs_metadata == null) {
 		return "";
 	} else {
-		return `https://ipfs.io/ipfs/${ipfs_metadata.path}`;
+		return `http://127.0.0.1:8080/ipfs/${ipfs_metadata.path}`;
 	}
 };
 

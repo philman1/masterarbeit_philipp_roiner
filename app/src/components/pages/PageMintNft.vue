@@ -5,12 +5,30 @@ import DuoHeadline from "../basic/DuoHeadline.vue";
 import SimpleButton from "../basic/SimpleButton.vue";
 import SimpleInput from "../basic/SimpleInput.vue";
 
-const name = ref("");
-const symbol = ref("");
-const description = ref("");
-const available = ref(false);
-const allowedLicenseTypes = ref(3);
-const oneTimePrice = ref(1);
+const defaultInput = {
+	name: "",
+	symbol: "",
+	description: "",
+	available: false,
+	allowedLicenseTypes: 3,
+	oneTimePrice: 1,
+};
+
+const name = ref(defaultInput.name);
+const symbol = ref(defaultInput.symbol);
+const description = ref(defaultInput.description);
+const available = ref(defaultInput.available);
+const allowedLicenseTypes = ref(defaultInput.allowedLicenseTypes);
+const oneTimePrice = ref(defaultInput.oneTimePrice);
+
+const nameInput = ref(null);
+const symbolInput = ref(null);
+const descriptionInput = ref(null);
+const availableInput = ref(null);
+const allowedLicenseTypesInput = ref(null);
+const oneTimePriceInput = ref(null);
+const imageInput = ref(null);
+
 const image = ref(null);
 const bgImage = ref(null);
 const validName = computed(() => name.value && name.value.length > 0);
@@ -24,15 +42,15 @@ const handleFiles = async (event) => {
 
 const mint = async () => {
 	if (!validName.value || !image.value) return;
-	const res = await saveToIpfs(image.value);
-	const { cidsEncrypted, cidsThumbnails } = res.data;
+	const ipfs = await saveToIpfs(image.value);
+	const { cidsEncrypted, cidsThumbnails } = ipfs.data;
 
 	await mintNft(
 		{
 			name: name.value,
 			symbol: symbol.value,
 			description: description.value,
-			image: `https://ipfs.io/ipfs/${cidsThumbnails[0]}`,
+			image: `http://127.0.0.1:8080/ipfs/${cidsThumbnails[0]}`,
 			fullResImg: cidsEncrypted[0],
 		},
 		{
@@ -41,6 +59,37 @@ const mint = async () => {
 			oneTimePrice: oneTimePrice.value,
 		}
 	);
+
+	clearInputs();
+};
+
+const clearInputs = () => {
+	nameInput.value.$refs.input.value = name.value = defaultInput.name;
+	nameInput.value.$refs.input.dispatchEvent(new Event("input"));
+	symbolInput.value.$refs.input.value = symbol.value = defaultInput.symbol;
+	symbolInput.value.$refs.input.dispatchEvent(new Event("input"));
+	descriptionInput.value.$refs.input.value = description.value =
+		defaultInput.description;
+	descriptionInput.value.$refs.input.dispatchEvent(new Event("input"));
+	availableInput.value = available.value = defaultInput.available;
+
+	if (allowedLicenseTypesInput.value) {
+		allowedLicenseTypesInput.value.$refs.input.value =
+			allowedLicenseTypes.value = defaultInput.allowedLicenseTypes;
+		allowedLicenseTypesInput.value.$refs.input.dispatchEvent(
+			new Event("input")
+		);
+		if (oneTimePriceInput.value) {
+			oneTimePriceInput.value.$refs.input.value = oneTimePrice.value =
+				defaultInput.oneTimePrice;
+			oneTimePriceInput.value.$refs.input.dispatchEvent(
+				new Event("input")
+			);
+		}
+	}
+
+	imageInput.value.$refs.input.value = image.value = bgImage.value = null;
+	imageInput.value.$refs.input.dispatchEvent(new Event("input"));
 };
 </script>
 
@@ -58,12 +107,16 @@ const mint = async () => {
 								<simple-input
 									id="name"
 									type="text"
-									placeholder="Name uri"
+									placeholder="Name"
 									v-model="name"
 									label="Name"
 									:class="{ 'border-red-500': !validName }"
+									ref="nameInput"
 								/>
-								<p v-if="!validName" class="text-red-500 text-xs italic">
+								<p
+									v-if="!validName"
+									class="text-red-500 text-xs italic"
+								>
 									Please choose a name.
 								</p>
 							</div>
@@ -74,6 +127,7 @@ const mint = async () => {
 									placeholder="Symbol"
 									v-model="symbol"
 									label="Symbol"
+									ref="symbolInput"
 								/>
 							</div>
 						</div>
@@ -84,6 +138,7 @@ const mint = async () => {
 								placeholder="Description"
 								v-model="description"
 								label="Description"
+								ref="descriptionInput"
 							/>
 						</div>
 						<div class="mb-4 flex">
@@ -98,8 +153,8 @@ const mint = async () => {
 									class="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
 									id="available"
 									type="checkbox"
-									placeholder="Description"
 									v-model="available"
+									ref="availableInput"
 								/>
 							</div>
 							<div v-if="available" class="mx-4">
@@ -109,20 +164,23 @@ const mint = async () => {
 									:min="0"
 									:max="3"
 									:step="1"
-									placeholder="Description"
 									v-model="allowedLicenseTypes"
 									label="License type"
+									ref="allowedLicenseTypesInput"
 								/>
 							</div>
 
-							<div v-if="available && allowedLicenseTypes === 2" class="ml-2">
+							<div
+								v-if="available && allowedLicenseTypes == 2"
+								class="ml-2"
+							>
 								<simple-input
 									id="oneTimePrice"
 									type="text"
-									placeholder="Description"
 									v-model="oneTimePrice"
 									label="Price (SOL)"
 									w="24"
+									ref="oneTimePriceInput"
 								/>
 							</div>
 						</div>
@@ -133,16 +191,22 @@ const mint = async () => {
 								@change="handleFiles"
 								multiple
 								label="Images"
+								ref="imageInput"
 							/>
 						</div>
 						<div class="w-full flex justify-center">
-							<simple-button :click-handler="mint" label="Upload" />
+							<simple-button
+								:click-handler="mint"
+								label="Upload"
+							/>
 						</div>
 					</form>
 				</div>
 				<div
 					class="absolute w-full h-full -z-10 opacity-25 bg-cover"
-					:style="bgImage ? { backgroundImage: `url(${bgImage})` } : ''"
+					:style="
+						bgImage ? { backgroundImage: `url(${bgImage})` } : ''
+					"
 				></div>
 			</div>
 		</div>

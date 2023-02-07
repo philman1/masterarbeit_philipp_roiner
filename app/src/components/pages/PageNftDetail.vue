@@ -16,6 +16,7 @@ import {
 	downloadDecryptedImage,
 	buyRfLicense,
 	licenseOwnerFilter,
+	licensesForImage,
 	createLicense,
 } from "@/api";
 import { useWorkspace, today } from "@/composables";
@@ -45,7 +46,7 @@ const oneTimePrice = ref(null);
 // OFFER
 const validPrice = ref(true);
 const validUri = ref(true);
-const price = ref(0.0);
+const price = ref(1.0);
 const offerUri = ref("");
 
 onMounted(async () => {
@@ -79,14 +80,16 @@ const fetchImageAccount = async () => {
 const fetchLicense = async () => {
 	const l = await fetchLicenses([
 		licenseOwnerFilter(wallet.value.publicKey.toBase58()),
-		mintAddressFilter(image.value.mintAddressB58),
+		licensesForImage(image.value.mintAddressB58),
 	]);
+
 	if (l.length > 0) {
 		license.value = l[0];
 	}
 };
 
 const initAndMakeOffer = async () => {
+	console.log(price.value, offerUri.value);
 	if (!price.value) {
 		validPrice.value = false;
 		return;
@@ -176,9 +179,13 @@ const provideAccess = async () => {
 					:src="nft.imageUri"
 				/>
 				<div class="lg:w-1/2 w-full lg:pl-10 mt-6 lg:mt-0">
-					<div class="overflow-hidden bg-white shadow sm:rounded-lg mb-6">
+					<div
+						class="overflow-hidden bg-white shadow sm:rounded-lg mb-6"
+					>
 						<div class="px-4 py-5 sm:px-6">
-							<h3 class="text-lg font-medium leading-6 text-gray-900">
+							<h3
+								class="text-lg font-medium leading-6 text-gray-900"
+							>
 								NFT Information
 							</h3>
 							<p class="mt-1 max-w-2xl text-sm text-gray-500">
@@ -190,13 +197,23 @@ const provideAccess = async () => {
 								<div
 									class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
 								>
-									<dt class="text-sm font-medium text-gray-500">Creators</dt>
-									<dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+									<dt
+										class="text-sm font-medium text-gray-500"
+									>
+										Creators
+									</dt>
+									<dd
+										class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0"
+									>
 										<p
 											v-for="creator of nft.creators"
 											:key="creator.address.toBase58()"
 										>
-											<hash-link :hash="creator.address.toBase58()" />
+											<hash-link
+												:hash="
+													creator.address.toBase58()
+												"
+											/>
 											({{ creator.share }}%)
 										</p>
 									</dd>
@@ -204,18 +221,26 @@ const provideAccess = async () => {
 								<div
 									class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
 								>
-									<dt class="text-sm font-medium text-gray-500">
+									<dt
+										class="text-sm font-medium text-gray-500"
+									>
 										Mint address
 									</dt>
-									<dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-										<hash-link :hash="nft.mint.address.toBase58()" />
+									<dd
+										class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0"
+									>
+										<hash-link
+											:hash="nft.mint.address.toBase58()"
+										/>
 									</dd>
 								</div>
 								<div v-if="image">
 									<div
 										class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
 									>
-										<dt class="text-sm font-medium text-gray-500">
+										<dt
+											class="text-sm font-medium text-gray-500"
+										>
 											Upload date
 										</dt>
 										<dd
@@ -227,19 +252,27 @@ const provideAccess = async () => {
 									<div
 										class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
 									>
-										<dt class="text-sm font-medium text-gray-500">
+										<dt
+											class="text-sm font-medium text-gray-500"
+										>
 											Availability
 										</dt>
 										<dd
 											class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0"
 										>
 											<div class="flex items-start">
-												<span class="w-24 mr-3">{{ image.availability }}</span>
+												<span class="w-24 mr-3">{{
+													image.availability
+												}}</span>
 												<simple-button
 													v-if="isCreator"
-													:click-handler="switchAvailability"
+													:click-handler="
+														switchAvailability
+													"
 													:label="`Set to ${
-														image.available ? 'Private' : 'Public'
+														image.available
+															? 'Private'
+															: 'Public'
 													}`"
 													appearance="secondary"
 												/>
@@ -250,7 +283,9 @@ const provideAccess = async () => {
 										class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
 										v-if="image.available"
 									>
-										<dt class="text-sm font-medium text-gray-500">
+										<dt
+											class="text-sm font-medium text-gray-500"
+										>
 											Allowed license types
 										</dt>
 										<dd
@@ -263,27 +298,39 @@ const provideAccess = async () => {
 													:min="0"
 													:max="3"
 													:step="1"
-													w="w-24"
-													:readonly="isCreator ? false : true"
+													w="24"
+													:readonly="
+														isCreator ? false : true
+													"
 												/>
 												<simple-button
 													v-if="isCreator"
-													:click-handler="changeAllowedLicenseTypes"
+													:click-handler="
+														changeAllowedLicenseTypes
+													"
 													label="Switch"
 													appearance="secondary"
 												/>
 											</div>
 											<div>
-												<p class="mt-1 max-w-2xl text-sm text-gray-500">
+												<p
+													class="mt-1 max-w-2xl text-sm text-gray-500"
+												>
 													0 - Public Domain
 												</p>
-												<p class="mt-1 max-w-2xl text-sm text-gray-500">
+												<p
+													class="mt-1 max-w-2xl text-sm text-gray-500"
+												>
 													1 - Creative Commons (CC)
 												</p>
-												<p class="mt-1 max-w-2xl text-sm text-gray-500">
+												<p
+													class="mt-1 max-w-2xl text-sm text-gray-500"
+												>
 													2 - Royalty Free (RF)
 												</p>
-												<p class="mt-1 max-w-2xl text-sm text-gray-500">
+												<p
+													class="mt-1 max-w-2xl text-sm text-gray-500"
+												>
 													3 - Rights Managed (RM)
 												</p>
 											</div>
@@ -292,10 +339,14 @@ const provideAccess = async () => {
 									<div
 										class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
 										v-if="
-											image.available && image.allowedLicenseTypesAsNumber === 2
+											image.available &&
+											image.allowedLicenseTypesAsNumber ===
+												2
 										"
 									>
-										<dt class="text-sm font-medium text-gray-500">
+										<dt
+											class="text-sm font-medium text-gray-500"
+										>
 											Price (SOL)
 										</dt>
 										<dd
@@ -308,8 +359,10 @@ const provideAccess = async () => {
 													:min="0"
 													:max="3"
 													:step="1"
-													w="w-24"
-													:readonly="isCreator ? false : true"
+													w="24"
+													:readonly="
+														isCreator ? false : true
+													"
 												/>
 												<simple-button
 													v-if="isCreator"
@@ -332,7 +385,10 @@ const provideAccess = async () => {
 								image.allowedLicenseTypesAsNumber === 1)
 						"
 					>
-						<simple-button :click-handler="downloadImage" label="Download" />
+						<simple-button
+							:click-handler="downloadImage"
+							label="Download"
+						/>
 					</div>
 				</div>
 				<div v-if="!isCreator && !license">
@@ -346,7 +402,10 @@ const provideAccess = async () => {
 							<p class="text-l text-black-500 mr-4">
 								{{ image.oneTimePriceText }}
 							</p>
-							<simple-button :click-handler="buyLicense" label="Pay!" />
+							<simple-button
+								:click-handler="buyLicense"
+								label="Pay!"
+							/>
 						</div>
 					</div>
 					<div v-if="image && image.allowedLicenseTypesAsNumber == 3">
@@ -362,13 +421,17 @@ const provideAccess = async () => {
 										<simple-input
 											type="number"
 											v-model="oneTimePrice"
+											:min="0"
 											label="Price in SOL"
 											placeholder="Price in SOL"
 											:class="{
 												'border-red-500': !validPrice,
 											}"
 										/>
-										<p v-if="!validPrice" class="text-red-500 text-xs italic">
+										<p
+											v-if="!validPrice"
+											class="text-red-500 text-xs italic"
+										>
 											Please enter a price.
 										</p>
 									</div>
@@ -380,10 +443,13 @@ const provideAccess = async () => {
 											v-model="offerUri"
 											label="Link to IPFS containing license arguments"
 											:class="{
-												'border-red-500': !valivalidUridPrice,
+												'border-red-500': !validUri,
 											}"
 										/>
-										<p v-if="!validUri" class="text-red-500 text-xs italic">
+										<p
+											v-if="!validUri"
+											class="text-red-500 text-xs italic"
+										>
 											Please enter a valid link.
 										</p>
 									</div>

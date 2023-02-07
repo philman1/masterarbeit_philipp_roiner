@@ -1,8 +1,11 @@
 <template>
 	<div class="w-screen h-screen">
 		<nav-bar />
-		<div v-if="connected && publicKey != null" class="md:container md:mx-auto">
-			<router-view class=""></router-view>
+		<div
+			v-if="connected && publicKey != null"
+			class="md:container md:mx-auto"
+		>
+			<router-view></router-view>
 		</div>
 	</div>
 </template>

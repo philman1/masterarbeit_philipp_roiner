@@ -13,7 +13,7 @@ use crate::print_edition::*;
 use crate::update_image::*;
 use instructions::*;
 
-declare_id!("FhKv5xKBKppK18jRDwAcXtpmALWzqppGkW2sPZ578YqQ");
+declare_id!("5C4WbaLJTN1q7UiUAcC3yYttbEHK6AUvFoopzeDhmMj9");
 
 #[program]
 pub mod masterarbeit_philipp_roiner {

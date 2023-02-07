@@ -4,6 +4,21 @@
 	"instructions": [
 		{
 			"name": "mintNft",
+			"docs": [
+				"Mints a token, creates a metadata account, creates a master edition account",
+				"and a image account for a given image that is stored on the IPFS.",
+				"",
+				"Arguments:",
+				"",
+				"* `ctx`: Context<MintNFT>",
+				"* `creator_key`: The public key of the creator of the NFT.",
+				"* `name`: The name of the NFT.",
+				"* `symbol`: The symbol of the token.",
+				"* `uri`: The URI of the NFT.",
+				"* `available`: Whether the NFT is available for purchase or not.",
+				"* `allowed_license_types`: Specifies the license type.",
+				"* `one_time_price`: Specifies the price for an RF license."
+			],
 			"accounts": [
 				{
 					"name": "mintAuthority",
@@ -94,6 +109,14 @@
 		},
 		{
 			"name": "mintEdition",
+			"docs": [
+				"Mints a new edition for a given master edition and copies its NFT and metadata.",
+				"",
+				"Arguments:",
+				"",
+				"* `ctx`: Context<MintPrintEdition>",
+				"* `edition`: Edition number"
+			],
 			"accounts": [
 				{
 					"name": "originalMint",
@@ -190,6 +213,16 @@
 		},
 		{
 			"name": "initializeOffer",
+			"docs": [
+				"It initializes a new offer account and a corresponding offer escrow account.",
+				"",
+				"Arguments:",
+				"",
+				"* `ctx`: Context<InitializeOffer>",
+				"* `bump`: The offer account bump.",
+				"* `escrow_bump`: The offer escrow account bump.",
+				"* `offer_uri`: The URI of the offer."
+			],
 			"accounts": [
 				{
 					"name": "offerAccount",
@@ -239,6 +272,14 @@
 		},
 		{
 			"name": "makeOffer",
+			"docs": [
+				"Transfers funds to the offer escrow account.",
+				"",
+				"Arguments:",
+				"",
+				"* `ctx`: Context<MakeOffer>",
+				"* `lamports`: The amount of lamports to transfer to the offer escrow account."
+			],
 			"accounts": [
 				{
 					"name": "offerAccount",
@@ -270,6 +311,14 @@
 		},
 		{
 			"name": "cancelOffer",
+			"docs": [
+				"The funds of the offer escrow account will be transferred back to the offer maker.",
+				"",
+				"Arguments:",
+				"",
+				"* `ctx`: Context<CancelOffer> - This is the context of the transaction. It contains the accounts",
+				"that are involved in the transaction."
+			],
 			"accounts": [
 				{
 					"name": "offerAccount",
@@ -296,6 +345,15 @@
 		},
 		{
 			"name": "acceptOffer",
+			"docs": [
+				"The offer escrow account is debited and the offer maker is credited. The license is updated to",
+				"reflect the new owner and the license type",
+				"",
+				"Arguments:",
+				"that are involved in the transaction.",
+				"* `ctx`: Context<AcceptOffer> - This is the context of the transaction. It contains the accounts",
+				"that are involved in the transaction."
+			],
 			"accounts": [
 				{
 					"name": "license",
@@ -332,6 +390,15 @@
 		},
 		{
 			"name": "updateImageAvailability",
+			"docs": [
+				"Updates the availability of an image.",
+				"",
+				"Arguments:",
+				"",
+				"* `ctx`: Context<UpdateImage> - This is the context of the transaction. It contains the accounts",
+				"that are involved in the transaction.",
+				"* `available`: New availability"
+			],
 			"accounts": [
 				{
 					"name": "imageAccount",
@@ -358,6 +425,15 @@
 		},
 		{
 			"name": "updateImageAllowedLicenseTypes",
+			"docs": [
+				"The function updates the license type of an image.",
+				"",
+				"Arguments:",
+				"",
+				"* `ctx`: Context<UpdateImage> - This is the context of the transaction. It contains the accounts",
+				"that are involved in the transaction.",
+				"* `allowed_license_types`: New license type."
+			],
 			"accounts": [
 				{
 					"name": "imageAccount",
@@ -384,6 +460,15 @@
 		},
 		{
 			"name": "updateImageOneTimePrice",
+			"docs": [
+				"The function updates the one time price of an image",
+				"",
+				"Arguments:",
+				"",
+				"* `ctx`: Context<UpdateImage> - This is the context of the transaction. It contains the accounts",
+				"that are involved in the transaction.",
+				"* `one_time_price`: New price."
+			],
 			"accounts": [
 				{
 					"name": "imageAccount",
@@ -410,6 +495,15 @@
 		},
 		{
 			"name": "buyRfLicense",
+			"docs": [
+				"If the image account allows RF licenses, then transfer the one-time price from the payer to the",
+				"author, and create a new RF license for the payer.",
+				"",
+				"Arguments:",
+				"",
+				"* `ctx`: Context<BuyRfLicense> - This is the context of the transaction. It contains the accounts",
+				"that are involved in the transaction."
+			],
 			"accounts": [
 				{
 					"name": "license",
@@ -441,6 +535,16 @@
 		},
 		{
 			"name": "createLicense",
+			"docs": [
+				"This function creates a RM license for the given image account.",
+				"",
+				"Arguments:",
+				"",
+				"* `ctx`: Context<CreateLicense> - This is the context of the transaction. It contains the accounts",
+				"that are involved in the transaction.",
+				"* `valid_until`: The time in seconds since the Unix epoch when the license expires.",
+				"* `license_information`: CID from the IPFS that holds all the license information."
+			],
 			"accounts": [
 				{
 					"name": "license",
@@ -611,6 +715,6 @@
 		}
 	],
 	"metadata": {
-		"address": "FhKv5xKBKppK18jRDwAcXtpmALWzqppGkW2sPZ578YqQ"
+		"address": "5C4WbaLJTN1q7UiUAcC3yYttbEHK6AUvFoopzeDhmMj9"
 	}
 }
