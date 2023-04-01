@@ -24,7 +24,7 @@ app.all("*", (req, res, next) => {
 });
 
 app.listen(rest_port, async () => {
-	console.log("Server running on port 3000");
+	console.log(`Server running on port ${rest_port}`);
 
 	initDb();
 	initWorkspace();

@@ -20,6 +20,8 @@
 		"sharp": "^0.31.2",
 		"sqlite3": "^5.1.2",
 		"tweetnacl": "^1.0.3",
-		"util": "^0.12.5"
+		"util": "^0.12.5",
+		"@project-serum/anchor": "^0.25.0",
+		"@solana/web3.js": "^1.65.0"
 	}
 }
